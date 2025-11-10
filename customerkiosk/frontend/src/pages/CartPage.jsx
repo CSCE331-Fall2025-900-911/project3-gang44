@@ -51,20 +51,31 @@ export default function CartPage() {
   return (
     <div className="cart-page">
       <h1>{t('cart')}</h1>
-      
-      {cart.map(item => (
-        <div key={item.id} className="cart-item">
-          <h3>🧋 {item.name}</h3>
-          <p><strong>{t('size')}:</strong> {item.size}</p>
-          <p><strong>{t('ice')}:</strong> {item.iceLevel}</p>
-          <p><strong>{t('sweetness')}:</strong> {item.sweetnessLevel}</p>
-          {item.toppings.length > 0 && (
-            <p><strong>{t('toppings')}:</strong> {item.toppings.map(t => t.name).join(', ')}</p>
-          )}
-          <p className="price">${item.price.toFixed(2)}</p>
-          <button onClick={() => removeFromCart(item.id)}>{t('remove')}</button>
-        </div>
-      ))}
+
+      {cart.map(item => {
+        // Translate item name, size, ice level, and toppings
+        const translatedName = t(item.name, { defaultValue: item.name });
+        const translatedSize = t(item.size, { defaultValue: item.size });
+        const translatedIce = t(item.iceLevel, { defaultValue: item.iceLevel });
+        const translatedSweetness = t(item.sweetnessLevel, { defaultValue: item.sweetnessLevel });
+        const translatedToppings = item.toppings.map(topping =>
+          t(topping.name, { defaultValue: topping.name })
+        ).join(', ');
+
+        return (
+          <div key={item.id} className="cart-item">
+            <h3>{translatedName}</h3>
+            <p><strong>{t('size')}:</strong> {translatedSize}</p>
+            <p><strong>{t('ice')}:</strong> {translatedIce}</p>
+            <p><strong>{t('sweetness')}:</strong> {translatedSweetness}</p>
+            {item.toppings.length > 0 && (
+              <p><strong>{t('toppings')}:</strong> {translatedToppings}</p>
+            )}
+            <p className="price">${item.price.toFixed(2)}</p>
+            <button onClick={() => removeFromCart(item.id)}>{t('remove')}</button>
+          </div>
+        );
+      })}
 
       <div className="cart-total">
         <h2>{t('total')}: ${cartTotal.toFixed(2)}</h2>

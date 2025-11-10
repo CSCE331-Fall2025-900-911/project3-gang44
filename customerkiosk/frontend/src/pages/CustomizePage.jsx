@@ -176,25 +176,28 @@ export default function CustomizePage() {
   if (!drink) return <div className="loading">Drink not found (ID: {id})</div>;
   if (!customizations) return <div className="loading">Loading options...</div>;
 
+  // Translate the drink name
+  const translatedDrinkName = t(drink.name, { defaultValue: drink.name });
+
   return (
     <div className="customize-page">
       <button className="back-button" onClick={() => navigate('/menu')}>
         ← {t('backToMenu')}
       </button>
-      
+
       <h1>{t('customize')}</h1>
-      <h2>🧋 {drink.name}</h2>
+      <h2>{translatedDrinkName}</h2>
 
       <div className="customization-section">
         <h3>{t('size')}</h3>
         <div className="button-group">
           {customizations.sizes.map(s => (
-            <button 
+            <button
               key={s}
               className={size === s ? 'selected' : ''}
               onClick={() => setSize(s)}
             >
-              {t(s.toLowerCase())}
+              {t(s, { defaultValue: s })}
             </button>
           ))}
         </div>
@@ -209,7 +212,7 @@ export default function CustomizePage() {
               className={iceLevel === option ? 'selected' : ''}
               onClick={() => setIceLevel(option)}
             >
-              {option}
+              {t(option, { defaultValue: option })}
             </button>
           ))}
         </div>
@@ -224,7 +227,7 @@ export default function CustomizePage() {
               className={sweetnessLevel === option ? 'selected' : ''}
               onClick={() => setSweetnessLevel(option)}
             >
-              {option}
+              {t(option, { defaultValue: option })}
             </button>
           ))}
         </div>
@@ -240,13 +243,16 @@ export default function CustomizePage() {
             // Normalize IDs to strings for consistent comparison
             const normalizeId = (id) => String(id);
             const toppingId = normalizeId(topping.id);
-            
+
             // Check if this specific topping is selected by comparing IDs
             const isSelected = selectedToppings.some(t => {
               const tId = normalizeId(t.id);
               return tId === toppingId;
             });
-            
+
+            // Translate the topping name
+            const translatedToppingName = t(topping.name, { defaultValue: topping.name });
+
             return (
               <button
                 key={`topping-${topping.id}-${topping.name}`}
@@ -257,7 +263,7 @@ export default function CustomizePage() {
                   toggleTopping(topping);
                 }}
               >
-                {topping.name} (+${topping.price}) {isSelected ? '✓' : ''}
+                {translatedToppingName} (+${topping.price}) {isSelected ? '✓' : ''}
               </button>
             );
           })}

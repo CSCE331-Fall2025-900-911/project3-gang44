@@ -12,7 +12,7 @@ export default function LanguageToggle() {
 
   return (
     <button className="language-toggle" onClick={toggleLanguage}>
-      {language === 'en' ? '🇪🇸 Español' : '🇺🇸 English'}
+      {language === 'en' ? 'Español' : 'English'}
     </button>
   );
 }

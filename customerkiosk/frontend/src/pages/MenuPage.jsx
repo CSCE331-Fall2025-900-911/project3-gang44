@@ -35,18 +35,20 @@ export default function MenuPage() {
   return (
     <div className="menu-page">
       <h1>{t('menu')}</h1>
-      
+
       <div className="drink-grid">
         {drinks.map(drink => {
           const productId = drink.product_id || drink.item_id;
+          // Translate the drink name, fallback to original if translation doesn't exist
+          const translatedName = t(drink.name, { defaultValue: drink.name });
+
           return (
-            <div 
-              key={productId} 
+            <div
+              key={productId}
               className="drink-card"
               onClick={() => navigate(`/customize/${productId}`)}
             >
-              <div className="drink-image-placeholder">🧋</div>
-              <h3>{drink.name}</h3>
+              <h3>{translatedName}</h3>
               <p>${parseFloat(drink.price).toFixed(2)}</p>
             </div>
           );
@@ -54,7 +56,7 @@ export default function MenuPage() {
       </div>
 
       {cart.length > 0 && (
-        <button 
+        <button
           className="cart-button"
           onClick={() => navigate('/cart')}
         >
