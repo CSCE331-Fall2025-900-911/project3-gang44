@@ -198,8 +198,9 @@ body {
 .customization-section button {
   padding: 18px 30px;
   font-size: 20px;
-  background: white;
-  border: 3px solid #e2e8f0;
+  background: #f7fafc;
+  color: #2d3748;
+  border: 3px solid #cbd5e0;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
@@ -209,7 +210,9 @@ body {
 }
 
 .customization-section button:hover {
+  background: #edf2f7;
   border-color: #667eea;
+  color: #667eea;
 }
 
 .customization-section button.selected {

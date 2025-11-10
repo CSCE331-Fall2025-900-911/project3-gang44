@@ -12,9 +12,13 @@ app.use(express.json());
 app.get('/api/menu', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM products 
+      SELECT 
+        item_id as product_id,
+        name,
+        category,
+        price
+      FROM products 
       ORDER BY category, name
-      LIMIT 10
     `);
     res.json(result.rows);
   } catch (err) {
@@ -25,6 +29,15 @@ app.get('/api/menu', async (req, res) => {
 
 app.get('/api/customizations', async (req, res) => {
   try {
+    // First, let's see what columns exist
+    const testQuery = await pool.query(`
+      SELECT * FROM ingredients 
+      WHERE quantity > 0
+      LIMIT 1
+    `);
+    console.log('Sample ingredient row:', testQuery.rows[0]);
+    console.log('Sample ingredient keys:', testQuery.rows[0] ? Object.keys(testQuery.rows[0]) : 'No rows');
+    
     const ingredients = await pool.query(`
       SELECT * FROM ingredients 
       WHERE quantity > 0
@@ -35,11 +48,16 @@ app.get('/api/customizations', async (req, res) => {
       sizes: ['Small', 'Medium', 'Large'],
       iceOptions: ['No Ice', 'Less Ice', 'Regular Ice', 'Extra Ice'],
       sweetnessOptions: ['0%', '25%', '50%', '75%', '100%'],
-      toppings: ingredients.rows.map(ing => ({
-        id: ing.ingredient_id,
-        name: ing.name,
-        price: 0.50 
-      }))
+      toppings: ingredients.rows.map((ing, index) => {
+        // Try multiple possible column names for the ID
+        const id = ing.ingredient_id || ing.item_id || ing.id || ing.ingredientid || `topping-${index + 1}`;
+        console.log(`Topping ${index}: name="${ing.name}", id=${id}, available keys:`, Object.keys(ing));
+        return {
+          id: id,
+          name: ing.name,
+          price: 0.50 
+        };
+      })
     });
   } catch (err) {
     console.error('Error fetching customizations:', err);

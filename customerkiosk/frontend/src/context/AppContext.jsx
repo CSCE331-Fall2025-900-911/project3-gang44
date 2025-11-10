@@ -8,7 +8,7 @@ export const AppProvider = ({ children }) => {
   const [language, setLanguage] = useState('en');
 
   const addToCart = (item) => {
-    setCart([...cart, { ...item, id: Date.now() }]);
+    setCart(prevCart => [...prevCart, { ...item, id: Date.now() }]);
   };
 
   const removeFromCart = (id) => {

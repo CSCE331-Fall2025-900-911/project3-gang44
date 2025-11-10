@@ -8,6 +8,8 @@ export default function CustomizePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { addToCart } = useApp();
+  
+  console.log('CustomizePage rendered with id:', id, 'from useParams');
 
   const [drink, setDrink] = useState(null);
   const [customizations, setCustomizations] = useState(null);
@@ -16,39 +18,122 @@ export default function CustomizePage() {
   const [size, setSize] = useState('Medium');
   const [iceLevel, setIceLevel] = useState('Regular Ice');
   const [sweetnessLevel, setSweetnessLevel] = useState('50%');
-  const [selectedToppings, setSelectedToppings] = useState([]);
+  const [selectedToppings, setSelectedToppings] = useState([]); // Array of full topping objects
 
   useEffect(() => {
+    if (!id) {
+      console.error('No product ID provided');
+      setLoading(false);
+      return;
+    }
+
+    // Reset selections and drink when ID changes
+    setDrink(null);
+    setSelectedToppings([]);
+    setSize('Medium');
+    setIceLevel('Regular Ice');
+    setSweetnessLevel('50%');
+
+    setLoading(true);
+    let loadedCount = 0;
+    const totalRequests = 2;
+
+    const markLoaded = () => {
+      loadedCount++;
+      if (loadedCount === totalRequests) {
+        setLoading(false);
+      }
+    };
+
     // Fetch all drinks
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
       .then(res => res.json())
       .then(data => {
-        const foundDrink = data.find(d => d.product_id === parseInt(id));
+        console.log('All drinks:', data);
+        console.log('URL param id:', id, 'Type:', typeof id);
+        // Try both string and number comparison, and handle both product_id and item_id
+        const foundDrink = data.find(d => {
+          const drinkId = d.product_id || d.item_id;
+          const searchId = parseInt(id) || id;
+          return drinkId === searchId || 
+                 drinkId === parseInt(id) || 
+                 String(drinkId) === String(id);
+        });
         console.log('Found drink:', foundDrink);
+        if (!foundDrink) {
+          console.error('Drink not found. Available IDs:', data.map(d => d.product_id || d.item_id));
+        }
         setDrink(foundDrink);
+        markLoaded();
       })
-      .catch(err => console.error('Error fetching drink:', err));
+      .catch(err => {
+        console.error('Error fetching drink:', err);
+        markLoaded();
+      });
 
-    // Fetch customization options
     fetch(`${import.meta.env.VITE_API_URL}/api/customizations`)
       .then(res => res.json())
       .then(data => {
         console.log('Customizations:', data);
+        console.log('Toppings data:', data.toppings);
+        console.log('Topping IDs:', data.toppings?.map(t => ({ id: t.id, name: t.name, idType: typeof t.id })));
+        // Verify all toppings have unique IDs
+        const ids = data.toppings?.map(t => t.id) || [];
+        const uniqueIds = new Set(ids);
+        console.log('Total toppings:', ids.length, 'Unique IDs:', uniqueIds.size);
+        if (ids.length !== uniqueIds.size) {
+          console.error('WARNING: Some toppings have duplicate IDs!');
+        }
         setCustomizations(data);
-        setLoading(false);
+        markLoaded();
       })
       .catch(err => {
         console.error('Error fetching customizations:', err);
-        setLoading(false);
+        markLoaded();
       });
   }, [id]);
 
   const toggleTopping = (topping) => {
-    if (selectedToppings.find(t => t.id === topping.id)) {
-      setSelectedToppings(selectedToppings.filter(t => t.id !== topping.id));
-    } else {
-      setSelectedToppings([...selectedToppings, topping]);
-    }
+    console.log('=== TOGGLE TOPPING ===');
+    console.log('Clicked topping:', topping);
+    console.log('Topping ID:', topping.id, 'Type:', typeof topping.id);
+    
+    setSelectedToppings(prevToppings => {
+      console.log('Previous toppings:', prevToppings);
+      console.log('Previous topping IDs:', prevToppings.map(t => ({ id: t.id, name: t.name })));
+      
+      // Normalize IDs to strings for consistent comparison
+      const normalizeId = (id) => {
+        if (id === null || id === undefined) {
+          console.error('WARNING: Topping has null/undefined ID!');
+          return 'undefined';
+        }
+        return String(id);
+      };
+      const clickedId = normalizeId(topping.id);
+      
+      // Check if this specific topping is already selected
+      const existingIndex = prevToppings.findIndex(t => {
+        const tId = normalizeId(t.id);
+        const match = tId === clickedId;
+        console.log(`Comparing ${tId} with ${clickedId}: ${match}`);
+        return match;
+      });
+      
+      console.log('Existing index:', existingIndex);
+      
+      if (existingIndex >= 0) {
+        // Remove the topping - create new array without this one
+        const filtered = prevToppings.filter((_, index) => index !== existingIndex);
+        console.log('REMOVED - New toppings:', filtered);
+        return filtered;
+      } else {
+        // Add the topping - create new array with this one added
+        const added = [...prevToppings, topping];
+        console.log('ADDED - New toppings:', added);
+        return added;
+      }
+    });
   };
 
   const calculatePrice = () => {
@@ -68,8 +153,9 @@ export default function CustomizePage() {
   };
 
   const handleAddToCart = () => {
-    addToCart({
-      menuItemId: drink.product_id,
+    const productId = drink.product_id || drink.item_id;
+    const cartItem = {
+      menuItemId: productId,
       name: drink.name,
       size,
       iceLevel,
@@ -77,12 +163,17 @@ export default function CustomizePage() {
       toppings: selectedToppings,
       price: parseFloat(calculatePrice()),
       quantity: 1
-    });
+    };
+    console.log('Adding to cart:', cartItem);
+    console.log('Drink name:', drink.name);
+    console.log('Drink object:', drink);
+    addToCart(cartItem);
     navigate('/menu');
   };
 
   if (loading) return <div className="loading">Loading...</div>;
-  if (!drink) return <div className="loading">Drink not found</div>;
+  if (!id) return <div className="loading">Invalid product ID</div>;
+  if (!drink) return <div className="loading">Drink not found (ID: {id})</div>;
   if (!customizations) return <div className="loading">Loading options...</div>;
 
   return (
@@ -140,17 +231,36 @@ export default function CustomizePage() {
       </div>
 
       <div className="customization-section">
-        <h3>{t('toppings')}</h3>
+        <h3>{t('toppings')} <span style={{fontSize: '18px', fontWeight: 'normal', color: '#666'}}>(Select multiple)</span></h3>
+        <div style={{marginBottom: '10px', fontSize: '14px', color: '#666'}}>
+          Selected: {selectedToppings.length} topping(s) - IDs: [{selectedToppings.map(t => t.id).join(', ')}]
+        </div>
         <div className="button-group">
-          {customizations.toppings.map(topping => (
-            <button
-              key={topping.id}
-              className={selectedToppings.find(t => t.id === topping.id) ? 'selected' : ''}
-              onClick={() => toggleTopping(topping)}
-            >
-              {topping.name} (+${topping.price})
-            </button>
-          ))}
+          {customizations.toppings.map(topping => {
+            // Normalize IDs to strings for consistent comparison
+            const normalizeId = (id) => String(id);
+            const toppingId = normalizeId(topping.id);
+            
+            // Check if this specific topping is selected by comparing IDs
+            const isSelected = selectedToppings.some(t => {
+              const tId = normalizeId(t.id);
+              return tId === toppingId;
+            });
+            
+            return (
+              <button
+                key={`topping-${topping.id}-${topping.name}`}
+                className={isSelected ? 'selected' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleTopping(topping);
+                }}
+              >
+                {topping.name} (+${topping.price}) {isSelected ? '✓' : ''}
+              </button>
+            );
+          })}
         </div>
       </div>
 

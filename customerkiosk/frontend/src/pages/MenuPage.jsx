@@ -37,17 +37,20 @@ export default function MenuPage() {
       <h1>{t('menu')}</h1>
       
       <div className="drink-grid">
-        {drinks.map(drink => (
-          <div 
-            key={drink.product_id} 
-            className="drink-card"
-            onClick={() => navigate(`/customize/${drink.product_id}`)}
-          >
-            <div className="drink-image-placeholder">🧋</div>
-            <h3>{drink.name}</h3>
-            <p>${parseFloat(drink.price).toFixed(2)}</p>
-          </div>
-        ))}
+        {drinks.map(drink => {
+          const productId = drink.product_id || drink.item_id;
+          return (
+            <div 
+              key={productId} 
+              className="drink-card"
+              onClick={() => navigate(`/customize/${productId}`)}
+            >
+              <div className="drink-image-placeholder">🧋</div>
+              <h3>{drink.name}</h3>
+              <p>${parseFloat(drink.price).toFixed(2)}</p>
+            </div>
+          );
+        })}
       </div>
 
       {cart.length > 0 && (
