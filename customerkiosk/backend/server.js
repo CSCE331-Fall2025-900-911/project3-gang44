@@ -67,52 +67,73 @@ app.get('/api/customizations', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
   const { items, total, customerEmail } = req.body;
-  
+
   try {
     const client = await pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
+      // Insert into orders table (no employee_id column, just order_date and total_price)
       const orderResult = await client.query(
-        `INSERT INTO orders (employee_id, order_date, total_price) 
-         VALUES ($1, NOW(), $2) 
+        `INSERT INTO orders (order_date, total_price)
+         VALUES (NOW(), $1)
          RETURNING order_id`,
-        [1, total]
+        [total]
       );
-      
+
       const orderId = orderResult.rows[0].order_id;
-      
+      console.log('Created order:', orderId);
+
+      // Insert each item into order_items
       for (const item of items) {
+        const pricePerUnit = item.price / (item.quantity || 1);
+        const subtotal = item.price;
+
+        // Build customization details string
+        const customizationDetails = [
+          `Size: ${item.size}`,
+          `Ice: ${item.iceLevel}`,
+          `Sweetness: ${item.sweetnessLevel}`,
+          item.toppings && item.toppings.length > 0
+            ? `Toppings: ${item.toppings.map(t => t.name).join(', ')}`
+            : null
+        ].filter(Boolean).join(', ');
+
+        // Add customization to product name if there are any
+        const productNameWithCustomization = customizationDetails
+          ? `${item.name} (${customizationDetails})`
+          : item.name;
+
         await client.query(
-          `INSERT INTO order_items 
-           (order_id, product_id, quantity, customization) 
-           VALUES ($1, $2, $3, $4)`,
+          `INSERT INTO order_items
+           (order_id, product_name, quantity, price_per_unit, subtotal)
+           VALUES ($1, $2, $3, $4, $5)`,
           [
-            orderId, 
-            item.menuItemId, 
+            orderId,
+            productNameWithCustomization,
             item.quantity || 1,
-            JSON.stringify({
-              size: item.size,
-              iceLevel: item.iceLevel,
-              sweetnessLevel: item.sweetnessLevel,
-              toppings: item.toppings
-            })
+            pricePerUnit,
+            subtotal
           ]
         );
+        console.log(`Added item: ${item.name} to order ${orderId}`);
       }
-      
+
       await client.query('COMMIT');
+      console.log('Order committed successfully');
       res.json({ orderId, message: 'Order placed successfully' });
-      
+
     } catch (err) {
       await client.query('ROLLBACK');
+      console.error('Transaction error:', err);
       throw err;
     } finally {
       client.release();
     }
   } catch (err) {
     console.error('Error creating order:', err);
+    console.error('Error details:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });

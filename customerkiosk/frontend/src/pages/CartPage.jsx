@@ -9,6 +9,9 @@ export default function CartPage() {
 
   const handlePlaceOrder = async () => {
     try {
+      console.log('Placing order with cart:', cart);
+      console.log('Cart total:', cartTotal);
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20,11 +23,19 @@ export default function CartPage() {
       });
 
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Order failed with status:', response.status);
+        console.error('Error data:', data);
+        throw new Error(data.error || 'Order failed');
+      }
+
+      console.log('Order successful! Order ID:', data.orderId);
       clearCart();
       navigate('/confirmation', { state: { orderId: data.orderId } });
     } catch (error) {
       console.error('Order failed:', error);
-      alert('Order failed. Please try again.');
+      alert(`Order failed: ${error.message}. Please try again.`);
     }
   };
 
