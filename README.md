@@ -8,11 +8,15 @@ in project3-gang44:
 
 cd customerkiosk/backend
 
+npm install
+
 node server.js
 
 in another terminal in project3-gang44
 
 cd customerkiosk/frontend
+
+npm install
 
 npm run dev
 
