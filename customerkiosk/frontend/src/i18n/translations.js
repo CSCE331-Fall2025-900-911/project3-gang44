@@ -1,0 +1,40 @@
+export const translations = {
+  en: {
+    welcome: "Welcome",
+    menu: "Menu",
+    cart: "Cart",
+    customize: "Customize Your Drink",
+    size: "Size",
+    ice: "Ice Level",
+    sweetness: "Sweetness",
+    toppings: "Toppings",
+    addToCart: "Add to Cart",
+    checkout: "Checkout",
+    placeOrder: "Place Order",
+    total: "Total",
+    signIn: "Sign in with Google",
+    orderConfirmed: "Order Confirmed!",
+    small: "Small",
+    medium: "Medium",
+    large: "Large"
+  },
+  es: {
+    welcome: "Bienvenido",
+    menu: "Menú",
+    cart: "Carrito",
+    customize: "Personaliza Tu Bebida",
+    size: "Tamaño",
+    ice: "Nivel de Hielo",
+    sweetness: "Dulzura",
+    toppings: "Complementos",
+    addToCart: "Añadir al Carrito",
+    checkout: "Pagar",
+    placeOrder: "Realizar Pedido",
+    total: "Total",
+    signIn: "Iniciar sesión con Google",
+    orderConfirmed: "¡Pedido Confirmado!",
+    small: "Pequeño",
+    medium: "Mediano",
+    large: "Grande"
+  }
+};
