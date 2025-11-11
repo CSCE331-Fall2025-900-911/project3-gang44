@@ -21,3 +21,11 @@ npm install
 npm run dev
 
 now open the link that the frontend spins up and try to sign in w tamu email
+
+SETUP DOCKER
+
+download docker from https://www.docker.com
+
+cd customerkiosk/
+
+docker compose up --build
