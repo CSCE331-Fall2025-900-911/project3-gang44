@@ -9,19 +9,32 @@ export default function GoogleAuth() {
   const { t } = useTranslation();
 
   const handleSuccess = async (credentialResponse) => {
+    console.log('Google login successful, credential received');
     try {
+      console.log('Sending request to:', `${import.meta.env.VITE_API_URL}/api/auth/google`);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: credentialResponse.credential })
       });
-      
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('Auth response:', data);
       setUser(data);
       navigate('/menu');
     } catch (error) {
       console.error('Login failed:', error);
+      alert('Login failed: ' + error.message);
     }
+  };
+
+  const handleError = () => {
+    console.error('Google Login Failed');
+    alert('Google login failed. Please try again.');
   };
 
   return (
@@ -30,7 +43,7 @@ export default function GoogleAuth() {
         <h1>{t('welcome')}</h1>
         <GoogleLogin
           onSuccess={handleSuccess}
-          onError={() => console.log('Login Failed')}
+          onError={handleError}
           size="large"
         />
       </div>
