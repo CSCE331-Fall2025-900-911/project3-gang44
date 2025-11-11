@@ -1,6 +1,6 @@
 services:
   # Backend API Service
-  - type: static
+  - type: web
     name: customer-kiosk-backend
     runtime: node
     region: oregon
@@ -33,9 +33,7 @@ services:
   # Frontend Static Site
   - type: web
     name: customer-kiosk-frontend
-    runtime: node
-    region: oregon
-    plan: free
+    runtime: static
     buildCommand: cd customerkiosk/frontend && npm install && npm run build
     staticPublishPath: ./customerkiosk/frontend/dist
     envVars:
