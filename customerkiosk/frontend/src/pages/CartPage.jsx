@@ -4,8 +4,8 @@ import { useApp } from '../context/AppContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { cart, removeFromCart, cartTotal, clearCart, user } = useApp();
+  const { t: i18nT } = useTranslation(); // For UI labels
+  const { cart, removeFromCart, cartTotal, clearCart, user, t } = useApp(); // For API translations
 
   const handlePlaceOrder = async () => {
     try {
@@ -42,45 +42,39 @@ export default function CartPage() {
   if (cart.length === 0) {
     return (
       <div className="empty-cart">
-        <h2>{t('emptyCart')}</h2>
-        <button onClick={() => navigate('/menu')}>{t('backToMenu')}</button>
+        <h2>{i18nT('emptyCart')}</h2>
+        <button onClick={() => navigate('/menu')}>{i18nT('backToMenu')}</button>
       </div>
     );
   }
 
   return (
     <div className="cart-page">
-      <h1>{t('cart')}</h1>
+      <h1>{i18nT('cart')}</h1>
 
       {cart.map(item => {
-        // Translate item name, size, ice level, and toppings
-        const translatedName = t(item.name, { defaultValue: item.name });
-        const translatedSize = t(item.size, { defaultValue: item.size });
-        const translatedIce = t(item.iceLevel, { defaultValue: item.iceLevel });
-        const translatedSweetness = t(item.sweetnessLevel, { defaultValue: item.sweetnessLevel });
-        const translatedToppings = item.toppings.map(topping =>
-          t(topping.name, { defaultValue: topping.name })
-        ).join(', ');
+        // Translate database items using API
+        const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
 
         return (
           <div key={item.id} className="cart-item">
-            <h3>{translatedName}</h3>
-            <p><strong>{t('size')}:</strong> {translatedSize}</p>
-            <p><strong>{t('ice')}:</strong> {translatedIce}</p>
-            <p><strong>{t('sweetness')}:</strong> {translatedSweetness}</p>
+            <h3>{t(item.name)}</h3>
+            <p><strong>{i18nT('size')}:</strong> {t(item.size)}</p>
+            <p><strong>{i18nT('ice')}:</strong> {t(item.iceLevel)}</p>
+            <p><strong>{i18nT('sweetness')}:</strong> {t(item.sweetnessLevel)}</p>
             {item.toppings.length > 0 && (
-              <p><strong>{t('toppings')}:</strong> {translatedToppings}</p>
+              <p><strong>{i18nT('toppings')}:</strong> {translatedToppings}</p>
             )}
             <p className="price">${item.price.toFixed(2)}</p>
-            <button onClick={() => removeFromCart(item.id)}>{t('remove')}</button>
+            <button onClick={() => removeFromCart(item.id)}>{i18nT('remove')}</button>
           </div>
         );
       })}
 
       <div className="cart-total">
-        <h2>{t('total')}: ${cartTotal.toFixed(2)}</h2>
+        <h2>{i18nT('total')}: ${cartTotal.toFixed(2)}</h2>
         <button className="place-order-btn" onClick={handlePlaceOrder}>
-          {t('placeOrder')}
+          {i18nT('placeOrder')}
         </button>
       </div>
     </div>

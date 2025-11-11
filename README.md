@@ -21,3 +21,11 @@ npm install
 npm run dev
 
 now open the link that the frontend spins up and try to sign in w tamu email
+
+IMPORTANT: SET UP .ENV FILES
+
+in customerkiosk/frontend and customerkiosk/backend, add .env files. just make a .env file in both and then copy and paste the stuff from discord
+
+they will have unique .env files
+
+check our discord gc for them

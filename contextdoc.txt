@@ -1,0 +1,495 @@
+# Boba Kiosk MVP - Project Handoff Document
+
+## Project Overview
+
+**Team:** Gang 44 (4 members: Justin, Ryan, Wesley, Geoffrey)  
+**Course:** CSCE 331 - Project 3  
+**Objective:** Build a customer self-service kiosk for a boba tea shop with React frontend, Node.js/Express backend, PostgreSQL database (existing from Project 2)
+
+**Key Requirements:**
+- Customer kiosk interface (touchscreen-optimized, 1080p)
+- Google OAuth authentication (must support `reveille.bubbletea@gmail.com`)
+- Full English/Spanish language toggle (single button press)
+- Ability to browse, customize, and order 10 drinks
+- Accessibility features (WCAG 2.1 compliant)
+- Deploy by end of Sprint 1
+
+---
+
+## Project Structure
+
+```
+project3-gang44/
+├── customerkiosk/
+│   ├── backend/
+│   │   ├── db.js                 # PostgreSQL connection
+│   │   ├── server.js             # Express API server
+│   │   ├── test-db.js            # Database connection test
+│   │   ├── check-schema.js       # Schema inspection tool
+│   │   ├── .env                  # Environment variables (NOT in git)
+│   │   └── package.json
+│   └── frontend/
+│       ├── src/
+│       │   ├── components/
+│       │   │   ├── GoogleAuth.jsx
+│       │   │   └── LanguageToggle.jsx
+│       │   ├── context/
+│       │   │   └── AppContext.jsx
+│       │   ├── i18n/
+│       │   │   ├── i18n.js
+│       │   │   └── translations.js
+│       │   ├── pages/
+│       │   │   ├── MenuPage.jsx
+│       │   │   ├── CustomizePage.jsx
+│       │   │   ├── CartPage.jsx
+│       │   │   └── ConfirmationPage.jsx
+│       │   ├── App.css
+│       │   ├── App.jsx
+│       │   └── main.jsx
+│       ├── .env                  # Environment variables (NOT in git)
+│       └── package.json
+```
+
+---
+
+## Database Information
+
+**Connection Details:**
+- Host: `csce-315-db.engr.tamu.edu`
+- Port: `5432`
+- Database: `gang_44_db`
+- User: `gang_44`
+- Password: (stored in `.env` file)
+
+**Available Tables:**
+- `employees`
+- `orders`
+- `sales_history`
+- `teammembers`
+- `products` ← Menu items (used for kiosk)
+- `product_ingredients`
+- `ingredients` ← Used for toppings
+- `report_counters`
+- `report_meta`
+- `orders_archive`
+- `order_items`
+
+**Products Table Schema:**
+- `item_id` - Primary key
+- `name` - Drink name
+- `category` - Category (e.g., "Milk Tea", "Creative Mix")
+- `price` - Base price (stored as string, needs parsing)
+
+**Sample Data (10 drinks available):**
+```json
+[
+  {"item_id":12,"name":"Honey Green Tea","category":"Creative Mix","price":"4.99"},
+  {"item_id":5,"name":"Passionfruit Green Tea","category":"Creative Mix","price":"5.99"},
+  {"item_id":11,"name":"Strawberry Lemonade","category":"Creative Mix","price":"4.99"},
+  {"item_id":4,"name":"Milk Foam Green Tea","category":"Milk Foam","price":"6.99"},
+  {"item_id":14,"name":"Milk Foam Green Tea","category":"Milk Foam","price":"4.99"},
+  {"item_id":13,"name":"Milk Foam Oolong Tea","category":"Milk Foam","price":"5.99"},
+  {"item_id":10,"name":"Brown Sugar Milk Tea","category":"Milk Tea","price":"5.99"},
+  {"item_id":15,"name":"Mango Milk Tea","category":"Milk Tea","price":"4.99"},
+  {"item_id":1,"name":"Taro Milk Tea","category":"Milk Tea","price":"4.99"},
+  {"item_id":7,"name":"Wintermelon Milk Tea","category":"Milk Tea","price":"4.99"}
+]
+```
+
+---
+
+## Environment Configuration
+
+### Backend `.env`
+```env
+# AWS PostgreSQL Connection
+DB_HOST=csce-315-db.engr.tamu.edu
+DB_PORT=5432
+DB_NAME=gang_44_db
+DB_USER=gang_44
+DB_PASSWORD=[REDACTED - team has this]
+
+# Google OAuth
+GOOGLE_CLIENT_ID=292199993155-eoddl3h07brh9h4bqml0c6khtd8h240f.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+
+# JWT Secret
+JWT_SECRET=[random string]
+
+# Server
+PORT=5000
+```
+
+### Frontend `.env`
+```env
+VITE_GOOGLE_CLIENT_ID=292199993155-eoddl3h07brh9h4bqml0c6khtd8h240f.apps.googleusercontent.com
+VITE_API_URL=http://localhost:5000
+```
+
+### Google Cloud Console OAuth Setup
+- **Project Name:** Boba Kiosk (or similar)
+- **OAuth Consent Screen:** External, Test mode
+- **Test Users:** `reveille.bubbletea@gmail.com` + team members
+- **Authorized JavaScript Origins:**
+  - `http://localhost:5173`
+  - `http://127.0.0.1:5173`
+  - `http://localhost:3000`
+- **Authorized Redirect URIs:**
+  - `http://localhost:5173`
+  - `http://127.0.0.1:5173`
+  - `http://localhost:3000`
+
+---
+
+## Completed Work ✅
+
+### Backend (Node.js + Express)
+- [x] Database connection configured (`db.js`)
+- [x] Express server setup (`server.js`)
+- [x] API endpoints created:
+  - `GET /api/menu` - Returns 10 products from database
+  - `GET /api/customizations` - Returns size, ice, sweetness, and topping options
+  - `POST /api/orders` - Creates new order in database
+  - `POST /api/auth/google` - Verifies Google OAuth token
+- [x] CORS enabled for frontend communication
+- [x] Database connection tested and verified
+- [x] Backend running on `http://localhost:5000`
+
+### Frontend (React + Vite)
+- [x] React project initialized with Vite
+- [x] Dependencies installed:
+  - `react-router-dom` (navigation)
+  - `i18next` + `react-i18next` (translations)
+  - `@react-oauth/google` (Google sign-in)
+- [x] Project structure created (components, pages, context, i18n)
+- [x] Google OAuth integration working
+- [x] Context API setup for global state (cart, user, language)
+- [x] Translation system configured (English + Spanish)
+- [x] Language toggle button functional
+- [x] All page components created (Auth, Menu, Customize, Cart, Confirmation)
+- [x] Complete CSS styling applied (purple gradient theme, touchscreen-friendly)
+
+### Authentication
+- [x] Google Cloud Console project created
+- [x] OAuth 2.0 credentials configured
+- [x] Test users added (including `reveille.bubbletea@gmail.com`)
+- [x] OAuth working - users can sign in successfully
+
+---
+
+## Current Issues 🚧
+
+### Frontend Display Issue
+**Problem:** After Google login, the menu page at `http://127.0.0.1:5173/menu` shows visual issues:
+- Purple background renders correctly
+- Drink cards not displaying properly (may show icons/weird rendering)
+- Clicking drinks navigates to `/customize/undefined` instead of `/customize/{id}`
+
+**Root Cause:** Column name mismatch between backend query and frontend component
+
+**Backend returns:** `item_id` (from products table)  
+**Frontend expects:** `product_id`
+
+**Impact:**
+- MenuPage can't read drink IDs correctly
+- Navigation breaks because `drink.product_id` is undefined
+- CustomizePage receives `undefined` as the ID parameter
+
+---
+
+## Immediate Next Steps 🎯
+
+### 1. Fix Column Name Mismatch (HIGH PRIORITY)
+
+**Option A: Update Backend to Match Frontend**
+
+In `backend/server.js`, change the menu endpoint:
+
+```javascript
+app.get('/api/menu', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        item_id as product_id,  -- ← Alias to match frontend
+        name, 
+        category, 
+        price 
+      FROM products 
+      ORDER BY category, name
+      LIMIT 10
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching menu:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+```
+
+**Option B: Update Frontend to Match Backend**
+
+In `frontend/src/pages/MenuPage.jsx`, change:
+```javascript
+// Change this line:
+onClick={() => navigate(`/customize/${drink.product_id}`)}
+
+// To this:
+onClick={() => navigate(`/customize/${drink.item_id}`)}
+```
+
+Also update `CustomizePage.jsx`:
+```javascript
+// Change this line:
+const foundDrink = data.find(d => d.product_id === parseInt(id));
+
+// To this:
+const foundDrink = data.find(d => d.item_id === parseInt(id));
+```
+
+And in the `addToCart` call:
+```javascript
+// Change:
+menuItemId: drink.product_id,
+
+// To:
+menuItemId: drink.item_id,
+```
+
+**Recommendation:** Go with **Option A** (update backend) - it's a one-line change and keeps the frontend cleaner.
+
+### 2. Test Complete Flow
+
+After fixing the column name issue:
+1. Start both servers
+2. Sign in with Google
+3. Browse the 10 drinks on menu page
+4. Click a drink
+5. Customize it (size, ice, sweetness, toppings)
+6. Add to cart
+7. View cart
+8. Place order
+9. See confirmation
+10. Toggle language at any point - verify all text changes
+
+### 3. Verify Database Schema for Orders
+
+Run `backend/check-schema.js` to see exact column names in `orders` and `order_items` tables.
+
+The current order insertion might need adjustment based on actual schema. Verify these columns exist:
+- `orders` table: `order_id`, `employee_id`, `order_date`, `total_price`
+- `order_items` table: `order_id`, `product_id`, `quantity`, `customization`
+
+If columns differ, update the `POST /api/orders` endpoint accordingly.
+
+---
+
+## Future Goals (Sprint 1 Completion)
+
+### Required for MVP Deployment:
+- [ ] Fix column name mismatch
+- [ ] Test complete order flow end-to-end
+- [ ] Verify orders are saving correctly to database
+- [ ] Add error handling for failed API calls
+- [ ] Add loading states for better UX
+- [ ] Test accessibility features (personas: Maria, Carol, Vishnu)
+  - [ ] Screen reader compatibility
+  - [ ] Keyboard navigation
+  - [ ] Text scaling (if not already implemented)
+  - [ ] High contrast mode (if not already implemented)
+- [ ] Deploy frontend to Vercel/Netlify
+- [ ] Deploy backend to Railway/Render
+- [ ] Update Google OAuth origins with production URLs
+- [ ] Test deployed version end-to-end
+
+### Nice-to-Have Enhancements:
+- [ ] Add drink images (currently using 🧋 emoji placeholder)
+- [ ] Add category filtering on menu page
+- [ ] Add quantity selector in cart
+- [ ] Add "Edit" button in cart to modify customizations
+- [ ] Add order history view (optional)
+- [ ] Add animations/transitions
+- [ ] Add toast notifications for feedback
+
+---
+
+## Known Technical Decisions
+
+### Why These Technologies?
+- **React:** Required by project specs (officially supported)
+- **Node.js + Express:** Officially supported by course, easier for team
+- **PostgreSQL:** Existing database from Project 2, must reuse
+- **i18next:** Industry standard for React internationalization
+- **Context API:** Simpler than Redux for small app, sufficient for cart state
+- **Google OAuth:** Required external API by project specs
+
+### Why Not Using LocalStorage?
+Per project requirements, localStorage is blocked in the iframe environment. All state must be in-memory (React state).
+
+### Database Design Notes
+- Reusing Project 2 schema, minimal modifications
+- `customization` stored as JSON in `order_items` table
+- `employee_id` in orders set to `1` for kiosk orders (system user)
+
+---
+
+## How to Run the Project
+
+### Start Backend:
+```bash
+cd customerkiosk/backend
+node server.js
+# Should see: ✅ Server running on port 5000
+```
+
+### Start Frontend:
+```bash
+cd customerkiosk/frontend
+npm run dev
+# Should see: Local: http://localhost:5173/
+```
+
+### Access Application:
+1. Go to `http://localhost:5173`
+2. Sign in with Google (use `reveille.bubbletea@gmail.com` or team emails)
+3. Browse and order drinks
+
+### Test Database Connection:
+```bash
+cd customerkiosk/backend
+node test-db.js
+```
+
+### Check Database Schema:
+```bash
+cd customerkiosk/backend
+node check-schema.js
+```
+
+---
+
+## Important Notes
+
+### Git/GitHub
+- Currently on branch: `backend-setup` (or similar feature branch)
+- Do NOT commit to `main` directly
+- `.env` files are gitignored (never commit credentials)
+- Push to feature branch, then create pull request
+
+### Team Roles
+- **Ryan:** Project Manager, backend integration
+- **Wesley:** Backend Developer, database
+- **Justin:** Frontend Developer, UI/UX
+- **Geoffrey:** Testing, full-stack support
+
+### Sprint Timeline
+- **Sprint 1:** Customer kiosk MVP (current - due end of Week 12)
+- **Sprint 2:** Cashier/Manager interfaces + external APIs (Weeks 13-14)
+- **Sprint 3:** Polish, testing, deployment (Weeks 15-16)
+
+### External APIs Required (Sprint 2+)
+- [x] Google OAuth (done)
+- [ ] Google Translate API
+- [ ] Weather API (OpenWeather or similar)
+
+---
+
+## Troubleshooting Common Issues
+
+### "Cannot find module" errors
+```bash
+cd frontend  # or backend
+npm install
+```
+
+### Google OAuth "origin_mismatch"
+- Verify exact URL in Google Cloud Console
+- Wait 2-3 minutes after changing settings
+- Use incognito window to clear cache
+
+### Database connection fails
+- Check VPN/network (TAMU database may require campus network)
+- Verify credentials in `.env`
+- Check if database server is running
+
+### Port already in use
+```bash
+# Find and kill process
+lsof -ti:5000 | xargs kill -9  # Backend
+lsof -ti:5173 | xargs kill -9  # Frontend
+```
+
+### React not updating after .env changes
+- Stop dev server (Ctrl+C)
+- Restart: `npm run dev`
+- Environment variables only load on startup
+
+---
+
+## Questions to Ask When Continuing
+
+1. **What is the exact error/visual issue on the menu page?**
+   - Take screenshot if possible
+   - Check browser console (F12) for errors
+
+2. **What does the network tab show?**
+   - Is `/api/menu` request succeeding?
+   - What data is returned?
+
+3. **Did the column name fix work?**
+   - After implementing Option A or B above
+   - Can you click drinks and see customization page?
+
+4. **Are orders saving to database?**
+   - After placing an order
+   - Check with: `SELECT * FROM orders ORDER BY order_id DESC LIMIT 5;`
+
+---
+
+## Success Criteria
+
+Sprint 1 is complete when:
+- ✅ Customer can sign in with Google
+- ✅ Customer can browse 10 drinks
+- ✅ Customer can customize each drink (size, ice, sweetness, toppings)
+- ✅ Customer can add multiple items to cart
+- ✅ Customer can view cart and see total price
+- ✅ Customer can place order (saves to database)
+- ✅ Customer sees order confirmation with order ID
+- ✅ Language toggle switches entire app between English/Spanish instantly
+- ✅ All buttons are touchscreen-friendly (min 44x44px)
+- ✅ App is deployed and accessible via public URL
+- ✅ Code is pushed to GitHub (feature branch → main via PR)
+
+---
+
+## Contact/Credentials Summary
+
+**Database:**
+- Host: `csce-315-db.engr.tamu.edu:5432`
+- Database: `gang_44_db`
+- User: `gang_44`
+
+**Google OAuth:**
+- Client ID: `292199993155-eoddl3h07brh9h4bqml0c6khtd8h240f.apps.googleusercontent.com`
+- Console: https://console.cloud.google.com/apis/credentials
+
+**GitHub Repo:** (team's repo URL - not specified in conversation)
+
+**Team Communication:** Discord + Messages
+
+---
+
+## Last Working State
+
+**Backend:** Running successfully on port 5000, returning 10 drinks from database  
+**Frontend:** Running on port 5173, Google OAuth working, navigating to menu page after login  
+**Issue:** Menu page not displaying drinks correctly due to `item_id` vs `product_id` mismatch  
+**Next Action:** Implement Option A fix in `backend/server.js` (add SQL alias)
+
+---
+
+*Document created: November 10, 2025*  
+*Last updated: End of initial setup phase*  
+*Status: Ready for column name fix and end-to-end testing*
+
+look at this doc. i need help building out the next stage of my mvp
