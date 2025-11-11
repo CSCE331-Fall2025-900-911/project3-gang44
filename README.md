@@ -28,7 +28,11 @@ download docker from https://www.docker.com
 
 cd customerkiosk/
 
+docker compose down --volumes --remove-orphans
 docker compose up --build
+
+
+
 IMPORTANT: SET UP .ENV FILES
 
 in customerkiosk/frontend and customerkiosk/backend, add .env files. just make a .env file in both and then copy and paste the stuff from discord
