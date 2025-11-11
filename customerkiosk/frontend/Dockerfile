@@ -1,21 +1,16 @@
-# ✅ Use Node 20, good for Vite + Rollup
-FROM node:20
+FROM node:22
 
-# Set working directory
 WORKDIR /app
 
-# Copy dependency manifests
+# Copy package files
 COPY package*.json ./
 
-# ⛔ Prevent optional Rollup native deps from breaking
-RUN npm config set optional false
-RUN npm install --omit=optional
+# Install dependencies - use npm install since there's no package-lock.json
+RUN npm install
 
-# Copy the rest of the app
+# Copy the rest of the application
 COPY . .
 
-# Expose port for Vite dev server
 EXPOSE 5173
 
-# Run Vite
 CMD ["npm", "run", "dev", "--", "--host"]
