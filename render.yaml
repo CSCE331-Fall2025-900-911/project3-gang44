@@ -1,6 +1,6 @@
 services:
   # Backend API Service
-  - type: web
+  - type: static
     name: customer-kiosk-backend
     runtime: node
     region: oregon
