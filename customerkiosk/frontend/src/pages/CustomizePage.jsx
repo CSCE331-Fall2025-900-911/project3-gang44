@@ -6,8 +6,8 @@ import { useApp } from '../context/AppContext';
 export default function CustomizePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { addToCart } = useApp();
+  const { t: i18nT } = useTranslation(); // For UI labels
+  const { addToCart, t } = useApp(); // For API translations
   
   console.log('CustomizePage rendered with id:', id, 'from useParams');
 
@@ -176,20 +176,17 @@ export default function CustomizePage() {
   if (!drink) return <div className="loading">Drink not found (ID: {id})</div>;
   if (!customizations) return <div className="loading">Loading options...</div>;
 
-  // Translate the drink name
-  const translatedDrinkName = t(drink.name, { defaultValue: drink.name });
-
   return (
     <div className="customize-page">
       <button className="back-button" onClick={() => navigate('/menu')}>
-        ← {t('backToMenu')}
+        ← {i18nT('backToMenu')}
       </button>
 
-      <h1>{t('customize')}</h1>
-      <h2>{translatedDrinkName}</h2>
+      <h1>{i18nT('customize')}</h1>
+      <h2>{t(drink.name)}</h2>
 
       <div className="customization-section">
-        <h3>{t('size')}</h3>
+        <h3>{i18nT('size')}</h3>
         <div className="button-group">
           {customizations.sizes.map(s => (
             <button
@@ -197,14 +194,14 @@ export default function CustomizePage() {
               className={size === s ? 'selected' : ''}
               onClick={() => setSize(s)}
             >
-              {t(s, { defaultValue: s })}
+              {t(s)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="customization-section">
-        <h3>{t('ice')}</h3>
+        <h3>{i18nT('ice')}</h3>
         <div className="button-group">
           {customizations.iceOptions.map(option => (
             <button
@@ -212,14 +209,14 @@ export default function CustomizePage() {
               className={iceLevel === option ? 'selected' : ''}
               onClick={() => setIceLevel(option)}
             >
-              {t(option, { defaultValue: option })}
+              {t(option)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="customization-section">
-        <h3>{t('sweetness')}</h3>
+        <h3>{i18nT('sweetness')}</h3>
         <div className="button-group">
           {customizations.sweetnessOptions.map(option => (
             <button
@@ -227,16 +224,16 @@ export default function CustomizePage() {
               className={sweetnessLevel === option ? 'selected' : ''}
               onClick={() => setSweetnessLevel(option)}
             >
-              {t(option, { defaultValue: option })}
+              {t(option)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="customization-section">
-        <h3>{t('toppings')} <span style={{fontSize: '18px', fontWeight: 'normal', color: '#666'}}>(Select multiple)</span></h3>
+        <h3>{i18nT('toppings')} <span style={{fontSize: '18px', fontWeight: 'normal', color: '#666'}}>(Select multiple)</span></h3>
         <div style={{marginBottom: '10px', fontSize: '14px', color: '#666'}}>
-          Selected: {selectedToppings.length} topping(s) - IDs: [{selectedToppings.map(t => t.id).join(', ')}]
+          Selected: {selectedToppings.length} topping(s) - IDs: [{selectedToppings.map(topping => topping.id).join(', ')}]
         </div>
         <div className="button-group">
           {customizations.toppings.map(topping => {
@@ -245,13 +242,10 @@ export default function CustomizePage() {
             const toppingId = normalizeId(topping.id);
 
             // Check if this specific topping is selected by comparing IDs
-            const isSelected = selectedToppings.some(t => {
-              const tId = normalizeId(t.id);
+            const isSelected = selectedToppings.some(selectedTopping => {
+              const tId = normalizeId(selectedTopping.id);
               return tId === toppingId;
             });
-
-            // Translate the topping name
-            const translatedToppingName = t(topping.name, { defaultValue: topping.name });
 
             return (
               <button
@@ -263,7 +257,7 @@ export default function CustomizePage() {
                   toggleTopping(topping);
                 }}
               >
-                {translatedToppingName} (+${topping.price}) {isSelected ? '✓' : ''}
+                {t(topping.name)} (+${topping.price}) {isSelected ? '✓' : ''}
               </button>
             );
           })}
@@ -271,9 +265,9 @@ export default function CustomizePage() {
       </div>
 
       <div className="price-section">
-        <h2>{t('total')}: ${calculatePrice()}</h2>
+        <h2>{i18nT('total')}: ${calculatePrice()}</h2>
         <button className="add-to-cart-btn" onClick={handleAddToCart}>
-          {t('addToCart')}
+          {i18nT('addToCart')}
         </button>
       </div>
     </div>

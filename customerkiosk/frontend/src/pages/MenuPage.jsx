@@ -7,8 +7,8 @@ export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { cart } = useApp();
+  const { t: i18nT } = useTranslation(); // For UI labels from i18n
+  const { cart, t, isTranslating } = useApp(); // For API translations of database items
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
@@ -28,19 +28,23 @@ export default function MenuPage() {
     return <div className="loading">Loading menu...</div>;
   }
 
+  if (isTranslating) {
+    return <div className="loading">Loading translations...</div>;
+  }
+
   if (drinks.length === 0) {
     return <div className="loading">No drinks available</div>;
   }
 
   return (
     <div className="menu-page">
-      <h1>{t('menu')}</h1>
+      <h1>{i18nT('menu')}</h1>
 
       <div className="drink-grid">
         {drinks.map(drink => {
           const productId = drink.product_id || drink.item_id;
-          // Translate the drink name, fallback to original if translation doesn't exist
-          const translatedName = t(drink.name, { defaultValue: drink.name });
+          // Translate the drink name using API translation
+          const translatedName = t(drink.name);
 
           return (
             <div
@@ -60,7 +64,7 @@ export default function MenuPage() {
           className="cart-button"
           onClick={() => navigate('/cart')}
         >
-          {t('cart')} ({cart.length})
+          {i18nT('cart')} ({cart.length})
         </button>
       )}
     </div>
