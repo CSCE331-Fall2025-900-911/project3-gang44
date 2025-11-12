@@ -345,3 +345,17 @@ body {
 .empty-cart button:hover {
   background: #f0f0f0;
 }
+
+.text-size-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+.text-size-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}

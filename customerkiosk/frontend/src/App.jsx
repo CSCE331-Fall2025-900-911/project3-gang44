@@ -7,6 +7,7 @@ import CartPage from './pages/CartPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import LanguageToggle from './components/LanguageToggle';
 import TranslationLoader from './components/TranslationLoader';
+import TextSizeAdjuster from './components/TextSizeAdjuster';
 import './i18n/i18n';
 import './App.css';
 
@@ -16,6 +17,9 @@ function App() {
       <BrowserRouter>
         <div className="app">
           <LanguageToggle />
+          <div className="text-size-toggle">
+            <TextSizeAdjuster />
+          </div>
           <TranslationLoader />
           <Routes>
             <Route path="/" element={<GoogleAuth />} />
@@ -27,6 +31,7 @@ function App() {
         </div>
       </BrowserRouter>
     </AppProvider>
+    
   );
 }
 

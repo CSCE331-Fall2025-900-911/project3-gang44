@@ -6,9 +6,11 @@ export default function LanguageToggle() {
   const { i18n } = useTranslation();
   const { language, toggleLanguage } = useApp();
 
-  useEffect(() => {
+useEffect(() => {
+  if (i18n.language !== language) {
     i18n.changeLanguage(language);
-  }, [language, i18n]);
+  }
+}, [language, i18n]);
 
   return (
     <button className="language-toggle" onClick={toggleLanguage}>
