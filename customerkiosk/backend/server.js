@@ -16,12 +16,20 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
-      process.env.FRONTEND_URL || 'https://customer-kiosk-frontend.onrender.com'
-    ];
+      'http://localhost:4173',
+      process.env.FRONTEND_URL
+    ].filter(Boolean); // Remove undefined values
 
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.onrender.com')) {
+    // Allow localhost, 127.0.0.1, or Render domains
+    if (allowedOrigins.indexOf(origin) !== -1 ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        origin.startsWith('https://localhost:') ||
+        origin.startsWith('https://127.0.0.1:') ||
+        origin.endsWith('.onrender.com')) {
       callback(null, true);
     } else {
+      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
