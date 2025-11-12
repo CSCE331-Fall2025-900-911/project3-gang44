@@ -13,12 +13,13 @@ const pool = new Pool({
 });
 
 // Test connection
-pool.on('connect', () => {
-  console.log('Connected to PSQL database');
-});
-
-pool.on('error', (err) => {
-  console.error('PSQL database connection error:', err);
-});
+pool.connect()
+  .then(client => {
+    console.log('✅ Connected to PSQL database');
+    client.release();
+  })
+  .catch(err => {
+    console.error('❌ PSQL connection error:', err);
+  });
 
 module.exports = pool;
