@@ -1,0 +1,11 @@
+SCRUM Meeting 1 for Project 3 
+Prepared by: Wesley
+Meeting Date: Nov 3 2025
+
+Meeting Agenda Items:
+Initializing Github Repository with proper structures.
+Set up React project and folder structures
+Confirm initial task ownership and dependencies
+Discuss backend environment setup
+
+There are no minutes from the previous meeting because this is the first meeting.
