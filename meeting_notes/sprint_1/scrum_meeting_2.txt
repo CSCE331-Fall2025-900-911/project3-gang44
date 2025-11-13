@@ -1,0 +1,11 @@
+SCRUM Meeting 2 for project 3
+Prepared by: Justin
+Meeting Date: Nov 5 2025
+
+Meeting Agenda Items:
+Review backend setup and data configuration
+Discuss progress on wireframes and UI components
+Integrate OAuth authentication setup
+
+Minutes from Previous Meeting:
+During our last meeting, the team finalized the Github setup and initialized environment configuration. Wesley  began backend setup and coordinated environment configuration, while Ryan  focused more on structuring the frontend and verifying project dependencies. Geoffrey and Justin were assigned in organizing tasks and ensuring that each component aligned with the initial sprint goals. The team agreed that later in the week, we will focus on backend connection and authentication setup to lay the groundwork for our full integration of our website.

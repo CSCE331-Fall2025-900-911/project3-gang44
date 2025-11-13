@@ -1,0 +1,11 @@
+SCRUM Meeting 3 for Project 3
+Prepared by: Geoffrey
+Meeting Date: Nov 10 2025
+
+Meeting Agenda Items:
+Review progress on backend API
+Verify OAuth and login functionality
+Designing accessibility for Maria and Trevor
+
+Minutes from Previous Meeting:
+During the last meeting, the team successfully completed backend database configuration and OAuth integration. Each member reported steady progress: Ryan and Wesley completed backend  and database setup, Geoffrey and Wesley finalized OAuth setup, and Justin created the UI wireframes. The team agreed to proceed with backend API development and to verify the login functionality before starting frontend integration and accessibility implementation.
