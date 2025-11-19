@@ -1,15 +1,3 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
-import GoogleAuth from './components/GoogleAuth';
-import MenuPage from './pages/MenuPage';
-import CustomizePage from './pages/CustomizePage';
-import CartPage from './pages/CartPage';
-import ConfirmationPage from './pages/ConfirmationPage';
-import LanguageToggle from './components/LanguageToggle';
-import TranslationLoader from './components/TranslationLoader';
-import TextSizeAdjuster from './components/TextSizeAdjuster';
-import './i18n/i18n';
-import './App.css';
 import Weather from './components/weather';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
