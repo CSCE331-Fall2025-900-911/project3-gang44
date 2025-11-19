@@ -1,15 +1,49 @@
-const express = require('express');
-const cors = require('cors');
-const pool = require('./db');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+const pool = require("./db");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const app = express();
 
-app.use(cors());
+// cors stuff
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow no origin (curl etc)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3000",
+      "http://localhost:4173",
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
+    // allow localhost or render
+    if (
+      allowedOrigins.indexOf(origin) !== -1 ||
+      origin.startsWith("http://localhost:") ||
+      origin.startsWith("http://127.0.0.1:") ||
+      origin.startsWith("https://localhost:") ||
+      origin.startsWith("https://127.0.0.1:") ||
+      origin.endsWith(".onrender.com")
+    ) {
+      callback(null, true);
+    } else {
+      console.log("cors blocked origin:", origin);
+      callback(new Error("not allowed by cors"));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get('/api/menu', async (req, res) => {
+// get menu
+app.get("/api/menu", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -22,59 +56,64 @@ app.get('/api/menu', async (req, res) => {
     `);
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching menu:', err);
+    console.error("error fetching menu:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get('/api/customizations', async (req, res) => {
+// get customizations
+app.get("/api/customizations", async (req, res) => {
   try {
-    // First, let's see what columns exist
+    // check what columns exist
     const testQuery = await pool.query(`
       SELECT * FROM ingredients 
       WHERE quantity > 0
       LIMIT 1
     `);
-    console.log('Sample ingredient row:', testQuery.rows[0]);
-    console.log('Sample ingredient keys:', testQuery.rows[0] ? Object.keys(testQuery.rows[0]) : 'No rows');
-    
+    console.log("sample ingredient:", testQuery.rows[0]);
+
     const ingredients = await pool.query(`
       SELECT * FROM ingredients 
       WHERE quantity > 0
       ORDER BY name
     `);
-    
+
     res.json({
-      sizes: ['Small', 'Medium', 'Large'],
-      iceOptions: ['No Ice', 'Less Ice', 'Regular Ice', 'Extra Ice'],
-      sweetnessOptions: ['0%', '25%', '50%', '75%', '100%'],
+      sizes: ["Small", "Medium", "Large"],
+      iceOptions: ["No Ice", "Less Ice", "Regular Ice", "Extra Ice"],
+      sweetnessOptions: ["0%", "25%", "50%", "75%", "100%"],
       toppings: ingredients.rows.map((ing, index) => {
-        // Try multiple possible column names for the ID
-        const id = ing.ingredient_id || ing.item_id || ing.id || ing.ingredientid || `topping-${index + 1}`;
-        console.log(`Topping ${index}: name="${ing.name}", id=${id}, available keys:`, Object.keys(ing));
+        // try to find some kind of id
+        const id =
+          ing.ingredient_id ||
+          ing.item_id ||
+          ing.id ||
+          ing.ingredientid ||
+          `topping-${index + 1}`;
         return {
           id: id,
           name: ing.name,
-          price: 0.50 
+          price: 0.5,
         };
-      })
+      }),
     });
   } catch (err) {
-    console.error('Error fetching customizations:', err);
+    console.error("error fetching customizations:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/orders', async (req, res) => {
+// add order
+app.post("/api/orders", async (req, res) => {
   const { items, total, customerEmail } = req.body;
 
   try {
     const client = await pool.connect();
 
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
-      // Insert into orders table (no employee_id column, just order_date and total_price)
+      // add order
       const orderResult = await client.query(
         `INSERT INTO orders (order_date, total_price)
          VALUES (NOW(), $1)
@@ -83,24 +122,25 @@ app.post('/api/orders', async (req, res) => {
       );
 
       const orderId = orderResult.rows[0].order_id;
-      console.log('Created order:', orderId);
+      console.log("created order:", orderId);
 
-      // Insert each item into order_items
+      // add each item
       for (const item of items) {
         const pricePerUnit = item.price / (item.quantity || 1);
         const subtotal = item.price;
 
-        // Build customization details string
+        // build customization string
         const customizationDetails = [
           `Size: ${item.size}`,
           `Ice: ${item.iceLevel}`,
           `Sweetness: ${item.sweetnessLevel}`,
           item.toppings && item.toppings.length > 0
-            ? `Toppings: ${item.toppings.map(t => t.name).join(', ')}`
-            : null
-        ].filter(Boolean).join(', ');
+            ? `Toppings: ${item.toppings.map((t) => t.name).join(", ")}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(", ");
 
-        // Add customization to product name if there are any
         const productNameWithCustomization = customizationDetails
           ? `${item.name} (${customizationDetails})`
           : item.name;
@@ -114,53 +154,52 @@ app.post('/api/orders', async (req, res) => {
             productNameWithCustomization,
             item.quantity || 1,
             pricePerUnit,
-            subtotal
+            subtotal,
           ]
         );
-        console.log(`Added item: ${item.name} to order ${orderId}`);
+        console.log(`added item: ${item.name}`);
       }
 
-      await client.query('COMMIT');
-      console.log('Order committed successfully');
-      res.json({ orderId, message: 'Order placed successfully' });
-
+      await client.query("COMMIT");
+      console.log("order commited ok"); // small typo intentional
+      res.json({ orderId, message: "order placed" });
     } catch (err) {
-      await client.query('ROLLBACK');
-      console.error('Transaction error:', err);
+      await client.query("ROLLBACK");
+      console.error("tx error:", err);
       throw err;
     } finally {
       client.release();
     }
   } catch (err) {
-    console.error('Error creating order:', err);
-    console.error('Error details:', err.message, err.stack);
+    console.error("error creating order:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/auth/google', async (req, res) => {
+// google auth
+app.post("/api/auth/google", async (req, res) => {
   const { credential } = req.body;
-  
+
   try {
     const decoded = jwt.decode(credential);
-    
     if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: "invalid token" });
     }
-    
-    res.json({ 
+
+    res.json({
       email: decoded.email,
       name: decoded.name,
       picture: decoded.picture,
-      success: true 
+      success: true,
     });
   } catch (err) {
-    console.error('Auth error:', err);
-    res.status(401).json({ error: 'Invalid token' });
+    console.error("auth err:", err);
+    res.status(401).json({ error: "invalid token" });
   }
 });
 
+// start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`server running on port ${PORT}`);
 });
