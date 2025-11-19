@@ -10,6 +10,7 @@ import TranslationLoader from './components/TranslationLoader';
 import TextSizeAdjuster from './components/TextSizeAdjuster';
 import './i18n/i18n';
 import './App.css';
+import Weather from './components/weather';
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
           <LanguageToggle />
           <div className="text-size-toggle">
             <TextSizeAdjuster />
+          </div>
+          <div className='text-size-toggle'>
+            <Weather/>
           </div>
           <TranslationLoader />
           <Routes>
@@ -31,7 +35,7 @@ function App() {
         </div>
       </BrowserRouter>
     </AppProvider>
-    
+
   );
 }
 
