@@ -12,13 +12,13 @@ export default function MenuPage() {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         console.log('Menu data:', data);
         setDrinks(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error fetching menu:', err);
         setLoading(false);
       });
@@ -36,7 +36,7 @@ export default function MenuPage() {
     return <div className="loading">No drinks available</div>;
   }
 
-   return (
+  return (
     <div className="menu-page">
       <div className="menu-header">
         <h1>{i18nT('menu')}</h1>
@@ -56,11 +56,11 @@ export default function MenuPage() {
         </div>
       </div>
 
+      {/* Grid of drinks */}
       <div className="drink-grid">
-        {drinks.map(drink => {
+        {drinks.map((drink) => {
           const productId = drink.product_id || drink.item_id;
-          // Translate the drink name using API translation
-          const translatedName = t(drink.name);
+          const translatedName = t(drink.name); // API translation
 
           return (
             <div
@@ -76,10 +76,7 @@ export default function MenuPage() {
       </div>
 
       {cart.length > 0 && (
-        <button
-          className="cart-button"
-          onClick={() => navigate('/cart')}
-        >
+        <button className="cart-button" onClick={() => navigate('/cart')}>
           {i18nT('cart')} ({cart.length})
         </button>
       )}
