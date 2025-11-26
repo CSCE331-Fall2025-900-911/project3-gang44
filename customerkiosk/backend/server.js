@@ -1,10 +1,21 @@
+console.log('🚀 Starting server initialization...');
+
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+console.log('✅ All dependencies loaded successfully');
+console.log('📋 Environment check:');
+console.log('   - PORT:', process.env.PORT || '5000 (default)');
+console.log('   - DB_HOST:', process.env.DB_HOST ? '✓ set' : '✗ missing');
+console.log('   - DB_NAME:', process.env.DB_NAME ? '✓ set' : '✗ missing');
+console.log('   - DB_USER:', process.env.DB_USER ? '✓ set' : '✗ missing');
+console.log('   - FRONTEND_URL:', process.env.FRONTEND_URL || 'not set (using localhost)');
+
 const app = express();
+console.log('✅ Express app created');
 
 // cors stuff
 const corsOptions = {
@@ -40,26 +51,43 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+console.log('✅ CORS middleware configured');
+
 app.use(express.json());
+console.log('✅ JSON body parser configured');
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`📨 [${timestamp}] ${req.method} ${req.path}`);
+  next();
+});
+console.log('✅ Request logging middleware configured');
+
+console.log('📝 Registering API routes...');
 
 // get menu
 app.get("/api/menu", async (req, res) => {
   try {
+    console.log('🔍 Fetching menu from database...');
     const result = await pool.query(`
-      SELECT 
+      SELECT
         item_id as product_id,
         name,
         category,
         price
-      FROM products 
+      FROM products
       ORDER BY category, name
     `);
+    console.log(`✅ Menu fetched successfully: ${result.rows.length} items`);
     res.json(result.rows);
   } catch (err) {
-    console.error("error fetching menu:", err);
+    console.error("❌ Error fetching menu:", err);
+    console.error("   Stack:", err.stack);
     res.status(500).json({ error: err.message });
   }
 });
+console.log('✅ Route registered: GET /api/menu');
 
 // get customizations
 app.get("/api/customizations", async (req, res) => {
@@ -782,8 +810,83 @@ app.get('/api/manager/reports/product-usage', async (req, res) => {
   }
 });
 
-// start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
+console.log('\n🔧 Setting up error handlers...');
+
+// Handle uncaught errors
+process.on('uncaughtException', (err) => {
+  console.error('\n❌❌❌ UNCAUGHT EXCEPTION ❌❌❌');
+  console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
+  console.error('⚠️  Server will continue running but this should be fixed!\n');
+  // Don't exit - keep server running
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('\n❌❌❌ UNHANDLED REJECTION ❌❌❌');
+  console.error('Promise:', promise);
+  console.error('Reason:', reason);
+  console.error('⚠️  Server will continue running but this should be fixed!\n');
+  // Don't exit - keep server running
+});
+
+process.on('exit', (code) => {
+  console.error(`\n⚠️⚠️⚠️  PROCESS EXITING with code: ${code} ⚠️⚠️⚠️`);
+  console.trace('Exit trace:');
+});
+
+console.log('✅ Error handlers configured');
+
+// start server
+console.log('\n🌐 Starting HTTP server...');
+const PORT = process.env.PORT || 5000;
+
+let server;
+try {
+  server = app.listen(PORT, () => {
+    console.log('\n' + '='.repeat(50));
+    console.log('✅✅✅ SERVER STARTED SUCCESSFULLY ✅✅✅');
+    console.log('='.repeat(50));
+    console.log(`📍 Port: ${PORT}`);
+    console.log(`🌐 URL: http://localhost:${PORT}`);
+    console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
+    console.log('='.repeat(50));
+    console.log('\n👂 Server is listening and ready to accept requests...\n');
+    console.log('Press Ctrl+C to stop the server\n');
+  });
+
+  // Handle server errors
+  server.on('error', (err) => {
+    console.error('\n❌❌❌ SERVER ERROR ❌❌❌');
+    console.error('Error:', err.message);
+    console.error('Code:', err.code);
+
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n🚫 Port ${PORT} is already in use!`);
+      console.error('Solutions:');
+      console.error('  1. Stop any other server running on port', PORT);
+      console.error('  2. Or change the PORT in your .env file');
+      console.error('  3. Or run: npx kill-port', PORT);
+      process.exit(1);
+    } else {
+      console.error('Stack:', err.stack);
+      process.exit(1);
+    }
+  });
+
+  server.on('listening', () => {
+    console.log('✅ Server listening event triggered');
+  });
+
+} catch (err) {
+  console.error('\n❌❌❌ FAILED TO START SERVER ❌❌❌');
+  console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
+  process.exit(1);
+}
+
+// Keep alive check
+setInterval(() => {
+  console.log(`💓 Server heartbeat - Still running at ${new Date().toLocaleTimeString()}`);
+}, 60000); // Every minute
+
+console.log('✅ Server initialization complete - waiting for listen callback...');
