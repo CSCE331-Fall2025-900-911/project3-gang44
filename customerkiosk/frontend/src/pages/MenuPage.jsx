@@ -36,9 +36,25 @@ export default function MenuPage() {
     return <div className="loading">No drinks available</div>;
   }
 
-  return (
+   return (
     <div className="menu-page">
-      <h1>{i18nT('menu')}</h1>
+      <div className="menu-header">
+        <h1>{i18nT('menu')}</h1>
+        <div className="mode-buttons">
+          <button
+            className="cashier-mode-button"
+            onClick={() => navigate('/cashier')}
+          >
+            Cashier Mode
+          </button>
+          <button
+            className="manager-mode-button"
+            onClick={() => navigate('/manager')}
+          >
+            Manager Mode
+          </button>
+        </div>
+      </div>
 
       <div className="drink-grid">
         {drinks.map(drink => {
