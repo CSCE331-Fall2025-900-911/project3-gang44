@@ -6,10 +6,12 @@ import MenuPage from "./pages/MenuPage";
 import CustomizePage from "./pages/CustomizePage";
 import CartPage from "./pages/CartPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
+import CashierPage from "./pages/CashierPage";
+import ManagerPage from "./pages/ManagerPage";
 import LanguageToggle from "./components/LanguageToggle";
 import TranslationLoader from "./components/TranslationLoader";
 import TextSizeAdjuster from "./components/TextSizeAdjuster";
-import TextReaderButton from "./components/TextReaderButton"; // new text reader btn
+import TextReaderButton from "./components/TextReaderButton";
 import "./i18n/i18n";
 import "./App.css";
 
@@ -26,8 +28,12 @@ function App() {
               gap: "10px",
               alignItems: "center",
               marginBottom: "10px",
+              padding: "10px",
             }}
           >
+            {/* weather widget */}
+            <Weather />
+
             {/* change language */}
             <LanguageToggle />
 
@@ -36,9 +42,6 @@ function App() {
 
             {/* text reader */}
             <TextReaderButton />
-          </div>
-          <div className='text-size-toggle'>
-            <Weather/>
           </div>
 
           {/* loads translations when language changes */}
@@ -51,6 +54,8 @@ function App() {
             <Route path="/customize/:id" element={<CustomizePage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/cashier" element={<CashierPage />} />
+            <Route path="/manager" element={<ManagerPage />} />
           </Routes>
         </div>
       </BrowserRouter>

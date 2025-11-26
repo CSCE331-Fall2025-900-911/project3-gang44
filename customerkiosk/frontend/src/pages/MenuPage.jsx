@@ -57,7 +57,23 @@ export default function MenuPage() {
 
   return (
     <div className="menu-page">
-      <h1>{i18nT('menu')}</h1>
+      <div className="menu-header">
+        <h1>{i18nT('menu')}</h1>
+        <div className="mode-buttons">
+          <button
+            className="cashier-mode-button"
+            onClick={() => navigate('/cashier')}
+          >
+            Cashier Mode
+          </button>
+          <button
+            className="manager-mode-button"
+            onClick={() => navigate('/manager')}
+          >
+            Manager Mode
+          </button>
+        </div>
+      </div>
 
       {/* Category tabs */}
       <div className="category-tabs">
