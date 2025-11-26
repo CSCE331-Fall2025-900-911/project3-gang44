@@ -72,7 +72,6 @@ export default function CartPage() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">{i18nT('cart')}</h1>
@@ -96,7 +95,6 @@ export default function CartPage() {
                 Add to Order
               </button>
             </div>
-=======
     <div className="cart-page">
       <div className="cart-header">
         <button className="back-button" onClick={() => navigate('/menu')}>
@@ -120,7 +118,6 @@ export default function CartPage() {
             )}
             <p className="price">${item.price.toFixed(2)}</p>
             <button onClick={() => removeFromCart(item.id)}>{i18nT('remove')}</button>
->>>>>>> af2a5cd43c0c65097b2bfbd0a3697119b4f29bef
           </div>
         )}
 
