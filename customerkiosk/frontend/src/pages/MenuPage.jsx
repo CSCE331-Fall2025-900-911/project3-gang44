@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('All'); // NEW
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels from i18n
   const { cart, t, isTranslating } = useApp(); // For API translations of database items
@@ -35,6 +36,24 @@ export default function MenuPage() {
   if (drinks.length === 0) {
     return <div className="loading">No drinks available</div>;
   }
+
+  // --- Build list of categories from the data ---
+  // This assumes each drink has drink.category or drink.type.
+  // If not, they fall into "Other".
+  const categories = Array.from(
+    new Set(
+      drinks.map((drink) => drink.category || drink.type || 'Other')
+    )
+  );
+
+  // Figure out which drinks to show based on selected category
+  const drinksToShow =
+    activeCategory === 'All'
+      ? drinks
+      : drinks.filter(
+          (drink) =>
+            (drink.category || drink.type || 'Other') === activeCategory
+        );
 
   return (
     <div className="menu-page">
