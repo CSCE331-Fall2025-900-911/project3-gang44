@@ -50,7 +50,12 @@ export default function CartPage() {
 
   return (
     <div className="cart-page">
-      <h1>{i18nT('cart')}</h1>
+      <div className="cart-header">
+        <button className="back-button" onClick={() => navigate('/menu')}>
+          ← {i18nT('backToMenu')}
+        </button>
+        <h1>{i18nT('cart')}</h1>
+      </div>
 
       {cart.map(item => {
         // Translate database items using API

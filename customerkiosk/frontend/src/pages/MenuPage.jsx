@@ -57,34 +57,27 @@ export default function MenuPage() {
 
   return (
     <div className="menu-page">
-      <h1>{i18nT('menu')}</h1>
-
-      {/* Category tabs */}
-      <div className="category-tabs">
-        <button
-          className={`category-tab ${
-            activeCategory === 'All' ? 'active' : ''
-          }`}
-          onClick={() => setActiveCategory('All')}
-        >
-          All
-        </button>
-        {categories.map((cat) => (
+      <div className="menu-header">
+        <h1>{i18nT('menu')}</h1>
+        <div className="mode-buttons">
           <button
-            key={cat}
-            className={`category-tab ${
-              activeCategory === cat ? 'active' : ''
-            }`}
-            onClick={() => setActiveCategory(cat)}
+            className="cashier-mode-button"
+            onClick={() => navigate('/cashier')}
           >
-            {cat}
+            Cashier Mode
           </button>
-        ))}
+          <button
+            className="manager-mode-button"
+            onClick={() => navigate('/manager')}
+          >
+            Manager Mode
+          </button>
+        </div>
       </div>
 
-      {/* Grid of drinks for the selected category */}
+      {/* Grid of drinks */}
       <div className="drink-grid">
-        {drinksToShow.map((drink) => {
+        {drinks.map((drink) => {
           const productId = drink.product_id || drink.item_id;
           const translatedName = t(drink.name); // API translation
 
