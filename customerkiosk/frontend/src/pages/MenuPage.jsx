@@ -75,9 +75,32 @@ export default function MenuPage() {
         </div>
       </div>
 
-      {/* Grid of drinks */}
+      {/* Category tabs */}
+      <div className="category-tabs">
+        <button
+          className={`category-tab ${
+            activeCategory === 'All' ? 'active' : ''
+          }`}
+          onClick={() => setActiveCategory('All')}
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            className={`category-tab ${
+              activeCategory === cat ? 'active' : ''
+            }`}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid of drinks for the selected category */}
       <div className="drink-grid">
-        {drinks.map((drink) => {
+        {drinksToShow.map((drink) => {
           const productId = drink.product_id || drink.item_id;
           const translatedName = t(drink.name); // API translation
 
