@@ -72,11 +72,16 @@ export default function CartPage() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">{i18nT('cart')}</h1>
-        
+        <div className="flex items-center justify-between mb-8">
+          <button className="back-button" onClick={() => navigate('/menu')}>
+            ← {i18nT('backToMenu')}
+          </button>
+          <h1 className="text-4xl font-bold text-gray-800 text-center flex-1">{i18nT('cart')}</h1>
+          <div className="w-24"></div>
+        </div>
+
         {!loading && recommendation && (
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 mb-6 text-white shadow-lg">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -89,45 +94,20 @@ export default function CartPage() {
                   <p className="text-blue-100">{recommendation.reason}</p>
                 </div>
               </div>
-              <button 
+              <button
                 className="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-blue-50 transition-colors"
                 onClick={() => navigate('/menu')}
               >
                 Add to Order
               </button>
             </div>
-=======
-    <div className="cart-page">
-      <div className="cart-header">
-        <button className="back-button" onClick={() => navigate('/menu')}>
-          ← {i18nT('backToMenu')}
-        </button>
-        <h1>{i18nT('cart')}</h1>
-      </div>
-
-      {cart.map(item => {
-        // Translate database items using API
-        const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
-
-        return (
-          <div key={item.id} className="cart-item">
-            <h3>{t(item.name)}</h3>
-            <p><strong>{i18nT('size')}:</strong> {t(item.size)}</p>
-            <p><strong>{i18nT('ice')}:</strong> {t(item.iceLevel)}</p>
-            <p><strong>{i18nT('sweetness')}:</strong> {t(item.sweetnessLevel)}</p>
-            {item.toppings.length > 0 && (
-              <p><strong>{i18nT('toppings')}:</strong> {translatedToppings}</p>
-            )}
-            <p className="price">${item.price.toFixed(2)}</p>
-            <button onClick={() => removeFromCart(item.id)}>{i18nT('remove')}</button>
->>>>>>> af2a5cd43c0c65097b2bfbd0a3697119b4f29bef
           </div>
         )}
 
         <div className="space-y-4 mb-8">
           {cart.map(item => {
             const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
-            
+
             return (
               <div key={item.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div className="flex justify-between items-start">
@@ -146,7 +126,7 @@ export default function CartPage() {
                     <p className="text-2xl font-bold text-purple-600 mb-3">
                       ${item.price.toFixed(2)}
                     </p>
-                    <button 
+                    <button
                       className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
                       onClick={() => removeFromCart(item.id)}
                     >
@@ -164,7 +144,7 @@ export default function CartPage() {
             <span className="text-2xl font-bold text-gray-800">{i18nT('total')}:</span>
             <span className="text-3xl font-bold text-purple-600">${cartTotal.toFixed(2)}</span>
           </div>
-          <button 
+          <button
             className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-xl text-xl font-bold hover:shadow-xl transition-shadow"
             onClick={handlePlaceOrder}
           >
