@@ -5,6 +5,8 @@ import MenuPage from './pages/MenuPage';
 import CustomizePage from './pages/CustomizePage';
 import CartPage from './pages/CartPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import CashierPage from './pages/CashierPage';
+import ManagerPage from './pages/ManagerPage';
 import LanguageToggle from './components/LanguageToggle';
 import TranslationLoader from './components/TranslationLoader';
 import TextSizeAdjuster from './components/TextSizeAdjuster';
@@ -27,6 +29,8 @@ function App() {
             <Route path="/customize/:id" element={<CustomizePage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/cashier" element={<CashierPage />} />
+a           <Route path="/manager" element={<ManagerPage />} />            
           </Routes>
         </div>
       </BrowserRouter>
