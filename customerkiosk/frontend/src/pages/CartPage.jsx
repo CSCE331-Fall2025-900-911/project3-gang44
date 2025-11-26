@@ -101,6 +101,32 @@ export default function CartPage() {
                 Add to Order
               </button>
             </div>
+<<<<<<< HEAD
+=======
+    <div className="cart-page">
+      <div className="cart-header">
+        <button className="back-button" onClick={() => navigate('/menu')}>
+          ← {i18nT('backToMenu')}
+        </button>
+        <h1>{i18nT('cart')}</h1>
+      </div>
+
+      {cart.map(item => {
+        // Translate database items using API
+        const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
+
+        return (
+          <div key={item.id} className="cart-item">
+            <h3>{t(item.name)}</h3>
+            <p><strong>{i18nT('size')}:</strong> {t(item.size)}</p>
+            <p><strong>{i18nT('ice')}:</strong> {t(item.iceLevel)}</p>
+            <p><strong>{i18nT('sweetness')}:</strong> {t(item.sweetnessLevel)}</p>
+            {item.toppings.length > 0 && (
+              <p><strong>{i18nT('toppings')}:</strong> {translatedToppings}</p>
+            )}
+            <p className="price">${item.price.toFixed(2)}</p>
+            <button onClick={() => removeFromCart(item.id)}>{i18nT('remove')}</button>
+>>>>>>> daac88521ab35a832fba09ad5977b43d91a7b34f
           </div>
         )}
 
