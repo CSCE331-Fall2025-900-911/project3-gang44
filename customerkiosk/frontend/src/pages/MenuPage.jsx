@@ -6,19 +6,20 @@ import { useApp } from '../context/AppContext';
 export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('All'); // NEW
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels from i18n
   const { cart, t, isTranslating } = useApp(); // For API translations of database items
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         console.log('Menu data:', data);
         setDrinks(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error fetching menu:', err);
         setLoading(false);
       });
@@ -36,15 +37,56 @@ export default function MenuPage() {
     return <div className="loading">No drinks available</div>;
   }
 
+  // --- Build list of categories from the data ---
+  // This assumes each drink has drink.category or drink.type.
+  // If not, they fall into "Other".
+  const categories = Array.from(
+    new Set(
+      drinks.map((drink) => drink.category || drink.type || 'Other')
+    )
+  );
+
+  // Figure out which drinks to show based on selected category
+  const drinksToShow =
+    activeCategory === 'All'
+      ? drinks
+      : drinks.filter(
+          (drink) =>
+            (drink.category || drink.type || 'Other') === activeCategory
+        );
+
   return (
     <div className="menu-page">
       <h1>{i18nT('menu')}</h1>
 
+      {/* Category tabs */}
+      <div className="category-tabs">
+        <button
+          className={`category-tab ${
+            activeCategory === 'All' ? 'active' : ''
+          }`}
+          onClick={() => setActiveCategory('All')}
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            className={`category-tab ${
+              activeCategory === cat ? 'active' : ''
+            }`}
+            onClick={() => setActiveCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid of drinks for the selected category */}
       <div className="drink-grid">
-        {drinks.map(drink => {
+        {drinksToShow.map((drink) => {
           const productId = drink.product_id || drink.item_id;
-          // Translate the drink name using API translation
-          const translatedName = t(drink.name);
+          const translatedName = t(drink.name); // API translation
 
           return (
             <div
@@ -60,10 +102,7 @@ export default function MenuPage() {
       </div>
 
       {cart.length > 0 && (
-        <button
-          className="cart-button"
-          onClick={() => navigate('/cart')}
-        >
+        <button className="cart-button" onClick={() => navigate('/cart')}>
           {i18nT('cart')} ({cart.length})
         </button>
       )}
