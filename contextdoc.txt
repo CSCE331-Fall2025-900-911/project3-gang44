@@ -123,7 +123,7 @@ PORT=5000
 ### Frontend `.env`
 ```env
 VITE_GOOGLE_CLIENT_ID=292199993155-eoddl3h07brh9h4bqml0c6khtd8h240f.apps.googleusercontent.com
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5001
 ```
 
 ### Google Cloud Console OAuth Setup

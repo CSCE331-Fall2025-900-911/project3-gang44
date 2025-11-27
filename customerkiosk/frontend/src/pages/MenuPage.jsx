@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useApp } from "../context/AppContext";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useApp } from '../context/AppContext';
+import { WeatherWidget } from '../components/weather';
 
 export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
@@ -10,6 +11,10 @@ export default function MenuPage() {
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels from i18n
   const { cart, t, isTranslating } = useApp(); // For API translations of database items
+
+  const handleWeatherDrinkClick = (productId) => {
+    navigate(`/customize/${productId}`);
+  };
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
@@ -55,22 +60,12 @@ export default function MenuPage() {
 
   return (
     <div className="menu-page">
-      <div className="menu-header">
-        <h1>{i18nT("menu")}</h1>
-        <div className="mode-buttons">
-          <button
-            className="cashier-mode-button"
-            onClick={() => navigate("/cashier")}
-          >
-            {i18nT("Cashier Mode")}
-          </button>
-          <button
-            className="manager-mode-button"
-            onClick={() => navigate("/manager")}
-          >
-            {i18nT("Manager Mode")}
-          </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div style={{ flex: '0 0 auto' }}>
+          <WeatherWidget drinks={drinks} onDrinkClick={handleWeatherDrinkClick} />
         </div>
+        <h1 style={{ flex: '1', textAlign: 'center', margin: 0 }}>{i18nT('menu')}</h1>
+        <div style={{ flex: '0 0 auto', width: '200px' }}></div>
       </div>
 
       {/* Category tabs */}
