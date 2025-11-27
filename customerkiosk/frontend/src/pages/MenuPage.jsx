@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useApp } from '../context/AppContext';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useApp } from "../context/AppContext";
 
 export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All'); // NEW
+  const [activeCategory, setActiveCategory] = useState("All"); // NEW
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels from i18n
   const { cart, t, isTranslating } = useApp(); // For API translations of database items
@@ -15,60 +15,58 @@ export default function MenuPage() {
     fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
       .then((res) => res.json())
       .then((data) => {
-        console.log('Menu data:', data);
+        console.log("Menu data:", data);
         setDrinks(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Error fetching menu:', err);
+        console.error("Error fetching menu:", err);
         setLoading(false);
       });
   }, []);
 
   if (loading) {
-    return <div className="loading">Loading menu...</div>;
+    return <div className="loading">{i18nT("Loading menu...")}</div>;
   }
 
   if (isTranslating) {
-    return <div className="loading">Loading translations...</div>;
+    return <div className="loading">{i18nT("Loading translations...")}</div>;
   }
 
   if (drinks.length === 0) {
-    return <div className="loading">No drinks available</div>;
+    return <div className="loading">{i18nT("No drinks available")}</div>;
   }
 
   // --- Build list of categories from the data ---
   // This assumes each drink has drink.category or drink.type.
   // If not, they fall into "Other".
   const categories = Array.from(
-    new Set(
-      drinks.map((drink) => drink.category || drink.type || 'Other')
-    )
+    new Set(drinks.map((drink) => drink.category || drink.type || "Other"))
   );
 
   // Figure out which drinks to show based on selected category
   const drinksToShow =
-    activeCategory === 'All'
+    activeCategory === "All"
       ? drinks
       : drinks.filter(
           (drink) =>
-            (drink.category || drink.type || 'Other') === activeCategory
+            (drink.category || drink.type || "Other") === activeCategory
         );
 
   return (
     <div className="menu-page">
       <div className="menu-header">
-        <h1>{i18nT('menu')}</h1>
+        <h1>{i18nT("menu")}</h1>
         <div className="mode-buttons">
           <button
             className="cashier-mode-button"
-            onClick={() => navigate('/cashier')}
+            onClick={() => navigate("/cashier")}
           >
             Cashier Mode
           </button>
           <button
             className="manager-mode-button"
-            onClick={() => navigate('/manager')}
+            onClick={() => navigate("/manager")}
           >
             Manager Mode
           </button>
@@ -78,19 +76,15 @@ export default function MenuPage() {
       {/* Category tabs */}
       <div className="category-tabs">
         <button
-          className={`category-tab ${
-            activeCategory === 'All' ? 'active' : ''
-          }`}
-          onClick={() => setActiveCategory('All')}
+          className={`category-tab ${activeCategory === "All" ? "active" : ""}`}
+          onClick={() => setActiveCategory("All")}
         >
           All
         </button>
         {categories.map((cat) => (
           <button
             key={cat}
-            className={`category-tab ${
-              activeCategory === cat ? 'active' : ''
-            }`}
+            className={`category-tab ${activeCategory === cat ? "active" : ""}`}
             onClick={() => setActiveCategory(cat)}
           >
             {cat}
@@ -118,8 +112,8 @@ export default function MenuPage() {
       </div>
 
       {cart.length > 0 && (
-        <button className="cart-button" onClick={() => navigate('/cart')}>
-          {i18nT('cart')} ({cart.length})
+        <button className="cart-button" onClick={() => navigate("/cart")}>
+          {i18nT("cart")} ({cart.length})
         </button>
       )}
     </div>
