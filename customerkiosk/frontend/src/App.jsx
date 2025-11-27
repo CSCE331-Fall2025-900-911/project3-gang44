@@ -30,9 +30,6 @@ function App() {
               padding: "10px",
             }}
           >
-            {/* weather widget */}
-            <Weather />
-
             {/* change language */}
             <LanguageToggle />
 

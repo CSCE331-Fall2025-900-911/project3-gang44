@@ -17,15 +17,39 @@ export default function MenuPage() {
   };
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
-      .then((res) => res.json())
+    const apiUrl = import.meta.env.VITE_API_URL;
+    console.log("Fetching menu from:", apiUrl ? `${apiUrl}/api/menu` : 'VITE_API_URL not set!');
+    
+    if (!apiUrl) {
+      console.error("VITE_API_URL is not set! Please check your .env file and restart the dev server.");
+      alert("Configuration error: VITE_API_URL is not set. Please check your .env file and restart the dev server.");
+      setLoading(false);
+      return;
+    }
+    
+    fetch(`${apiUrl}/api/menu`)
+      .then((res) => {
+        console.log("Response status:", res.status, res.statusText);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        console.log("Menu data:", data);
-        setDrinks(data);
+        console.log("Menu data received:", data);
+        if (Array.isArray(data)) {
+          setDrinks(data);
+        } else {
+          console.error("Menu data is not an array:", data);
+          setDrinks([]);
+        }
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching menu:", err);
+        console.error("API URL was:", apiUrl);
+        alert(`Failed to load menu: ${err.message}. Check console for details.`);
+        setDrinks([]);
         setLoading(false);
       });
   }, []);
