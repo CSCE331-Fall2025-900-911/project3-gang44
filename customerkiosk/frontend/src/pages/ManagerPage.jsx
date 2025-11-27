@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/ManagerPage.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useApp } from "../context/AppContext";
+import "../styles/ManagerPage.css";
 
 export default function ManagerPage() {
-  const [activeTab, setActiveTab] = useState('menu-stats');
+  const [activeTab, setActiveTab] = useState("menu-stats");
   const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
+  const { t: i18nT } = useTranslation();
 
   // Update clock every second
   useEffect(() => {
@@ -17,10 +20,10 @@ export default function ManagerPage() {
   }, []);
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -28,10 +31,10 @@ export default function ManagerPage() {
     <div className="manager-page">
       <div className="manager-header">
         <div className="header-left">
-          <button className="back-button" onClick={() => navigate('/menu')}>
-            ← Back to Customer View
+          <button className="back-button" onClick={() => navigate("/menu")}>
+            ← {i18nT("Back to Customer View")}
           </button>
-          <h1>Manager Dashboard</h1>
+          <h1>{i18nT("Manager Dashboard")}</h1>
         </div>
         <div className="header-right">
           <span className="current-time">{formatTime(currentTime)}</span>
@@ -40,50 +43,52 @@ export default function ManagerPage() {
 
       <div className="manager-tabs">
         <button
-          className={`tab-button ${activeTab === 'menu-stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('menu-stats')}
+          className={`tab-button ${activeTab === "menu-stats" ? "active" : ""}`}
+          onClick={() => setActiveTab("menu-stats")}
         >
-          Menu Statistics
+          {i18nT("Menu Statistics")}
         </button>
         <button
-          className={`tab-button ${activeTab === 'inventory' ? 'active' : ''}`}
-          onClick={() => setActiveTab('inventory')}
+          className={`tab-button ${activeTab === "inventory" ? "active" : ""}`}
+          onClick={() => setActiveTab("inventory")}
         >
-          Inventory
+          {i18nT("Inventory")}
         </button>
         <button
-          className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
-          onClick={() => setActiveTab('products')}
+          className={`tab-button ${activeTab === "products" ? "active" : ""}`}
+          onClick={() => setActiveTab("products")}
         >
-          Manage Products
+          {i18nT("Manage Products")}
         </button>
         <button
-          className={`tab-button ${activeTab === 'ingredients' ? 'active' : ''}`}
-          onClick={() => setActiveTab('ingredients')}
+          className={`tab-button ${
+            activeTab === "ingredients" ? "active" : ""
+          }`}
+          onClick={() => setActiveTab("ingredients")}
         >
-          Manage Ingredients
+          {i18nT("Manage Ingredients")}
         </button>
         <button
-          className={`tab-button ${activeTab === 'employees' ? 'active' : ''}`}
-          onClick={() => setActiveTab('employees')}
+          className={`tab-button ${activeTab === "employees" ? "active" : ""}`}
+          onClick={() => setActiveTab("employees")}
         >
-          Manage Employees
+          {i18nT("Manage Employees")}
         </button>
         <button
-          className={`tab-button ${activeTab === 'reports' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reports')}
+          className={`tab-button ${activeTab === "reports" ? "active" : ""}`}
+          onClick={() => setActiveTab("reports")}
         >
-          Reports
+          {i18nT("Reports")}
         </button>
       </div>
 
       <div className="manager-content">
-        {activeTab === 'menu-stats' && <MenuStatsTab />}
-        {activeTab === 'inventory' && <InventoryTab />}
-        {activeTab === 'products' && <ProductsTab />}
-        {activeTab === 'ingredients' && <IngredientsTab />}
-        {activeTab === 'employees' && <EmployeesTab />}
-        {activeTab === 'reports' && <ReportsTab />}
+        {activeTab === "menu-stats" && <MenuStatsTab />}
+        {activeTab === "inventory" && <InventoryTab />}
+        {activeTab === "products" && <ProductsTab />}
+        {activeTab === "ingredients" && <IngredientsTab />}
+        {activeTab === "employees" && <EmployeesTab />}
+        {activeTab === "reports" && <ReportsTab />}
       </div>
     </div>
   );
@@ -91,8 +96,10 @@ export default function ManagerPage() {
 
 // Menu Statistics Tab
 function MenuStatsTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product names
   const [stats, setStats] = useState([]);
-  const [period, setPeriod] = useState('day');
+  const [period, setPeriod] = useState("day");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -102,11 +109,15 @@ function MenuStatsTab() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/menu-stats?period=${period}`);
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/manager/menu-stats?period=${period}`
+      );
       const data = await response.json();
       setStats(data);
     } catch (err) {
-      console.error('Error fetching menu stats:', err);
+      console.error("Error fetching menu stats:", err);
     } finally {
       setLoading(false);
     }
@@ -114,43 +125,49 @@ function MenuStatsTab() {
 
   return (
     <div className="tab-content">
-      <h2>Menu Statistics</h2>
+      <h2>{i18nT("Menu Statistics")}</h2>
       <div className="period-buttons">
         <button
-          className={period === 'day' ? 'active' : ''}
-          onClick={() => setPeriod('day')}
+          className={period === "day" ? "active" : ""}
+          onClick={() => setPeriod("day")}
         >
-          Day
+          {i18nT("Day")}
         </button>
         <button
-          className={period === 'week' ? 'active' : ''}
-          onClick={() => setPeriod('week')}
+          className={period === "week" ? "active" : ""}
+          onClick={() => setPeriod("week")}
         >
-          Week
+          {i18nT("Week")}
         </button>
         <button
-          className={period === 'month' ? 'active' : ''}
-          onClick={() => setPeriod('month')}
+          className={period === "month" ? "active" : ""}
+          onClick={() => setPeriod("month")}
         >
-          Month
+          {i18nT("Month")}
         </button>
       </div>
-
       {loading ? (
-        <div className="loading">Loading statistics...</div>
+        <div className="loading">{i18nT("Loading statistics...")}</div>
       ) : (
         <table className="stats-table">
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Sales {period === 'day' ? 'Today' : `This ${period}`}</th>
-              <th>Sold/Day</th>
+              <th>{i18nT("Item")}</th>
+              <th>
+                {i18nT("Sales")}{" "}
+                {period === "day"
+                  ? i18nT("Today")
+                  : i18nT("This {period}", {
+                      period: i18nT(period === "week" ? "Week" : "Month"),
+                    })}
+              </th>
+              <th>{i18nT("Sold/Day")}</th>
             </tr>
           </thead>
           <tbody>
             {stats.map((item, index) => (
               <tr key={index}>
-                <td>{item.name}</td>
+                <td>{t(item.name)}</td>
                 <td>{item.totalSold}</td>
                 <td>{item.avgPerDay}</td>
               </tr>
@@ -164,6 +181,8 @@ function MenuStatsTab() {
 
 // Inventory Tab
 function InventoryTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating ingredient names
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -173,11 +192,13 @@ function InventoryTab() {
 
   const fetchIngredients = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/ingredients`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/ingredients`
+      );
       const data = await response.json();
       setIngredients(data);
     } catch (err) {
-      console.error('Error fetching ingredients:', err);
+      console.error("Error fetching ingredients:", err);
     } finally {
       setLoading(false);
     }
@@ -185,28 +206,31 @@ function InventoryTab() {
 
   return (
     <div className="tab-content">
-      <h2>Current Inventory</h2>
+      <h2>{i18nT("Current Inventory")}</h2>
       {loading ? (
-        <div className="loading">Loading inventory...</div>
+        <div className="loading">{i18nT("Loading inventory...")}</div>
       ) : (
         <table className="inventory-table">
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Amount</th>
-              <th>Status</th>
+              <th>{i18nT("Item")}</th>
+              <th>{i18nT("Amount")}</th>
+              <th>{i18nT("Status")}</th>
             </tr>
           </thead>
           <tbody>
             {ingredients.map((item) => (
-              <tr key={item.id} className={item.quantity < 10 ? 'low-stock' : ''}>
-                <td>{item.name}</td>
+              <tr
+                key={item.id}
+                className={item.quantity < 10 ? "low-stock" : ""}
+              >
+                <td>{t(item.name)}</td>
                 <td>{item.quantity}</td>
                 <td>
                   {item.quantity < 10 ? (
-                    <span className="status-low">Low Stock</span>
+                    <span className="status-low">{i18nT("Low Stock")}</span>
                   ) : (
-                    <span className="status-ok">OK</span>
+                    <span className="status-ok">{i18nT("OK")}</span>
                   )}
                 </td>
               </tr>
@@ -220,6 +244,8 @@ function InventoryTab() {
 
 // Products Management Tab
 function ProductsTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product names
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -231,11 +257,13 @@ function ProductsTab() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/products`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/products`
+      );
       const data = await response.json();
       setProducts(data);
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
     }
@@ -244,53 +272,60 @@ function ProductsTab() {
   const handleAdd = async (formData) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/manager/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
       fetchProducts();
       setShowAddForm(false);
     } catch (err) {
-      console.error('Error adding product:', err);
-      alert('Failed to add product');
+      console.error("Error adding product:", err);
+      alert(i18nT("Failed to add product"));
     }
   };
 
   const handleUpdate = async (id, formData) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/products/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/products/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
       fetchProducts();
       setEditingProduct(null);
     } catch (err) {
-      console.error('Error updating product:', err);
-      alert('Failed to update product');
+      console.error("Error updating product:", err);
+      alert(i18nT("Failed to update product"));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm(i18nT("Are you sure you want to delete this product?")))
+      return;
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/products/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       fetchProducts();
     } catch (err) {
-      console.error('Error deleting product:', err);
-      alert('Failed to delete product');
+      console.error("Error deleting product:", err);
+      alert(i18nT("Failed to delete product"));
     }
   };
 
   return (
     <div className="tab-content">
       <div className="tab-header">
-        <h2>Manage Products</h2>
+        <h2>{i18nT("Manage Products")}</h2>
         <button className="add-button" onClick={() => setShowAddForm(true)}>
-          + Add Product
+          + {i18nT("Add Product")}
         </button>
       </div>
 
@@ -302,16 +337,16 @@ function ProductsTab() {
       )}
 
       {loading ? (
-        <div className="loading">Loading products...</div>
+        <div className="loading">{i18nT("Loading products...")}</div>
       ) : (
         <table className="management-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Actions</th>
+              <th>{i18nT("ID")}</th>
+              <th>{i18nT("Name")}</th>
+              <th>{i18nT("Category")}</th>
+              <th>{i18nT("Price")}</th>
+              <th>{i18nT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -326,15 +361,21 @@ function ProductsTab() {
                 ) : (
                   <>
                     <td>{product.id}</td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
+                    <td>{t(product.name)}</td>
+                    <td>{t(product.category)}</td>
                     <td>${parseFloat(product.price).toFixed(2)}</td>
                     <td>
-                      <button className="edit-btn" onClick={() => setEditingProduct(product)}>
-                        Edit
+                      <button
+                        className="edit-btn"
+                        onClick={() => setEditingProduct(product)}
+                      >
+                        {i18nT("Edit")}
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(product.id)}>
-                        Delete
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        {i18nT("Delete")}
                       </button>
                     </td>
                   </>
@@ -349,7 +390,12 @@ function ProductsTab() {
 }
 
 function ProductForm({ onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({ name: '', category: '', price: '' });
+  const { t: i18nT } = useTranslation();
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    price: "",
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -380,17 +426,20 @@ function ProductForm({ onSubmit, onCancel }) {
         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
         required
       />
-      <button type="submit">Add</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      <button type="submit">{i18nT("Add")}</button>
+      <button type="button" onClick={onCancel}>
+        {i18nT("Cancel")}
+      </button>
     </form>
   );
 }
 
 function ProductFormRow({ product, onSave, onCancel }) {
+  const { t: i18nT } = useTranslation();
   const [formData, setFormData] = useState({
     name: product.name,
     category: product.category,
-    price: product.price
+    price: product.price,
   });
 
   return (
@@ -407,7 +456,9 @@ function ProductFormRow({ product, onSave, onCancel }) {
         <input
           type="text"
           value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, category: e.target.value })
+          }
         />
       </td>
       <td>
@@ -419,8 +470,12 @@ function ProductFormRow({ product, onSave, onCancel }) {
         />
       </td>
       <td>
-        <button className="save-btn" onClick={() => onSave(formData)}>Save</button>
-        <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+        <button className="save-btn" onClick={() => onSave(formData)}>
+          {i18nT("Save")}
+        </button>
+        <button className="cancel-btn" onClick={onCancel}>
+          {i18nT("Cancel")}
+        </button>
       </td>
     </>
   );
@@ -428,6 +483,8 @@ function ProductFormRow({ product, onSave, onCancel }) {
 
 // Ingredients Management Tab
 function IngredientsTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating ingredient names
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingIngredient, setEditingIngredient] = useState(null);
@@ -439,11 +496,13 @@ function IngredientsTab() {
 
   const fetchIngredients = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/ingredients`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/ingredients`
+      );
       const data = await response.json();
       setIngredients(data);
     } catch (err) {
-      console.error('Error fetching ingredients:', err);
+      console.error("Error fetching ingredients:", err);
     } finally {
       setLoading(false);
     }
@@ -452,53 +511,60 @@ function IngredientsTab() {
   const handleAdd = async (formData) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/manager/ingredients`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
       fetchIngredients();
       setShowAddForm(false);
     } catch (err) {
-      console.error('Error adding ingredient:', err);
-      alert('Failed to add ingredient');
+      console.error("Error adding ingredient:", err);
+      alert(i18nT("Failed to add ingredient"));
     }
   };
 
   const handleUpdate = async (id, formData) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/ingredients/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/ingredients/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
       fetchIngredients();
       setEditingIngredient(null);
     } catch (err) {
-      console.error('Error updating ingredient:', err);
-      alert('Failed to update ingredient');
+      console.error("Error updating ingredient:", err);
+      alert(i18nT("Failed to update ingredient"));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this ingredient?')) return;
+    if (!confirm(i18nT("Are you sure you want to delete this ingredient?")))
+      return;
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/ingredients/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/ingredients/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       fetchIngredients();
     } catch (err) {
-      console.error('Error deleting ingredient:', err);
-      alert('Failed to delete ingredient');
+      console.error("Error deleting ingredient:", err);
+      alert(i18nT("Failed to delete ingredient"));
     }
   };
 
   return (
     <div className="tab-content">
       <div className="tab-header">
-        <h2>Manage Ingredients</h2>
+        <h2>{i18nT("Manage Ingredients")}</h2>
         <button className="add-button" onClick={() => setShowAddForm(true)}>
-          + Add Ingredient
+          + {i18nT("Add Ingredient")}
         </button>
       </div>
 
@@ -510,17 +576,17 @@ function IngredientsTab() {
       )}
 
       {loading ? (
-        <div className="loading">Loading ingredients...</div>
+        <div className="loading">{i18nT("Loading ingredients...")}</div>
       ) : (
         <table className="management-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th>Actions</th>
+              <th>{i18nT("ID")}</th>
+              <th>{i18nT("Name")}</th>
+              <th>{i18nT("Category")}</th>
+              <th>{i18nT("Price")}</th>
+              <th>{i18nT("Quantity")}</th>
+              <th>{i18nT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -535,16 +601,22 @@ function IngredientsTab() {
                 ) : (
                   <>
                     <td>{ingredient.id}</td>
-                    <td>{ingredient.name}</td>
-                    <td>{ingredient.category}</td>
+                    <td>{t(ingredient.name)}</td>
+                    <td>{t(ingredient.category)}</td>
                     <td>${parseFloat(ingredient.price).toFixed(2)}</td>
                     <td>{ingredient.quantity}</td>
                     <td>
-                      <button className="edit-btn" onClick={() => setEditingIngredient(ingredient)}>
-                        Edit
+                      <button
+                        className="edit-btn"
+                        onClick={() => setEditingIngredient(ingredient)}
+                      >
+                        {i18nT("Edit")}
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(ingredient.id)}>
-                        Delete
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(ingredient.id)}
+                      >
+                        {i18nT("Delete")}
                       </button>
                     </td>
                   </>
@@ -559,7 +631,12 @@ function IngredientsTab() {
 }
 
 function IngredientForm({ onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({ name: '', category: '', price: '' });
+  const { t: i18nT } = useTranslation();
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    price: "",
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -590,16 +667,19 @@ function IngredientForm({ onSubmit, onCancel }) {
         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
         required
       />
-      <button type="submit">Add</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      <button type="submit">{i18nT("Add")}</button>
+      <button type="button" onClick={onCancel}>
+        {i18nT("Cancel")}
+      </button>
     </form>
   );
 }
 
 function IngredientFormRow({ ingredient, onSave, onCancel }) {
+  const { t: i18nT } = useTranslation();
   const [formData, setFormData] = useState({
     price: ingredient.price,
-    quantity: ingredient.quantity
+    quantity: ingredient.quantity,
   });
 
   return (
@@ -619,12 +699,18 @@ function IngredientFormRow({ ingredient, onSave, onCancel }) {
         <input
           type="number"
           value={formData.quantity}
-          onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, quantity: e.target.value })
+          }
         />
       </td>
       <td>
-        <button className="save-btn" onClick={() => onSave(formData)}>Save</button>
-        <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+        <button className="save-btn" onClick={() => onSave(formData)}>
+          {i18nT("Save")}
+        </button>
+        <button className="cancel-btn" onClick={onCancel}>
+          {i18nT("Cancel")}
+        </button>
       </td>
     </>
   );
@@ -632,6 +718,8 @@ function IngredientFormRow({ ingredient, onSave, onCancel }) {
 
 // Employees Management Tab
 function EmployeesTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating employee roles
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -643,11 +731,13 @@ function EmployeesTab() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/employees`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/employees`
+      );
       const data = await response.json();
       setEmployees(data);
     } catch (err) {
-      console.error('Error fetching employees:', err);
+      console.error("Error fetching employees:", err);
     } finally {
       setLoading(false);
     }
@@ -656,53 +746,60 @@ function EmployeesTab() {
   const handleAdd = async (formData) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/manager/employees`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
       fetchEmployees();
       setShowAddForm(false);
     } catch (err) {
-      console.error('Error adding employee:', err);
-      alert('Failed to add employee');
+      console.error("Error adding employee:", err);
+      alert(i18nT("Failed to add employee"));
     }
   };
 
   const handleUpdate = async (id, formData) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/employees/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/employees/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
       fetchEmployees();
       setEditingEmployee(null);
     } catch (err) {
-      console.error('Error updating employee:', err);
-      alert('Failed to update employee');
+      console.error("Error updating employee:", err);
+      alert(i18nT("Failed to update employee"));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this employee?')) return;
+    if (!confirm(i18nT("Are you sure you want to delete this employee?")))
+      return;
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/employees/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/employees/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       fetchEmployees();
     } catch (err) {
-      console.error('Error deleting employee:', err);
-      alert('Failed to delete employee');
+      console.error("Error deleting employee:", err);
+      alert(i18nT("Failed to delete employee"));
     }
   };
 
   return (
     <div className="tab-content">
       <div className="tab-header">
-        <h2>Manage Employees</h2>
+        <h2>{i18nT("Manage Employees")}</h2>
         <button className="add-button" onClick={() => setShowAddForm(true)}>
-          + Add Employee
+          + {i18nT("Add Employee")}
         </button>
       </div>
 
@@ -714,16 +811,16 @@ function EmployeesTab() {
       )}
 
       {loading ? (
-        <div className="loading">Loading employees...</div>
+        <div className="loading">{i18nT("Loading employees...")}</div>
       ) : (
         <table className="management-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Wage</th>
-              <th>Actions</th>
+              <th>{i18nT("ID")}</th>
+              <th>{i18nT("Name")}</th>
+              <th>{i18nT("Role")}</th>
+              <th>{i18nT("Wage")}</th>
+              <th>{i18nT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -739,14 +836,20 @@ function EmployeesTab() {
                   <>
                     <td>{employee.id}</td>
                     <td>{employee.name}</td>
-                    <td>{employee.role}</td>
+                    <td>{t(employee.role)}</td>
                     <td>${parseFloat(employee.salary).toFixed(2)}/hr</td>
                     <td>
-                      <button className="edit-btn" onClick={() => setEditingEmployee(employee)}>
-                        Edit
+                      <button
+                        className="edit-btn"
+                        onClick={() => setEditingEmployee(employee)}
+                      >
+                        {i18nT("Edit")}
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(employee.id)}>
-                        Delete
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(employee.id)}
+                      >
+                        {i18nT("Delete")}
                       </button>
                     </td>
                   </>
@@ -761,7 +864,8 @@ function EmployeesTab() {
 }
 
 function EmployeeForm({ onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({ name: '', role: '', salary: '' });
+  const { t: i18nT } = useTranslation();
+  const [formData, setFormData] = useState({ name: "", role: "", salary: "" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -792,17 +896,20 @@ function EmployeeForm({ onSubmit, onCancel }) {
         onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
         required
       />
-      <button type="submit">Add</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      <button type="submit">{i18nT("Add")}</button>
+      <button type="button" onClick={onCancel}>
+        {i18nT("Cancel")}
+      </button>
     </form>
   );
 }
 
 function EmployeeFormRow({ employee, onSave, onCancel }) {
+  const { t: i18nT } = useTranslation();
   const [formData, setFormData] = useState({
     name: employee.name,
     role: employee.role,
-    salary: employee.salary
+    salary: employee.salary,
   });
 
   return (
@@ -831,8 +938,12 @@ function EmployeeFormRow({ employee, onSave, onCancel }) {
         />
       </td>
       <td>
-        <button className="save-btn" onClick={() => onSave(formData)}>Save</button>
-        <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+        <button className="save-btn" onClick={() => onSave(formData)}>
+          {i18nT("Save")}
+        </button>
+        <button className="cancel-btn" onClick={onCancel}>
+          {i18nT("Cancel")}
+        </button>
       </td>
     </>
   );
@@ -840,86 +951,106 @@ function EmployeeFormRow({ employee, onSave, onCancel }) {
 
 // Reports Tab
 function ReportsTab() {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product/ingredient names
   const [xReportData, setXReportData] = useState(null);
   const [productUsageData, setProductUsageData] = useState(null);
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const generateXReport = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/manager/reports/x-report`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/reports/x-report`
+      );
       const data = await response.json();
       setXReportData(data);
     } catch (err) {
-      console.error('Error generating X-report:', err);
-      alert('Failed to generate X-report');
+      console.error("Error generating X-report:", err);
+      alert(i18nT("Failed to generate X-report"));
     }
   };
 
   const generateProductUsage = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/manager/reports/product-usage?startDate=${startDate}&endDate=${endDate}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/manager/reports/product-usage?startDate=${startDate}&endDate=${endDate}`
       );
       const data = await response.json();
       setProductUsageData(data);
     } catch (err) {
-      console.error('Error generating product usage report:', err);
-      alert('Failed to generate product usage report');
+      console.error("Error generating product usage report:", err);
+      alert(i18nT("Failed to generate product usage report"));
     }
   };
 
   return (
     <div className="tab-content">
-      <h2>Reports</h2>
+      <h2>{i18nT("Reports")}</h2>
 
       <div className="report-section">
-        <h3>X-Report (Today's Activity)</h3>
+        <h3>{i18nT("X-Report (Today's Activity)")}</h3>
         <button className="generate-report-btn" onClick={generateXReport}>
-          Generate X-Report
+          {i18nT("Generate X-Report")}
         </button>
 
         {xReportData && (
           <div className="report-display">
-            <h4>Sales Summary</h4>
-            <p>Total Orders: {xReportData.totalOrders}</p>
-            <p>Total Items Sold: {xReportData.totalItems}</p>
-            <p>Total Revenue: ${xReportData.totalRevenue.toFixed(2)}</p>
+            <h4>{i18nT("Sales Summary")}</h4>
+            <p>
+              {i18nT("Total Orders")}: {xReportData.totalOrders}
+            </p>
+            <p>
+              {i18nT("Total Items Sold")}: {xReportData.totalItems}
+            </p>
+            <p>
+              {i18nT("Total Revenue")}: ${xReportData.totalRevenue.toFixed(2)}
+            </p>
 
-            <h4>Top Selling Items</h4>
+            <h4>{i18nT("Top Selling Items")}</h4>
             <ul>
               {xReportData.topItems.map((item, index) => (
                 <li key={index}>
-                  {item.product_name}: {item.quantity} units
+                  {t(item.product_name)}: {item.quantity} {i18nT("Quantity")}
                 </li>
               ))}
             </ul>
 
-            <h4>Low Stock Items</h4>
+            <h4>{i18nT("Low Stock Items")}</h4>
             {xReportData.lowStock.length === 0 ? (
-              <p>All stock levels are sufficient.</p>
+              <p>{i18nT("All stock levels are sufficient.")}</p>
             ) : (
               <ul>
                 {xReportData.lowStock.map((item, index) => (
                   <li key={index}>
-                    {item.name}: {item.quantity} units left
+                    {item.name}: {item.quantity} {i18nT("Quantity")}
                   </li>
                 ))}
               </ul>
             )}
 
-            <h4>Employee Statistics</h4>
-            <p>Total Employees: {xReportData.employeeCount}</p>
-            <p>Average Wage: ${xReportData.avgWage.toFixed(2)}/hr</p>
+            <h4>{i18nT("Employee Statistics")}</h4>
+            <p>
+              {i18nT("Total Employees")}: {xReportData.employeeCount}
+            </p>
+            <p>
+              {i18nT("Average Wage")}: ${xReportData.avgWage.toFixed(2)}/hr
+            </p>
           </div>
         )}
       </div>
 
       <div className="report-section">
-        <h3>Product Usage Report</h3>
+        <h3>{i18nT("Product Usage Report")}</h3>
         <div className="date-range">
           <label>
-            Start Date:
+            {i18nT("Start Date")}:
             <input
               type="date"
               value={startDate}
@@ -927,59 +1058,70 @@ function ReportsTab() {
             />
           </label>
           <label>
-            End Date:
+            {i18nT("End Date")}:
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
           </label>
-          <button className="generate-report-btn" onClick={generateProductUsage}>
-            Generate Report
+          <button
+            className="generate-report-btn"
+            onClick={generateProductUsage}
+          >
+            {i18nT("Generate Report")}
           </button>
         </div>
 
         {productUsageData && (
           <div className="report-display">
-            <h4>Products Sold ({productUsageData.startDate} to {productUsageData.endDate})</h4>
+            <h4>
+              {i18nT("Products Sold")} ({productUsageData.startDate} to{" "}
+              {productUsageData.endDate})
+            </h4>
             <table className="report-table">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>Quantity</th>
+                  <th>{i18nT("Product")}</th>
+                  <th>{i18nT("Quantity")}</th>
                 </tr>
               </thead>
               <tbody>
                 {productUsageData.productsSold.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.product_name}</td>
+                    <td>{t(item.product_name)}</td>
                     <td>{item.quantity}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <h4>Ingredients Used</h4>
+            <h4>{i18nT("Ingredients Used")}</h4>
             <table className="report-table">
               <thead>
                 <tr>
-                  <th>Ingredient</th>
-                  <th>Quantity Used</th>
+                  <th>{i18nT("Ingredient")}</th>
+                  <th>{i18nT("Quantity Used")}</th>
                 </tr>
               </thead>
               <tbody>
                 {productUsageData.ingredientsUsed.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.name}</td>
+                    <td>{t(item.name)}</td>
                     <td>{item.quantity}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <h4>Summary</h4>
-            <p>Total Products Sold: {productUsageData.totalProducts}</p>
-            <p>Total Ingredient Units Used: {productUsageData.totalIngredients}</p>
+            <h4>{i18nT("Summary")}</h4>
+            <p>
+              {i18nT("Total Products Sold")}: {productUsageData.totalProducts}
+            </p>
+            <p>
+              {i18nT("Total Ingredient Units Used")}:{" "}
+              {productUsageData.totalIngredients}
+            </p>
           </div>
         )}
       </div>

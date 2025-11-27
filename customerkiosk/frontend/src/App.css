@@ -110,18 +110,12 @@ body {
 }
 
 .drink-card {
-  background: #E9D8FD; /* light pastel purple */
-  padding: 20px;
+  background: white;
+  padding: 1.25rem;
   border: 2px solid #333;
   cursor: pointer;
   text-align: center;
-  transition: background 0.2s;
 }
-
-.drink-card:hover {
-  background: #D6BCFA; /* slightly darker purple on hover */
-}
-
 
 .drink-card:hover {
   background: #f5f5f5;
