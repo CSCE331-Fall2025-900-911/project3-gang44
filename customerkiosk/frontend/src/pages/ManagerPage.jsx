@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useApp } from "../context/AppContext";
 import "../styles/ManagerPage.css";
 
 export default function ManagerPage() {
@@ -96,6 +97,7 @@ export default function ManagerPage() {
 // Menu Statistics Tab
 function MenuStatsTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product names
   const [stats, setStats] = useState([]);
   const [period, setPeriod] = useState("day");
   const [loading, setLoading] = useState(true);
@@ -165,7 +167,7 @@ function MenuStatsTab() {
           <tbody>
             {stats.map((item, index) => (
               <tr key={index}>
-                <td>{item.name}</td>
+                <td>{t(item.name)}</td>
                 <td>{item.totalSold}</td>
                 <td>{item.avgPerDay}</td>
               </tr>
@@ -180,6 +182,7 @@ function MenuStatsTab() {
 // Inventory Tab
 function InventoryTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating ingredient names
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -221,7 +224,7 @@ function InventoryTab() {
                 key={item.id}
                 className={item.quantity < 10 ? "low-stock" : ""}
               >
-                <td>{item.name}</td>
+                <td>{t(item.name)}</td>
                 <td>{item.quantity}</td>
                 <td>
                   {item.quantity < 10 ? (
@@ -242,6 +245,7 @@ function InventoryTab() {
 // Products Management Tab
 function ProductsTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product names
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -357,8 +361,8 @@ function ProductsTab() {
                 ) : (
                   <>
                     <td>{product.id}</td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
+                    <td>{t(product.name)}</td>
+                    <td>{t(product.category)}</td>
                     <td>${parseFloat(product.price).toFixed(2)}</td>
                     <td>
                       <button
@@ -480,6 +484,7 @@ function ProductFormRow({ product, onSave, onCancel }) {
 // Ingredients Management Tab
 function IngredientsTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating ingredient names
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingIngredient, setEditingIngredient] = useState(null);
@@ -576,12 +581,12 @@ function IngredientsTab() {
         <table className="management-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th>Actions</th>
+              <th>{i18nT("ID")}</th>
+              <th>{i18nT("Name")}</th>
+              <th>{i18nT("Category")}</th>
+              <th>{i18nT("Price")}</th>
+              <th>{i18nT("Quantity")}</th>
+              <th>{i18nT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -596,8 +601,8 @@ function IngredientsTab() {
                 ) : (
                   <>
                     <td>{ingredient.id}</td>
-                    <td>{ingredient.name}</td>
-                    <td>{ingredient.category}</td>
+                    <td>{t(ingredient.name)}</td>
+                    <td>{t(ingredient.category)}</td>
                     <td>${parseFloat(ingredient.price).toFixed(2)}</td>
                     <td>{ingredient.quantity}</td>
                     <td>
@@ -714,6 +719,7 @@ function IngredientFormRow({ ingredient, onSave, onCancel }) {
 // Employees Management Tab
 function EmployeesTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating employee roles
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -810,11 +816,11 @@ function EmployeesTab() {
         <table className="management-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Wage</th>
-              <th>Actions</th>
+              <th>{i18nT("ID")}</th>
+              <th>{i18nT("Name")}</th>
+              <th>{i18nT("Role")}</th>
+              <th>{i18nT("Wage")}</th>
+              <th>{i18nT("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -830,7 +836,7 @@ function EmployeesTab() {
                   <>
                     <td>{employee.id}</td>
                     <td>{employee.name}</td>
-                    <td>{employee.role}</td>
+                    <td>{t(employee.role)}</td>
                     <td>${parseFloat(employee.salary).toFixed(2)}/hr</td>
                     <td>
                       <button
@@ -946,6 +952,7 @@ function EmployeeFormRow({ employee, onSave, onCancel }) {
 // Reports Tab
 function ReportsTab() {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp(); // For translating product/ingredient names
   const [xReportData, setXReportData] = useState(null);
   const [productUsageData, setProductUsageData] = useState(null);
   const [startDate, setStartDate] = useState(
@@ -1010,7 +1017,7 @@ function ReportsTab() {
             <ul>
               {xReportData.topItems.map((item, index) => (
                 <li key={index}>
-                  {item.product_name}: {item.quantity} {i18nT("Quantity")}
+                  {t(item.product_name)}: {item.quantity} {i18nT("Quantity")}
                 </li>
               ))}
             </ul>
@@ -1082,7 +1089,7 @@ function ReportsTab() {
               <tbody>
                 {productUsageData.productsSold.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.product_name}</td>
+                    <td>{t(item.product_name)}</td>
                     <td>{item.quantity}</td>
                   </tr>
                 ))}
@@ -1100,7 +1107,7 @@ function ReportsTab() {
               <tbody>
                 {productUsageData.ingredientsUsed.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.name}</td>
+                    <td>{t(item.name)}</td>
                     <td>{item.quantity}</td>
                   </tr>
                 ))}

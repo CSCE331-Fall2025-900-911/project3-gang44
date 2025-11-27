@@ -429,5 +429,13 @@ export const translations = {
     Napkin: "Servilleta",
     Straw: "Pajita",
     "To-go Box": "Caja para Llevar",
+    "Manage Ingredients": "Administrar Ingredientes",
+    "Manage Employees": "Administrar Empleados",
+
+    // Employee Roles
+    Manager: "Gerente",
+    Cashier: "Cajero",
+    "Inventory Manager": "Gerente de Inventario",
+    Waiter: "Camarero",
   },
 };
