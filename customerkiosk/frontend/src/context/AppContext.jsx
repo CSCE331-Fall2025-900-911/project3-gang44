@@ -90,6 +90,9 @@ export const AppProvider = ({ children }) => {
           translatedPhrases[normalizeText(k)] = v;
         }
 
+        // Publish seeded static translations immediately so UI can read them
+        setTranslations((prev) => ({ ...prev, ...translatedPhrases }));
+
         for (const text of textsToTranslate) {
           const key = text || "";
           if (!key || String(key).trim() === "") continue;
@@ -106,17 +109,32 @@ export const AppProvider = ({ children }) => {
               language,
               "en"
             );
+            // update local map and runtime cache incrementally
             translatedPhrases[key] = translated;
             translatedPhrases[normalizeText(key)] = translated;
+            setTranslations((prev) => ({
+              ...prev,
+              [key]: translated,
+              [normalizeText(key)]: translated,
+            }));
             console.log(`Translated: "${key}" -> "${translated}"`);
           } catch (error) {
             console.error(`Failed to translate "${key}":`, error);
+            // cache fallback as original
             translatedPhrases[key] = key;
             translatedPhrases[normalizeText(key)] = key;
+            setTranslations((prev) => ({
+              ...prev,
+              [key]: key,
+              [normalizeText(key)]: key,
+            }));
           }
         }
 
-        setTranslations(translatedPhrases);
+        console.log(
+          "All translations loaded:",
+          Object.keys(translatedPhrases).length
+        );
         console.log(
           "All translations loaded:",
           Object.keys(translatedPhrases).length
@@ -139,6 +157,22 @@ export const AppProvider = ({ children }) => {
     if (translations[text]) return translations[text];
     const n = normalizeText(text);
     if (n && translations[n]) return translations[n];
+
+    // Consult static translations (synchronous) before calling API.
+    // This ensures toppings added later but present in `src/i18n/translations.js`
+    // are returned immediately without waiting for a language toggle.
+    const staticMap =
+      (staticTranslations && staticTranslations[language]) || {};
+    if (staticMap[text]) {
+      const val = staticMap[text];
+      setTranslations((prev) => ({ ...prev, [text]: val, [n]: val }));
+      return val;
+    }
+    if (staticMap[n]) {
+      const val = staticMap[n];
+      setTranslations((prev) => ({ ...prev, [text]: val, [n]: val }));
+      return val;
+    }
 
     // Translate on the fly
     try {
@@ -166,7 +200,17 @@ export const AppProvider = ({ children }) => {
     if (language === "en") return text;
     if (translations[text]) return translations[text];
     const n = normalizeText(text);
-    return n && translations[n] ? translations[n] : text;
+    if (n && translations[n]) return translations[n];
+
+    // As a last-resort synchronous lookup, consult the static translations
+    // so strings present in `src/i18n/translations.js` (including ones
+    // added after initial load) appear immediately.
+    const staticMap =
+      (staticTranslations && staticTranslations[language]) || {};
+    if (staticMap[text]) return staticMap[text];
+    if (staticMap[n]) return staticMap[n];
+
+    return text;
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);

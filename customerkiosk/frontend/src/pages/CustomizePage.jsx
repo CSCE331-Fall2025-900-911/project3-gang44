@@ -7,7 +7,7 @@ export default function CustomizePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels
-  const { addToCart, t } = useApp(); // For API translations
+  const { addToCart, t, translate, language } = useApp(); // For API translations
 
   console.log("CustomizePage rendered with id:", id, "from useParams");
 
@@ -109,6 +109,23 @@ export default function CustomizePage() {
         markLoaded();
       });
   }, [id]);
+
+  // Ensure toppings added dynamically are seeded into translations cache
+  useEffect(() => {
+    if (!customizations || language === "en") return;
+    try {
+      customizations.toppings.forEach((top) => {
+        if (top && top.name) {
+          // Fire-and-forget to cache translations for topping names
+          translate(top.name).catch((e) => {
+            /* ignore */
+          });
+        }
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, [customizations, language]);
 
   const toggleTopping = (topping) => {
     console.log("=== TOGGLE TOPPING ===");
@@ -264,12 +281,12 @@ export default function CustomizePage() {
           <span
             style={{ fontSize: "18px", fontWeight: "normal", color: "#666" }}
           >
-            (Select multiple)
+            ({i18nT("Select multiple")})
           </span>
         </h3>
         <div style={{ marginBottom: "10px", fontSize: "14px", color: "#666" }}>
-          Selected: {selectedToppings.length} topping(s) - IDs: [
-          {selectedToppings.map((topping) => topping.id).join(", ")}]
+          {i18nT("Selected")} : {selectedToppings.length} {i18nT("toppings")} -
+          IDs: [{selectedToppings.map((topping) => topping.id).join(", ")}]
         </div>
         <div className="button-group">
           {customizations.toppings.map((topping) => {
@@ -282,6 +299,13 @@ export default function CustomizePage() {
               const tId = normalizeId(selectedTopping.id);
               return tId === toppingId;
             });
+
+            // Log for debugging, then explicitly return the button element
+            console.log(
+              `Topping render: "${topping.name}" -> t()="${t(
+                topping.name
+              )}" (lang=${language})`
+            );
 
             return (
               <button
