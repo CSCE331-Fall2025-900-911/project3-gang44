@@ -1,0 +1,12 @@
+SCRUM Meeting 3 for Project 3
+Prepared by: Justin	
+Meeting Date: Nov 21, 2025
+
+Meeting Agenda Items:
+Review payment progress
+Check status of admin components
+Checking status of weather API 
+Review remaining sprint items and confirm what will be completed next
+
+Minutes from Previous Meeting:
+In the previous meeting, the team reviewed progress on the cashier and manager interfaces, evaluated API integration tasks and addressed Stripe configuration issues. Task assignments were made for payment endpoints, webhook handling, and admin dashboard features. Many progress were made, most UI and backend components were nearing completion, though some are still having issues and needs additional work due to integration issues. 

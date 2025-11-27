@@ -1,0 +1,10 @@
+SCRUM Meeting 1 for Project 3
+Prepared by: Ryan
+Meeting Date: Nov 17, 2025
+
+Meeting Agenda Items:
+Design and discuss features for cashier view.
+Design and discuss features for Manager view.
+Settle another API we can call for our project.
+
+There are no minutes from the previous meeting because this is the first meeting.

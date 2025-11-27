@@ -1,0 +1,11 @@
+SCRUM Meeting 2 for Project 3
+Prepared by: Wesley
+Meeting Date: Nov 19, 2025
+
+Meeting Agenda Items:
+Reviewing progress on cashier and manager interfaces
+Evaluating the progress on database migration 
+Discussion about integrating order and payment APIs
+
+Minutes from Previous Meeting
+During the previous meeting, the team discussed the design and the functionality of the cashier and manager interfaces. Each member talked about what should be included in both interfaces and what shouldn’t be included. All members agreed on a layout for both views and API to integrate. Task assignments focused on interface design and preparation for backend integration. At the end of the meeting, all the design tasks were assigned and completed.
