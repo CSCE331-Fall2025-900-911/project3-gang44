@@ -1,286 +1,183 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useApp } from "../context/AppContext";
 
-export const useWeather = () => {
-  const [weather, setWeather] = useState(null);
-  const [location, setLocation] = useState(null);
+// Helper function to get boba recommendation based on weather
+export const getBobaRecommendation = (temp, weatherCode, t) => {
+  // Temperature in Fahrenheit
+  if (temp >= 80) {
+    return {
+      drink: "Mango Green Tea",
+      reason: `It's ${Math.round(temp)}°F! ${t(
+        "Perfect weather for a refreshing fruit tea"
+      )}`,
+      emoji: "☀️",
+    };
+  } else if (temp >= 65) {
+    return {
+      drink: "Honey Milk Tea",
+      reason: `Nice ${Math.round(temp)}°F ${t(
+        "Nice weather calls for a sweet and smooth classic"
+      )}`,
+      emoji: "🌤️",
+    };
+  } else if (temp >= 50) {
+    return {
+      drink: "Brown Sugar Milk Tea",
+      reason: `At ${Math.round(temp)}°F, ${t(
+        "Enjoy something warm and comforting"
+      )}`,
+      emoji: "🍂",
+    };
+  } else if (weatherCode >= 71 && weatherCode <= 77) {
+    return {
+      drink: "Hot Taro Milk Tea",
+      reason: t("It's snowing! Warm up with a cozy hot drink"),
+      emoji: "❄️",
+    };
+  } else if (weatherCode >= 51 && weatherCode <= 67) {
+    return {
+      drink: "Jasmine Milk Tea",
+      reason: t("Rainy day? A soothing tea is just what you need"),
+      emoji: "🌧️",
+    };
+  } else {
+    return {
+      drink: "Thai Milk Tea",
+      reason: `At ${Math.round(temp)}°F, ${t(
+        "Treat yourself to something special"
+      )}`,
+      emoji: "✨",
+    };
+  }
+};
+
+// Hook to fetch weather and get recommendation
+export const useWeatherRecommendation = () => {
+  const { t } = useApp();
+  const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const getWeatherCondition = useCallback((code) => {
-    if (code === 0) return 'Clear';
-    if (code <= 3) return 'Partly Cloudy';
-    if (code <= 67) return 'Rainy';
-    if (code <= 77) return 'Snowy';
-    if (code <= 99) return 'Stormy';
-    return 'Unknown';
-  }, []);
-
-  const getLocationAndWeather = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      let latitude, longitude;
-
-      // Try to get user's location from browser geolocation
+  useEffect(() => {
+    const fetchWeatherRecommendation = async () => {
       try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 15000, // Increased timeout to 15 seconds
-            maximumAge: 300000,
-            enableHighAccuracy: false // Faster, less accurate is fine for weather
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+
+              const weatherResponse = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
+              );
+              const weatherData = await weatherResponse.json();
+
+              const temp = weatherData.current.temperature_2m;
+              const weatherCode = weatherData.current.weather_code;
+
+              const rec = getBobaRecommendation(temp, weatherCode, t);
+              setRecommendation(rec);
+              setLoading(false);
+            },
+            (err) => {
+              console.error("Location error:", err);
+              // Default recommendation if location unavailable
+              setRecommendation({
+                drink: t("Classic Milk Tea"),
+                reason: t("A timeless favorite for any occasion"),
+                emoji: "🥤",
+              });
+              setLoading(false);
+            }
+          );
+        } else {
+          setRecommendation({
+            drink: t("Classic Milk Tea"),
+            reason: t("A timeless favorite for any occasion"),
+            emoji: "🥤",
           });
-        });
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
-      } catch (geoError) {
-        // If geolocation fails, try IP-based location as fallback
-        console.log('Geolocation failed, trying IP-based location...', geoError);
-        try {
-          // Use AbortController for timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-          
-          const ipResponse = await fetch('https://ipapi.co/json/', {
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          
-          if (!ipResponse.ok) throw new Error('IP location fetch failed');
-          const ipData = await ipResponse.json();
-          latitude = ipData.latitude;
-          longitude = ipData.longitude;
-        } catch (ipError) {
-          // Last resort: use a default location (e.g., San Francisco)
-          console.log('IP location failed, using default location...', ipError);
-          latitude = 37.7749;
-          longitude = -122.4194;
+          setLoading(false);
         }
+      } catch (err) {
+        console.error("Weather fetch error:", err);
+        setError(err.message);
+        setLoading(false);
       }
+    };
 
-      setLocation({ latitude, longitude });
+    fetchWeatherRecommendation();
+  }, [t]);
 
-      // Fetch weather data from Open-Meteo API (free, no API key needed)
-      const weatherResponse = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
-      );
-      
-      if (!weatherResponse.ok) throw new Error('Weather fetch failed');
-      
-      const weatherData = await weatherResponse.json();
-      const temp = weatherData.current.temperature_2m;
-      const weatherCode = weatherData.current.weather_code;
-      
-      setWeather({
-        temperature: temp,
-        weatherCode: weatherCode,
-        condition: getWeatherCondition(weatherCode)
-      });
-      
-    } catch (err) {
-      console.error('Location/Weather error:', err);
-      setError(err.message || 'Unable to fetch weather data. Please check your connection.');
-    } finally {
-      setLoading(false);
-    }
-  }, [getWeatherCondition]);
+  return { recommendation, loading, error };
+};
+
+// Original Weather Display Component
+export default function Weather() {
+  const [weather, setWeather] = useState(null);
+  const [error, setError] = useState("");
+  const [location, setLocation] = useState(null);
 
   useEffect(() => {
-    getLocationAndWeather();
-  }, [getLocationAndWeather]);
-
-  return { weather, location, loading, error };
-};
-
-export const getDrinkRecommendation = (temp, weatherCode) => {
-  // Hot weather (>75°F)
-  if (temp > 75) {
-    return {
-      name: 'Iced Passion Fruit Tea',
-      reason: `It's ${temp}°F - perfect weather for something refreshing!`,
-      size: 'Large',
-      iceLevel: '100%',
-      sweetnessLevel: '50%',
-      toppings: ['Lychee Jelly'],
-      emoji: '☀️'
-    };
-  }
-  
-  // Cold weather (<50°F)
-  if (temp < 50) {
-    return {
-      name: 'Hot Milk Tea',
-      reason: `It's only ${temp}°F - warm up with a hot drink!`,
-      size: 'Medium',
-      iceLevel: '0%',
-      sweetnessLevel: '75%',
-      toppings: ['Tapioca Pearls'],
-      emoji: '❄️'
-    };
-  }
-
-  // Rainy weather
-  if (weatherCode >= 51 && weatherCode <= 67) {
-    return {
-      name: 'Hot Taro Milk Tea',
-      reason: `Rainy day at ${temp}°F - cozy up with something warm!`,
-      size: 'Medium',
-      iceLevel: '0%',
-      sweetnessLevel: '75%',
-      toppings: ['Pudding'],
-      emoji: '🌧️'
-    };
-  }
-
-  // Snowy weather
-  if (weatherCode >= 71 && weatherCode <= 77) {
-    return {
-      name: 'Hot Chocolate Milk Tea',
-      reason: `Snowy weather at ${temp}°F - stay cozy!`,
-      size: 'Medium',
-      iceLevel: '0%',
-      sweetnessLevel: '75%',
-      toppings: ['Tapioca Pearls', 'Pudding'],
-      emoji: '🌨️'
-    };
-  }
-
-  // Moderate weather - default to popular choice
-  return {
-    name: 'Classic Milk Tea',
-    reason: `Perfect ${temp}°F weather for our bestseller!`,
-    size: 'Medium',
-    iceLevel: '50%',
-    sweetnessLevel: '50%',
-    toppings: ['Tapioca Pearls'],
-    emoji: '🌤️'
-  };
-};
-
-// Simple Weather Component for MenuPage - shows temperature and recommended drink
-export const WeatherWidget = ({ drinks, onDrinkClick }) => {
-  const { weather, loading, error } = useWeather();
-  const recommendedDrink = weather ? getDrinkRecommendation(weather.temperature, weather.weatherCode) : null;
-
-  if (loading) {
-    return (
-      <div style={{ 
-        padding: '10px', 
-        background: '#f5f5f5', 
-        borderRadius: '5px',
-        fontSize: '14px'
-      }}>
-        Loading weather...
-      </div>
-    );
-  }
-
-  if (error || !weather || !recommendedDrink) {
-    // Default recommendation when weather unavailable
-    const defaultRecommendation = {
-      name: 'Classic Milk Tea',
-      emoji: '🌤️'
-    };
-    
-    const handleClick = () => {
-      if (drinks && onDrinkClick) {
-        const normalizeName = (name) => name.toLowerCase().replace(/\s+/g, ' ').trim();
-        // Try to find a milk tea drink
-        let drink = drinks.find(d => {
-          const drinkName = normalizeName(d.name);
-          return drinkName.includes('milk tea') || drinkName.includes('classic');
-        });
-        // If no milk tea, just get the first drink
-        if (!drink && drinks.length > 0) {
-          drink = drinks[0];
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          setLocation({ lat, lon });
+        },
+        (err) => {
+          setError("Unable to get location. Please enable location access.");
+          console.error(err);
         }
-        if (drink) {
-          const productId = drink.product_id || drink.item_id;
-          onDrinkClick(productId);
-        }
-      }
-    };
-
-    return (
-      <div 
-        onClick={handleClick}
-        style={{ 
-          padding: '10px 15px', 
-          background: '#e8e8e8', 
-          borderRadius: '5px',
-          cursor: 'pointer',
-          border: '1px solid #ddd'
-        }}
-      >
-        <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-          {defaultRecommendation.emoji} Recommended: {defaultRecommendation.name}
-        </div>
-      </div>
-    );
-  }
-
-  const handleClick = () => {
-    if (drinks && onDrinkClick) {
-      // Normalize names for better matching
-      const normalizeName = (name) => name.toLowerCase().replace(/\s+/g, ' ').trim();
-      const recommendedName = normalizeName(recommendedDrink.name);
-      
-      // Try to find the recommended drink by name (flexible matching)
-      let drink = drinks.find(d => {
-        const drinkName = normalizeName(d.name);
-        // Check if names match or contain each other
-        return drinkName.includes(recommendedName) || 
-               recommendedName.includes(drinkName) ||
-               // Try matching key words (e.g., "Passion Fruit" matches "Passionfruit")
-               recommendedName.split(' ').some(word => word.length > 3 && drinkName.includes(word)) ||
-               drinkName.split(' ').some(word => word.length > 3 && recommendedName.includes(word));
-      });
-      
-      // If no match, try matching by keywords from recommendation
-      if (!drink) {
-        const keywords = recommendedName.split(' ').filter(w => w.length > 3);
-        drink = drinks.find(d => {
-          const drinkName = normalizeName(d.name);
-          return keywords.some(keyword => drinkName.includes(keyword));
-        });
-      }
-      
-      // Last resort: find any milk tea
-      if (!drink) {
-        drink = drinks.find(d => normalizeName(d.name).includes('milk tea'));
-      }
-      
-      if (drink) {
-        const productId = drink.product_id || drink.item_id;
-        onDrinkClick(productId);
-      }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser");
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!location) return;
+
+    const fetchWeather = async () => {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current_weather=true`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.current_weather) {
+          setError("Weather data not available");
+          return;
+        }
+
+        setWeather(data.current_weather);
+      } catch (err) {
+        setError("Failed to fetch weather");
+      }
+    };
+
+    fetchWeather();
+  }, [location]);
+
+  if (error) return <p style={{ padding: 10 }}>Error: {error}</p>;
+  if (!weather) return <p style={{ padding: 10 }}>Loading weather...</p>;
+
+  const tempF = (weather.temperature * 9) / 5 + 32;
 
   return (
-    <div 
-      onClick={handleClick}
-      style={{ 
-        padding: '10px 15px', 
-        background: '#e8e8e8', 
-        borderRadius: '5px',
-        cursor: 'pointer',
-        border: '1px solid #ddd'
+    <div
+      style={{
+        padding: 10,
+        width: 220,
+        borderRadius: 12,
+        background: "#e9e9e9",
       }}
     >
-      <div style={{ fontSize: '14px', marginBottom: '5px' }}>
-        🌡️ {weather.temperature}°F
-      </div>
-      <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-        {recommendedDrink.emoji} {recommendedDrink.name}
-      </div>
+      <h3>Your Location</h3>
+      <p>🌡 Temp: {tempF.toFixed(1)}°F</p>
+      <p>💨 Wind: {weather.windspeed} mph</p>
+      <p>📍 Direction: {weather.winddirection}°</p>
+      <p>⏱ Time: {weather.time}</p>
     </div>
   );
-};
-
-// Keep default export for backward compatibility (if used elsewhere)
-const Weather = () => {
-  return null; // Not used in App.jsx anymore
-};
-
-export default Weather;
+}

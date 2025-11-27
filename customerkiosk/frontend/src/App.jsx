@@ -1,3 +1,4 @@
+import Weather from './components/weather';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import GoogleAuth from "./components/GoogleAuth";
@@ -48,7 +49,6 @@ function App() {
 
           {/* routes for all the pages */}
           <Routes>
-            
             <Route path="/" element={<GoogleAuth />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/customize/:id" element={<CustomizePage />} />

@@ -43,16 +43,6 @@ export default function GoogleAuth() {
     alert("Google login failed. Please try again.");
   };
 
-  const handleSkipLogin = () => {
-    // Set a guest user and navigate to menu
-    setUser({
-      email: 'guest@example.com',
-      name: 'Guest User',
-      picture: null
-    });
-    navigate("/menu");
-  };
-
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="auth-container">
@@ -62,20 +52,6 @@ export default function GoogleAuth() {
           onError={handleError}
           size="large"
         />
-        <button 
-          onClick={handleSkipLogin}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            backgroundColor: '#f0f0f0',
-            border: '1px solid #ccc',
-            borderRadius: '5px'
-          }}
-        >
-          Skip Login (Continue as Guest)
-        </button>
       </div>
     </GoogleOAuthProvider>
   );
