@@ -51,6 +51,25 @@ export const translations = {
     "Cashier Mode": "Cashier Mode",
     "Manager Mode": "Manager Mode",
 
+    // Cashier Page
+    "Loading cashier mode...": "Loading cashier mode...",
+    Products: "Products",
+    "Current Order": "Current Order",
+    "No items in cart": "No items in cart",
+    "Clear Order": "Clear Order",
+    "Finish Order": "Finish Order",
+    "Please add items to the order before submitting.":
+      "Please add items to the order before submitting.",
+    "Order ID": "Order ID",
+    "Customize {product}": "Customize {product}",
+    "Add to Order": "Add to Order",
+    "Submitting...": "Submitting...",
+    Customize: "Customize",
+    Size: "Size",
+    "Ice Level": "Ice Level",
+    Sweetness: "Sweetness",
+    Toppings: "Toppings",
+
     Inventory: "Inventory",
     "Sales Summary": "Sales Summary",
     "Top Selling Items": "Top Selling Items",
@@ -246,6 +265,25 @@ export const translations = {
     // Mode buttons
     "Cashier Mode": "Modo Cajero",
     "Manager Mode": "Modo Administrador",
+
+    // Cashier Page
+    "Loading cashier mode...": "Cargando modo cajero...",
+    Products: "Productos",
+    "Current Order": "Pedido Actual",
+    "No items in cart": "Sin artículos en el carrito",
+    "Clear Order": "Limpiar Pedido",
+    "Finish Order": "Finalizar Pedido",
+    "Please add items to the order before submitting.":
+      "Por favor, agregue artículos al pedido antes de enviarlo.",
+    "Order ID": "ID de Pedido",
+    "Customize {product}": "Personalizar {product}",
+    "Add to Order": "Añadir al Pedido",
+    "Submitting...": "Enviando...",
+    Customize: "Personalizar",
+    Size: "Tamaño",
+    "Ice Level": "Nivel de Hielo",
+    Sweetness: "Dulzura",
+    Toppings: "Complementos",
 
     Inventory: "Inventario",
     "Sales Summary": "Resumen de Ventas",
