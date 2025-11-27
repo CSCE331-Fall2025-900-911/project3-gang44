@@ -137,7 +137,6 @@ export default function CartPage() {
       )}
 
       {cart.map(item => {
-        // Translate database items using API
         const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
 
         return (
