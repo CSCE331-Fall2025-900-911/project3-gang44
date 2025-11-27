@@ -1,4 +1,3 @@
-import Weather from './components/weather';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import GoogleAuth from "./components/GoogleAuth";
@@ -37,15 +36,13 @@ function App() {
             {/* text reader */}
             <TextReaderButton />
           </div>
-          <div className='text-size-toggle'>
-            <Weather/>
-          </div>
 
           {/* loads translations when language changes */}
           <TranslationLoader />
 
           {/* routes for all the pages */}
           <Routes>
+            
             <Route path="/" element={<GoogleAuth />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/customize/:id" element={<CustomizePage />} />
