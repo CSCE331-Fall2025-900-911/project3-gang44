@@ -127,6 +127,41 @@ export const translations = {
     "Failed to update employee": "Failed to update employee",
     "Failed to delete employee": "Failed to delete employee",
 
+    // Weather
+    "Your Location": "Your Location",
+    "Temp:": "Temp:",
+    "Wind:": "Wind:",
+    "Direction:": "Direction:",
+    "Time:": "Time:",
+    "Loading weather...": "Loading weather...",
+    "Error:": "Error:",
+    "Unable to get location. Please enable location access.":
+      "Unable to get location. Please enable location access.",
+    "Geolocation is not supported by your browser":
+      "Geolocation is not supported by your browser",
+    "Weather data not available": "Weather data not available",
+    "Failed to fetch weather": "Failed to fetch weather",
+    "Perfect weather for a refreshing fruit tea":
+      "Perfect weather for a refreshing fruit tea",
+    "Nice weather calls for a sweet and smooth classic":
+      "Nice weather calls for a sweet and smooth classic",
+    "Enjoy something warm and comforting":
+      "Enjoy something warm and comforting",
+    "It's snowing! Warm up with a cozy hot drink":
+      "It's snowing! Warm up with a cozy hot drink",
+    "Rainy day? A soothing tea is just what you need":
+      "Rainy day? A soothing tea is just what you need",
+    "Treat yourself to something special":
+      "Treat yourself to something special",
+    "A timeless favorite for any occasion":
+      "A timeless favorite for any occasion",
+    "Mango Green Tea": "Mango Green Tea",
+    "Honey Milk Tea": "Honey Milk Tea",
+    "Hot Taro Milk Tea": "Hot Taro Milk Tea",
+    "Jasmine Milk Tea": "Jasmine Milk Tea",
+    "Thai Milk Tea": "Thai Milk Tea",
+    "Classic Milk Tea": "Classic Milk Tea",
+
     // Messages
     "Loading menu...": "Loading menu...",
     "Loading translations...": "Loading translations...",
@@ -158,6 +193,13 @@ export const translations = {
     "50%": "50%",
     "75%": "75%",
     "100%": "100%",
+
+    // Product Categories
+    "Milk Tea": "Milk Tea",
+    "Tea Latte": "Tea Latte",
+    Slush: "Slush",
+    "Green Tea": "Green Tea",
+    "Creative Mix": "Creative Mix",
 
     // Products - Milk Tea
     "Taro Milk Tea": "Taro Milk Tea",
@@ -343,6 +385,40 @@ export const translations = {
     "Failed to update employee": "Error al actualizar el empleado",
     "Failed to delete employee": "Error al eliminar el empleado",
 
+    // Weather
+    "Your Location": "Tu Ubicación",
+    "Temp:": "Temp:",
+    "Wind:": "Viento:",
+    "Direction:": "Dirección:",
+    "Time:": "Hora:",
+    "Loading weather...": "Cargando clima...",
+    "Error:": "Error:",
+    "Unable to get location. Please enable location access.":
+      "No se puede obtener la ubicación. Por favor, habilita el acceso a la ubicación.",
+    "Geolocation is not supported by your browser":
+      "La geolocalizacion no es compatible con tu navegador",
+    "Weather data not available": "Datos meteorologicos no disponibles",
+    "Failed to fetch weather": "Error al obtener el clima",
+    "Perfect weather for a refreshing fruit tea":
+      "¡Clima perfecto para un té de frutas refrescante!",
+    "Nice weather calls for a sweet and smooth classic":
+      "Clima agradable pide un clásico dulce y suave",
+    "Enjoy something warm and comforting":
+      "Disfruta de algo cálido y reconfortante",
+    "It's snowing! Warm up with a cozy hot drink":
+      "¡Está nevando! Caliéntate con una bebida caliente acogedora",
+    "Rainy day? A soothing tea is just what you need":
+      "¿Día lluvioso? Un té calmante es justo lo que necesitas",
+    "Treat yourself to something special": "Trátatete algo especial",
+    "A timeless favorite for any occasion":
+      "Un favorito atemporal para cualquier ocasión",
+    "Mango Green Tea": "Té Verde de Mango",
+    "Honey Milk Tea": "Té de Leche con Miel",
+    "Hot Taro Milk Tea": "Té de Leche de Taro Caliente",
+    "Jasmine Milk Tea": "Té de Leche de Jazmín",
+    "Thai Milk Tea": "Té de Leche Tailandés",
+    "Classic Milk Tea": "Té de Leche Clásico",
+
     // Messages
     "Loading menu...": "Cargando menú...",
     "Loading translations...": "Cargando traducciones...",
@@ -374,6 +450,13 @@ export const translations = {
     "50%": "50%",
     "75%": "75%",
     "100%": "100%",
+
+    // Product Categories
+    "Milk Tea": "Té de Leche",
+    "Tea Latte": "Latte de Té",
+    Slush: "Granizado",
+    "Green Tea": "Té Verde",
+    "Creative Mix": "Mezcla Creativa",
 
     // Products - Milk Tea
     "Taro Milk Tea": "Té de Leche de Taro",
