@@ -3,6 +3,7 @@ export const translations = {
     // UI Labels
     welcome: "Welcome",
     menu: "Menu",
+    All: "All",
     cart: "Cart",
     customize: "Customize Your Drink",
     size: "Size",
@@ -45,6 +46,10 @@ export const translations = {
     Edit: "Edit",
     Delete: "Delete",
     Save: "Save",
+
+    // Mode buttons
+    "Cashier Mode": "Cashier Mode",
+    "Manager Mode": "Manager Mode",
 
     Inventory: "Inventory",
     "Sales Summary": "Sales Summary",
@@ -192,6 +197,7 @@ export const translations = {
     // UI Labels
     welcome: "Bienvenido",
     menu: "Menú",
+    All: "Todos",
     cart: "Carrito",
     customize: "Personaliza Tu Bebida",
     size: "Tamaño",
@@ -234,6 +240,10 @@ export const translations = {
     Edit: "Editar",
     Delete: "Eliminar",
     Save: "Guardar",
+
+    // Mode buttons
+    "Cashier Mode": "Modo Cajero",
+    "Manager Mode": "Modo Administrador",
 
     Inventory: "Inventario",
     "Sales Summary": "Resumen de Ventas",

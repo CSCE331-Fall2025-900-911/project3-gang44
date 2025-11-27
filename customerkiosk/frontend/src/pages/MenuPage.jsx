@@ -62,13 +62,13 @@ export default function MenuPage() {
             className="cashier-mode-button"
             onClick={() => navigate("/cashier")}
           >
-            Cashier Mode
+            {i18nT("Cashier Mode")}
           </button>
           <button
             className="manager-mode-button"
             onClick={() => navigate("/manager")}
           >
-            Manager Mode
+            {i18nT("Manager Mode")}
           </button>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function MenuPage() {
           className={`category-tab ${activeCategory === "All" ? "active" : ""}`}
           onClick={() => setActiveCategory("All")}
         >
-          All
+          {i18nT("All")}
         </button>
         {categories.map((cat) => (
           <button
@@ -87,7 +87,7 @@ export default function MenuPage() {
             className={`category-tab ${activeCategory === cat ? "active" : ""}`}
             onClick={() => setActiveCategory(cat)}
           >
-            {cat}
+            {t(cat)}
           </button>
         ))}
       </div>
