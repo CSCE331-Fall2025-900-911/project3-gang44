@@ -1,4 +1,3 @@
-import Weather from './components/weather';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import GoogleAuth from "./components/GoogleAuth";

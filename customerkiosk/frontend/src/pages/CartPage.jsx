@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext';
-import { useWeatherRecommendation } from '../components/weather';
+import { useWeather, getDrinkRecommendation } from '../components/weather';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation();
   const { cart, removeFromCart, cartTotal, clearCart, user, t } = useApp();
-  const { recommendation, loading } = useWeatherRecommendation();
+  const { weather, loading } = useWeather();
+  const recommendation = weather ? getDrinkRecommendation(weather.temperature, weather.weatherCode) : null;
 
   const handlePlaceOrder = async () => {
     try {
@@ -55,10 +56,10 @@ export default function CartPage() {
             border: '2px solid #333'
           }}>
             <div style={{ fontSize: '40px', marginBottom: '10px' }}>{recommendation.emoji}</div>
-            <h3 style={{ fontSize: '20px', marginBottom: '10px', color: '#333' }}>
-              Try: {t(recommendation.drink)}
-            </h3>
-            <p style={{ fontSize: '14px', color: '#666' }}>{recommendation.reason}</p>
+              <h3 style={{ fontSize: '20px', marginBottom: '10px', color: '#333' }}>
+                Try: {t(recommendation.name)}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#666' }}>{recommendation.reason}</p>
           </div>
         )}
         <button onClick={() => navigate('/menu')}>{i18nT('backToMenu')}</button>
@@ -93,7 +94,7 @@ export default function CartPage() {
             <div style={{ fontSize: '50px' }}>{recommendation.emoji}</div>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
-                Try this: {t(recommendation.drink)}
+                Try this: {t(recommendation.name)}
               </h3>
               <p style={{ fontSize: '14px', color: '#e3f2fd' }}>{recommendation.reason}</p>
             </div>
