@@ -57,21 +57,30 @@ body {
   padding: 1.25rem;
 }
 
+/* Header: Menu centered, buttons top-right */
 .menu-header {
+  position: relative;
+  width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: center; /* keep "Menu" centered */
   align-items: center;
-  gap: 1.875rem;
   margin: 1.25rem 0 1.875rem 0;
 }
 
-.menu-page h1 {
+/* Menu title */
+.menu-header h1 {
   margin: 0;
   font-size: 2.25rem;
   color: #333;
+  text-align: center;
 }
 
+/* Cashier / Manager buttons aligned top-right */
 .mode-buttons {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   gap: 0.9375rem;
 }
@@ -85,8 +94,10 @@ body {
   cursor: pointer;
   font-weight: bold;
   transition: all 0.2s;
+  border-radius: 6px;
 }
 
+/* Pastel button colors */
 .cashier-mode-button {
   background: #ffb3ba; /* pastel pink */
 }
@@ -95,6 +106,7 @@ body {
   background: #bae1ff; /* pastel blue */
 }
 
+/* Hover styling */
 .cashier-mode-button:hover,
 .manager-mode-button:hover {
   transform: translateY(-2px);
