@@ -127,6 +127,15 @@ export default function CustomizePage() {
     }
   }, [customizations, language]);
 
+  // Add a document-root class so CSS can change the app background only
+  // while this page is mounted (used by high-contrast styling).
+  useEffect(() => {
+    document.documentElement.classList.add("on-customize");
+    return () => {
+      document.documentElement.classList.remove("on-customize");
+    };
+  }, []);
+
   const toggleTopping = (topping) => {
     console.log("=== TOGGLE TOPPING ===");
     console.log("Clicked topping:", topping);
