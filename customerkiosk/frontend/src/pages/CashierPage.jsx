@@ -2,7 +2,23 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import StripePaymentForm from '../components/StripePaymentForm';
 import "../styles/CashierPage.css";
+
+// Load Stripe (disable developer tools)
+let stripePromise = null;
+const getStripePromise = async () => {
+  if (!stripePromise) {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe-config`);
+    const { publishableKey } = await response.json();
+    stripePromise = loadStripe(publishableKey, {
+      developerTools: { assistant: { enabled: false } }
+    });
+  }
+  return stripePromise;
+};
 
 export default function CashierPage() {
   const [products, setProducts] = useState([]);
@@ -14,9 +30,20 @@ export default function CashierPage() {
   const [customizations, setCustomizations] = useState(null);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
+  const [stripe, setStripe] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels
   const { t } = useApp(); // For API translations
+
+  // Initialize Stripe
+  useEffect(() => {
+    getStripePromise().then(setStripe);
+  }, []);
 
   // Load products, order ID, and customizations
   useEffect(() => {
@@ -81,6 +108,24 @@ export default function CashierPage() {
     setCart(cart.filter((item) => item.cart_item_id !== cartItemId));
   };
 
+  const updateCartItemQuantity = (cartItemId, delta) => {
+    setCart(cart.map((item) => {
+      if (item.cart_item_id === cartItemId) {
+        const newQuantity = item.quantity + delta;
+        if (newQuantity <= 0) {
+          // Remove item if quantity reaches 0
+          return null;
+        }
+        return {
+          ...item,
+          quantity: newQuantity,
+          subtotal: item.price_per_unit * newQuantity
+        };
+      }
+      return item;
+    }).filter(Boolean)); // Remove null entries
+  };
+
   const clearCart = () => {
     setCart([]);
   };
@@ -91,9 +136,49 @@ export default function CashierPage() {
       return;
     }
 
+    // If card payment, show payment modal
+    if (paymentMethod === 'CARD') {
+      await createPaymentIntent();
+      setShowPaymentModal(true);
+      return;
+    }
+
+    // Process cash payment directly
+    await submitCashOrder();
+  };
+
+  const createPaymentIntent = async () => {
+    try {
+      setSubmitting(true);
+      const total = calculateTotal();
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/create-payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: total })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment intent');
+      }
+
+      setClientSecret(data.clientSecret);
+    } catch (err) {
+      console.error('Payment intent error:', err);
+      alert(`Failed to initialize payment: ${err.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitCashOrder = async () => {
+    console.log('submitCashOrder called');
     setSubmitting(true);
 
     try {
+      console.log('Sending cash order request...');
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/cashier/orders`,
         {
@@ -101,28 +186,90 @@ export default function CashierPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ items: cart }),
+          body: JSON.stringify({ items: cart, paymentMethod: 'CASH' }),
         }
       );
 
       const data = await response.json();
+      console.log('Cash order response:', data);
 
       if (response.ok) {
-        alert(
-          `Order #${
-            data.orderId
-          } submitted successfully!\nTotal: $${data.totalPrice.toFixed(2)}`
+        console.log('Showing confirmation for order:', data.orderId);
+
+        // Show confirmation modal
+        setConfirmationMessage(
+          `💵 Cash Order #${data.orderId}\n\nTotal: $${data.totalPrice.toFixed(2)}\n\nCollect cash from customer.`
         );
+        setShowConfirmation(true);
 
         // Clear cart and get next order ID
         setCart([]);
+        setPaymentMethod('CASH');
         const orderIdRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/cashier/next-order-id`
         );
         const orderIdData = await orderIdRes.json();
         setOrderId(orderIdData.nextOrderId);
       } else {
-        alert(`Error: ${data.error}`);
+        console.error('Order failed:', data.error);
+        setConfirmationMessage(`Error: ${data.error}`);
+        setShowConfirmation(true);
+      }
+    } catch (err) {
+      console.error("Error submitting order:", err);
+      alert("Failed to submit order. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCardPaymentSuccess = async (paymentIntentId) => {
+    console.log('handleCardPaymentSuccess called with paymentIntentId:', paymentIntentId);
+    setSubmitting(true);
+
+    try {
+      console.log('Sending card order request with payment intent...');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/cashier/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            items: cart,
+            paymentMethod: 'CARD',
+            paymentIntentId
+          }),
+        }
+      );
+
+      const data = await response.json();
+      console.log('Card order response:', data);
+
+      if (response.ok) {
+        console.log('Card order successful, closing modal and showing confirmation');
+        setShowPaymentModal(false);
+
+        // Show confirmation modal
+        setConfirmationMessage(
+          `💳 Card Payment Successful!\n\nOrder #${data.orderId}\nTotal: $${data.totalPrice.toFixed(2)}\n\nPayment processed successfully.`
+        );
+        setShowConfirmation(true);
+
+        // Clear cart and get next order ID
+        setCart([]);
+        setPaymentMethod('CASH');
+        setClientSecret('');
+        const orderIdRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/cashier/next-order-id`
+        );
+        const orderIdData = await orderIdRes.json();
+        setOrderId(orderIdData.nextOrderId);
+      } else {
+        console.error('Card order failed:', data.error);
+        setConfirmationMessage(`Error: ${data.error}`);
+        setShowConfirmation(true);
       }
     } catch (err) {
       console.error("Error submitting order:", err);
@@ -236,17 +383,51 @@ export default function CashierPage() {
                       )}
                     </span>
                   </div>
-                  <div className="item-actions">
+                  <div className="item-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span className="item-subtotal">
                       ${item.subtotal.toFixed(2)}
                     </span>
-                    <button
-                      className="remove-button"
-                      onClick={() => removeFromCart(item.cart_item_id)}
-                      title="Remove item"
-                    >
-                      −
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => updateCartItemQuantity(item.cart_item_id, -1)}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: '1px solid #ddd',
+                          background: '#fff',
+                          color: '#000',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                        title="Decrease quantity"
+                      >
+                        <span style={{ color: '#000' }}>-</span>
+                      </button>
+                      <span style={{ minWidth: '25px', textAlign: 'center', fontWeight: 'bold', color: '#000' }}>
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateCartItemQuantity(item.cart_item_id, 1)}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: '1px solid #ddd',
+                          background: '#fff',
+                          color: '#000',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                        title="Increase quantity"
+                      >
+                        <span style={{ color: '#000' }}>+</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -259,6 +440,44 @@ export default function CashierPage() {
               <span className="total-amount">
                 ${calculateTotal().toFixed(2)}
               </span>
+            </div>
+
+            <div className="payment-method-section">
+              <h3 style={{ marginBottom: '10px', fontSize: '16px' }}>{i18nT("Payment Method")}:</h3>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                <button
+                  className={`payment-method-btn ${paymentMethod === 'CASH' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('CASH')}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: paymentMethod === 'CASH' ? '3px solid #4caf50' : '2px solid #ddd',
+                    borderRadius: '8px',
+                    background: paymentMethod === 'CASH' ? '#e8f5e9' : 'white',
+                    cursor: 'pointer',
+                    fontWeight: paymentMethod === 'CASH' ? 'bold' : 'normal',
+                    fontSize: '16px',
+                  }}
+                >
+                  💵 {i18nT("Cash")}
+                </button>
+                <button
+                  className={`payment-method-btn ${paymentMethod === 'CARD' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('CARD')}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: paymentMethod === 'CARD' ? '3px solid #2196f3' : '2px solid #ddd',
+                    borderRadius: '8px',
+                    background: paymentMethod === 'CARD' ? '#e3f2fd' : 'white',
+                    cursor: 'pointer',
+                    fontWeight: paymentMethod === 'CARD' ? 'bold' : 'normal',
+                    fontSize: '16px',
+                  }}
+                >
+                  💳 {i18nT("Card")}
+                </button>
+              </div>
             </div>
 
             <div className="cart-actions">
@@ -292,6 +511,104 @@ export default function CashierPage() {
             setSelectedProduct(null);
           }}
         />
+      )}
+
+      {/* Card Payment Modal */}
+      {showPaymentModal && (
+        <div className="modal-overlay" onClick={() => {
+          setShowPaymentModal(false);
+          setClientSecret(''); // Clear client secret when closing
+        }}>
+          <div className="modal-content payment-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>💳 Process Card Payment</h2>
+              <button className="modal-close" onClick={() => {
+                setShowPaymentModal(false);
+                setClientSecret(''); // Clear client secret when closing
+              }}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>Order Total</h3>
+                <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#4caf50' }}>
+                  ${calculateTotal().toFixed(2)}
+                </p>
+              </div>
+
+              {clientSecret && stripe ? (
+                <Elements stripe={stripe} options={{ clientSecret }}>
+                  <StripePaymentForm
+                    total={calculateTotal()}
+                    onSuccess={handleCardPaymentSuccess}
+                    onError={(error) => {
+                      setConfirmationMessage(`Payment failed: ${error}`);
+                      setShowConfirmation(true);
+                      setShowPaymentModal(false);
+                      setClientSecret(''); // Clear client secret on error
+                    }}
+                  />
+                </Elements>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <div style={{ fontSize: '18px', color: '#666' }}>Preparing payment...</div>
+                </div>
+              )}
+
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                background: '#fff3cd',
+                borderRadius: '8px',
+                border: '1px solid #ffc107'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#856404' }}>
+                  Test Cards
+                </h4>
+                <p style={{ margin: 0, fontSize: '13px', color: '#856404' }}>
+                  <strong>4242 4242 4242 4242</strong> - Any future date, any CVC
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Confirmation Modal */}
+      {showConfirmation && (
+        <div className="modal-overlay" onClick={() => setShowConfirmation(false)}>
+          <div className="modal-content confirmation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: '3px solid #4caf50' }}>
+              <h2 style={{ color: '#4caf50' }}>Order Confirmed!</h2>
+              <button className="modal-close" onClick={() => setShowConfirmation(false)}>
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: 'center', padding: '40px 30px' }}>
+              <div style={{
+                fontSize: '18px',
+                whiteSpace: 'pre-line',
+                lineHeight: '1.8',
+                color: '#333'
+              }}>
+                {confirmationMessage}
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ borderTop: 'none' }}>
+              <button
+                className="add-btn"
+                onClick={() => setShowConfirmation(false)}
+                style={{ width: '100%', padding: '15px', fontSize: '18px' }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
