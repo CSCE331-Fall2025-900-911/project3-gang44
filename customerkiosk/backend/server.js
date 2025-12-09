@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 require("dotenv").config();
 
 console.log('✅ All dependencies loaded successfully');
@@ -226,6 +227,125 @@ app.post("/api/auth/google", async (req, res) => {
   }
 });
 
+// ==================== STRIPE PAYMENT ENDPOINTS ====================
+
+// Create a payment intent for card payments
+app.post('/api/create-payment-intent', async (req, res) => {
+  const { amount } = req.body;
+
+  try {
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe expects amount in cents
+      currency: 'usd',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        integration_source: 'boba-kiosk',
+      },
+    });
+
+    console.log('Created payment intent:', paymentIntent.id);
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+    });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get Stripe publishable key (for frontend)
+app.get('/api/stripe-config', (req, res) => {
+  res.json({
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  });
+});
+
+// Complete order with payment information
+app.post('/api/orders/complete', async (req, res) => {
+  const { items, total, customerEmail, paymentMethod, paymentIntentId } = req.body;
+
+  try {
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Verify payment if it's a card payment
+      if (paymentMethod === 'CARD' && paymentIntentId) {
+        try {
+          const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+          if (paymentIntent.status !== 'succeeded') {
+            throw new Error('Payment not completed. Please try again.');
+          }
+        } catch (stripeError) {
+          console.error('Stripe verification error:', stripeError);
+          throw new Error('Failed to verify payment: ' + stripeError.message);
+        }
+      }
+
+      // Insert order with payment information
+      const orderResult = await client.query(
+        `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
+         VALUES (NOW(), $1, $2, $3, $4)
+         RETURNING order_id`,
+        [total, paymentMethod, 'CUSTOMER_KIOSK', paymentIntentId || null]
+      );
+
+      const orderId = orderResult.rows[0].order_id;
+      console.log('Created order:', orderId, 'Payment method:', paymentMethod);
+
+      // Insert order items
+      for (const item of items) {
+        const pricePerUnit = item.price / (item.quantity || 1);
+        const subtotal = item.price;
+
+        // Build customization string
+        const customizationDetails = [
+          `Size: ${item.size}`,
+          `Ice: ${item.iceLevel}`,
+          `Sweetness: ${item.sweetnessLevel}`,
+          item.toppings && item.toppings.length > 0
+            ? `Toppings: ${item.toppings.map((t) => t.name).join(', ')}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(', ');
+
+        const productNameWithCustomization = customizationDetails
+          ? `${item.name} (${customizationDetails})`
+          : item.name;
+
+        await client.query(
+          `INSERT INTO order_items
+           (order_id, product_name, quantity, price_per_unit, subtotal)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [orderId, productNameWithCustomization, item.quantity || 1, pricePerUnit, subtotal]
+        );
+        console.log(`Added item: ${item.name}`);
+      }
+
+      await client.query('COMMIT');
+      console.log('Order committed successfully');
+      res.json({ orderId, message: 'Order placed successfully' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      console.error('Transaction error:', err);
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('Error creating order:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==================== CASHIER MODE ENDPOINTS ====================
 
 // Get all products for cashier mode (simpler than customer menu)
@@ -262,7 +382,7 @@ app.get('/api/cashier/next-order-id', async (req, res) => {
 
 // Submit cashier order with inventory updates
 app.post('/api/cashier/orders', async (req, res) => {
-  const { items } = req.body;
+  const { items, paymentMethod = 'CASH', paymentIntentId } = req.body;
 
   if (!items || items.length === 0) {
     return res.status(400).json({ error: 'Order must contain at least one item' });
@@ -273,18 +393,33 @@ app.post('/api/cashier/orders', async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // Verify payment if it's a card payment
+    if (paymentMethod === 'CARD' && paymentIntentId) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        if (paymentIntent.status !== 'succeeded') {
+          throw new Error('Payment not completed. Please try again.');
+        }
+        console.log('Stripe payment verified:', paymentIntentId);
+      } catch (stripeError) {
+        console.error('Stripe verification error:', stripeError);
+        throw new Error('Failed to verify payment: ' + stripeError.message);
+      }
+    }
+
     // Calculate total price
     let totalPrice = 0;
     for (const item of items) {
       totalPrice += item.subtotal;
     }
 
-    // Insert order with timestamp
+    // Insert order with timestamp, payment method, and stripe payment intent
     const orderResult = await client.query(
-      `INSERT INTO orders (order_date, total_price)
-       VALUES (NOW(), $1)
+      `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
+       VALUES (NOW(), $1, $2, $3, $4)
        RETURNING order_id`,
-      [totalPrice]
+      [totalPrice, paymentMethod, 'CASHIER', paymentIntentId || null]
     );
 
     const orderId = orderResult.rows[0].order_id;

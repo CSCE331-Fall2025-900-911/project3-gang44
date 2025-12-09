@@ -10,36 +10,8 @@ export default function CartPage() {
   const { weather, loading } = useWeather();
   const recommendation = weather ? getDrinkRecommendation(weather.temperature, weather.weatherCode) : null;
 
-  const handlePlaceOrder = async () => {
-    try {
-      console.log('Placing order with cart:', cart);
-      console.log('Cart total:', cartTotal);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart,
-          total: cartTotal,
-          customerEmail: user?.email || 'guest@example.com'
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('Order failed with status:', response.status);
-        console.error('Error data:', data);
-        throw new Error(data.error || 'Order failed');
-      }
-
-      console.log('Order successful! Order ID:', data.orderId);
-      clearCart();
-      navigate('/confirmation', { state: { orderId: data.orderId } });
-    } catch (error) {
-      console.error('Order failed:', error);
-      alert(`Order failed: ${error.message}. Please try again.`);
-    }
+  const handleProceedToCheckout = () => {
+    navigate('/checkout');
   };
 
   if (cart.length === 0) {
@@ -136,8 +108,8 @@ export default function CartPage() {
 
       <div className="cart-total">
         <h2>{i18nT('total')}: ${cartTotal.toFixed(2)}</h2>
-        <button className="place-order-btn" onClick={handlePlaceOrder}>
-          {i18nT('placeOrder')}
+        <button className="place-order-btn" onClick={handleProceedToCheckout}>
+          Proceed to Checkout
         </button>
       </div>
     </div>

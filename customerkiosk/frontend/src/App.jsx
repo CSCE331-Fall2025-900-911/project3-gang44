@@ -4,6 +4,7 @@ import GoogleAuth from "./components/GoogleAuth";
 import MenuPage from "./pages/MenuPage";
 import CustomizePage from "./pages/CustomizePage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import CashierPage from "./pages/CashierPage";
 import ManagerPage from "./pages/ManagerPage";
@@ -49,6 +50,7 @@ function App() {
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/customize/:id" element={<CustomizePage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
             <Route path="/cashier" element={<CashierPage />} />
             <Route path="/manager" element={<ManagerPage />} />
