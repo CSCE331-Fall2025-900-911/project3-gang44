@@ -11,7 +11,7 @@ import ManagerPage from "./pages/ManagerPage";
 import LanguageToggle from "./components/LanguageToggle";
 import TranslationLoader from "./components/TranslationLoader";
 import TextSizeAdjuster from "./components/TextSizeAdjuster";
-import TextReaderButton from "./components/TextReaderButton";
+import HighContrastToggle from "./components/HighContrastToggle";
 import "./i18n/i18n";
 import "./App.css";
 
@@ -37,8 +37,10 @@ function App() {
             {/* adjust text size */}
             <TextSizeAdjuster />
 
-            {/* text reader */}
-            <TextReaderButton />
+            {/* high contrast toggle */}
+            <HighContrastToggle />
+
+            {/* text reader removed */}
           </div>
 
           {/* loads translations when language changes */}
@@ -58,7 +60,6 @@ function App() {
         </div>
       </BrowserRouter>
     </AppProvider>
-
   );
 }
 

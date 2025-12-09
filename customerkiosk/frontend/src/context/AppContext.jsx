@@ -10,6 +10,7 @@ export const AppProvider = ({ children }) => {
   const [language, setLanguage] = useState("en");
   const [translations, setTranslations] = useState({});
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isHighContrast, setIsHighContrast] = useState(false);
 
   const addToCart = (item) => {
     setCart((prevCart) => [...prevCart, { ...item, id: Date.now() }]);
@@ -20,24 +21,25 @@ export const AppProvider = ({ children }) => {
   };
 
   const updateCartItemQuantity = (id, delta) => {
-    setCart((prevCart) =>
-      prevCart
-        .map((item) => {
-          if (item.id === id) {
-            const newQuantity = (item.quantity || 1) + delta;
-            if (newQuantity <= 0) {
-              // Remove item if quantity reaches 0
-              return null;
+    setCart(
+      (prevCart) =>
+        prevCart
+          .map((item) => {
+            if (item.id === id) {
+              const newQuantity = (item.quantity || 1) + delta;
+              if (newQuantity <= 0) {
+                // Remove item if quantity reaches 0
+                return null;
+              }
+              return {
+                ...item,
+                quantity: newQuantity,
+                price: (item.price / (item.quantity || 1)) * newQuantity, // Recalculate total price
+              };
             }
-            return {
-              ...item,
-              quantity: newQuantity,
-              price: item.price / (item.quantity || 1) * newQuantity, // Recalculate total price
-            };
-          }
-          return item;
-        })
-        .filter(Boolean) // Remove null entries
+            return item;
+          })
+          .filter(Boolean) // Remove null entries
     );
   };
 
@@ -171,6 +173,19 @@ export const AppProvider = ({ children }) => {
     loadTranslations();
   }, [language]);
 
+  // Apply/remove a high-contrast class on the root element when toggled
+  useEffect(() => {
+    try {
+      if (isHighContrast) {
+        document.documentElement.classList.add("high-contrast");
+      } else {
+        document.documentElement.classList.remove("high-contrast");
+      }
+    } catch (e) {
+      // server-side or test environment may not have document
+    }
+  }, [isHighContrast]);
+
   // Translation function that uses API
   const translate = async (text) => {
     if (!text) return "";
@@ -235,6 +250,8 @@ export const AppProvider = ({ children }) => {
     return text;
   };
 
+  const toggleHighContrast = () => setIsHighContrast((v) => !v);
+
   const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
@@ -253,6 +270,8 @@ export const AppProvider = ({ children }) => {
         t,
         translate,
         isTranslating,
+        isHighContrast,
+        toggleHighContrast,
       }}
     >
       {children}
