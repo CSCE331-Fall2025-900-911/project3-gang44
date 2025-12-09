@@ -9,6 +9,64 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* High contrast mode (applies when .high-contrast is on documentElement) */
+.high-contrast body,
+.high-contrast .app {
+  background: #000 !important;
+  color: #fff !important;
+}
+.high-contrast .drink-card {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+.high-contrast .language-toggle,
+.high-contrast .high-contrast-toggle,
+.high-contrast .add-to-cart-btn,
+.high-contrast .cart-button {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* High contrast toggle button */
+.high-contrast-toggle {
+  padding: 10px 16px;
+  font-size: 16px;
+  background: white;
+  color: #333;
+  border: 2px solid #333;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.high-contrast-toggle.active {
+  background: #333;
+  color: white;
+}
+
+/* Weather display (top bar) - match high-contrast toggle look */
+.weather-display {
+  padding: 8px 12px;
+  font-size: 14px;
+  background: white;
+  color: #333;
+  border: 2px solid #333;
+  cursor: default;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.weather-display .weather-temp {
+  font-weight: 700;
+}
+
+.high-contrast .weather-display {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
 /* Main app container - pastel green background */
 .app {
   min-height: 100vh;
@@ -89,7 +147,7 @@ body {
 .manager-mode-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  color: #333;
+  color: white;
   border: 2px solid #333;
   cursor: pointer;
   font-weight: bold;
@@ -97,13 +155,15 @@ body {
   border-radius: 6px;
 }
 
-/* Pastel button colors */
+/* Pastel button colors restored: cashier = green, manager = purple */
 .cashier-mode-button {
-  background: #ffb3ba; /* pastel pink */
+  background: #4caf50;
+  color: white;
 }
 
 .manager-mode-button {
-  background: #bae1ff; /* pastel blue */
+  background: #667eea;
+  color: white;
 }
 
 /* Hover styling */
@@ -122,29 +182,30 @@ body {
 }
 
 .drink-card {
-  background: #E9D8FD; /* light pastel purple */
-  padding: 20px;
-  border: 2px solid #333;
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
   cursor: pointer;
   text-align: center;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .drink-card:hover {
-  background: #D6BCFA; /* slightly darker purple on hover */
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-
 .drink-card h3 {
-  margin: 0.625rem 0;
-  font-size: 1.125rem;
+  margin: 15px 0;
+  font-size: 1.5rem;
   color: #333;
 }
 
 .drink-card p {
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #333;
+  color: #667eea;
 }
 
 /* Cart Button */
@@ -417,9 +478,9 @@ body {
 .category-tab {
   padding: 8px 16px;
   font-size: 14px;
-  background: #d9b3ff;        /* light purple */
-  color: #333;
-  border: 2px solid #333;
+  background: #f7fafc;
+  color: #2d3748;
+  border: 2px solid #cbd5e0;
   cursor: pointer;
   border-radius: 6px;
   transition: background 0.2s ease, color 0.2s ease;
@@ -427,12 +488,12 @@ body {
 
 /* Hover effect for unselected tabs */
 .category-tab:hover:not(.active) {
-  background: #c68cff;        /* darker purple */
-  color: black;
+  background: #edf2f7;
+  color: #667eea;
 }
 
-/* Selected/active tab stays black */
+/* Selected/active tab uses accent color */
 .category-tab.active {
-  background: #333;
+  background: #667eea;
   color: white;
 }
