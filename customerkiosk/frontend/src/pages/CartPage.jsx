@@ -6,7 +6,7 @@ import { useWeather, getDrinkRecommendation } from '../components/weather';
 export default function CartPage() {
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation();
-  const { cart, removeFromCart, cartTotal, clearCart, user, t } = useApp();
+  const { cart, removeFromCart, updateCartItemQuantity, cartTotal, clearCart, user, t } = useApp();
   const { weather, loading } = useWeather();
   const recommendation = weather ? getDrinkRecommendation(weather.temperature, weather.weatherCode) : null;
 
@@ -90,6 +90,8 @@ export default function CartPage() {
 
       {cart.map(item => {
         const translatedToppings = item.toppings.map(topping => t(topping.name)).join(', ');
+        const itemQuantity = item.quantity || 1;
+        const pricePerItem = item.price / itemQuantity;
 
         return (
           <div key={item.id} className="cart-item">
@@ -100,8 +102,57 @@ export default function CartPage() {
             {item.toppings.length > 0 && (
               <p><strong>{i18nT('toppings')}:</strong> {translatedToppings}</p>
             )}
-            <p className="price">${item.price.toFixed(2)}</p>
-            <button onClick={() => removeFromCart(item.id)}>{i18nT('remove')}</button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  onClick={() => updateCartItemQuantity(item.id, -1)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    borderRadius: '4px',
+                    border: '2px solid #333',
+                    background: '#fff',
+                    color: '#000',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    padding: 0
+                  }}
+                >
+                  <span style={{ color: '#000' }}>-</span>
+                </button>
+                <span style={{ fontSize: '16px', fontWeight: 'bold', minWidth: '25px', textAlign: 'center', color: '#000' }}>
+                  {itemQuantity}
+                </span>
+                <button
+                  onClick={() => updateCartItemQuantity(item.id, 1)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    borderRadius: '4px',
+                    border: '2px solid #333',
+                    background: '#fff',
+                    color: '#000',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    padding: 0
+                  }}
+                >
+                  <span style={{ color: '#000' }}>+</span>
+                </button>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p className="price" style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>${item.price.toFixed(2)}</p>
+                {itemQuantity > 1 && (
+                  <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>
+                    ${pricePerItem.toFixed(2)} × {itemQuantity}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         );
       })}

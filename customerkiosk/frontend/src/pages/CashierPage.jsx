@@ -108,6 +108,24 @@ export default function CashierPage() {
     setCart(cart.filter((item) => item.cart_item_id !== cartItemId));
   };
 
+  const updateCartItemQuantity = (cartItemId, delta) => {
+    setCart(cart.map((item) => {
+      if (item.cart_item_id === cartItemId) {
+        const newQuantity = item.quantity + delta;
+        if (newQuantity <= 0) {
+          // Remove item if quantity reaches 0
+          return null;
+        }
+        return {
+          ...item,
+          quantity: newQuantity,
+          subtotal: item.price_per_unit * newQuantity
+        };
+      }
+      return item;
+    }).filter(Boolean)); // Remove null entries
+  };
+
   const clearCart = () => {
     setCart([]);
   };
@@ -365,17 +383,51 @@ export default function CashierPage() {
                       )}
                     </span>
                   </div>
-                  <div className="item-actions">
+                  <div className="item-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span className="item-subtotal">
                       ${item.subtotal.toFixed(2)}
                     </span>
-                    <button
-                      className="remove-button"
-                      onClick={() => removeFromCart(item.cart_item_id)}
-                      title="Remove item"
-                    >
-                      −
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => updateCartItemQuantity(item.cart_item_id, -1)}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: '1px solid #ddd',
+                          background: '#fff',
+                          color: '#000',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                        title="Decrease quantity"
+                      >
+                        <span style={{ color: '#000' }}>-</span>
+                      </button>
+                      <span style={{ minWidth: '25px', textAlign: 'center', fontWeight: 'bold', color: '#000' }}>
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateCartItemQuantity(item.cart_item_id, 1)}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: '1px solid #ddd',
+                          background: '#fff',
+                          color: '#000',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                        title="Increase quantity"
+                      >
+                        <span style={{ color: '#000' }}>+</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))

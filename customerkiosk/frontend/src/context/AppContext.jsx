@@ -19,6 +19,28 @@ export const AppProvider = ({ children }) => {
     setCart(cart.filter((item) => item.id !== id));
   };
 
+  const updateCartItemQuantity = (id, delta) => {
+    setCart((prevCart) =>
+      prevCart
+        .map((item) => {
+          if (item.id === id) {
+            const newQuantity = (item.quantity || 1) + delta;
+            if (newQuantity <= 0) {
+              // Remove item if quantity reaches 0
+              return null;
+            }
+            return {
+              ...item,
+              quantity: newQuantity,
+              price: item.price / (item.quantity || 1) * newQuantity, // Recalculate total price
+            };
+          }
+          return item;
+        })
+        .filter(Boolean) // Remove null entries
+    );
+  };
+
   const clearCart = () => {
     setCart([]);
   };
@@ -221,6 +243,7 @@ export const AppProvider = ({ children }) => {
         cart,
         addToCart,
         removeFromCart,
+        updateCartItemQuantity,
         clearCart,
         cartTotal,
         user,
