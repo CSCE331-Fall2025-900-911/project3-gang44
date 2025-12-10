@@ -1,6 +1,6 @@
 .cashier-page {
   min-height: 100vh;
-  background: #FFD1DC; /* Pastel pink background */
+  background: #ffd1dc; /* Pastel pink background */
   padding: 20px;
 }
 
@@ -124,7 +124,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px 15px;
-  background: #FFB6C1; /* Solid pastel pink */
+  background: #ffb6c1; /* Solid pastel pink */
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -282,7 +282,7 @@
 }
 
 .submit-button {
-  background: #FFB6C1; /* Solid pastel pink */
+  background: #ffb6c1; /* Solid pastel pink */
   color: #333;
 }
 
@@ -486,7 +486,7 @@
 }
 
 .modal-actions .add-btn {
-  background: #FFB6C1; /* Solid pastel pink */
+  background: #ffb6c1; /* Solid pastel pink */
   color: #333;
 }
 

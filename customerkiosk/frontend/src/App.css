@@ -198,7 +198,7 @@ body {
 /* High contrast toggle button */
 .high-contrast-toggle {
   padding: 10px 16px;
-  font-size: 16px;
+  font-size: 1rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -213,7 +213,7 @@ body {
 /* Weather display (top bar) - match high-contrast toggle look */
 .weather-display {
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -342,7 +342,7 @@ body {
 /* Language Toggle */
 .language-toggle {
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1rem;
   background: white;
   color: #333;
   border: 2px solid #333;
