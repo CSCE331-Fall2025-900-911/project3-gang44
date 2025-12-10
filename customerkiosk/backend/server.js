@@ -948,6 +948,87 @@ app.get('/api/manager/reports/product-usage', async (req, res) => {
   }
 });
 
+// Payment Tracking Endpoint
+app.get('/api/manager/payments', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    // Parse dates - use start and end of day
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    console.log(`📊 Fetching payment data from ${startDate} to ${endDate}`);
+
+    // Get payment data from orders
+    const paymentResult = await pool.query(`
+      SELECT 
+        payment_method,
+        COUNT(*) as count,
+        COALESCE(SUM(total_price), 0) as total
+      FROM orders
+      WHERE order_date >= $1 AND order_date <= $2
+      GROUP BY payment_method
+    `, [start, end]);
+
+    // Get daily breakdown
+    const dailyResult = await pool.query(`
+      SELECT 
+        DATE(order_date) as date,
+        payment_method,
+        COUNT(*) as count,
+        COALESCE(SUM(total_price), 0) as total
+      FROM orders
+      WHERE order_date >= $1 AND order_date <= $2
+      GROUP BY DATE(order_date), payment_method
+      ORDER BY DATE(order_date) ASC
+    `, [start, end]);
+
+    // Process payment summary
+    let cardTotal = 0;
+    let cardCount = 0;
+    let cashTotal = 0;
+    let cashCount = 0;
+
+    paymentResult.rows.forEach(row => {
+      if (row.payment_method && (row.payment_method.toLowerCase() === 'card' || row.payment_method.toLowerCase() === 'stripe')) {
+        cardTotal += parseFloat(row.total) || 0;
+        cardCount += parseInt(row.count) || 0;
+      } else if (row.payment_method && row.payment_method.toLowerCase() === 'cash') {
+        cashTotal += parseFloat(row.total) || 0;
+        cashCount += parseInt(row.count) || 0;
+      }
+    });
+
+    // Process daily breakdown
+    const paymentsByDay = {};
+    dailyResult.rows.forEach(row => {
+      const dateStr = row.date.toISOString().split('T')[0];
+      if (!paymentsByDay[dateStr]) {
+        paymentsByDay[dateStr] = { date: dateStr, cardAmount: 0, cashAmount: 0 };
+      }
+
+      if (row.payment_method && (row.payment_method.toLowerCase() === 'card' || row.payment_method.toLowerCase() === 'stripe')) {
+        paymentsByDay[dateStr].cardAmount += parseFloat(row.total) || 0;
+      } else if (row.payment_method && row.payment_method.toLowerCase() === 'cash') {
+        paymentsByDay[dateStr].cashAmount += parseFloat(row.total) || 0;
+      }
+    });
+
+    res.json({
+      cardTotal: Math.round(cardTotal * 100) / 100,
+      cardCount,
+      cashTotal: Math.round(cashTotal * 100) / 100,
+      cashCount,
+      paymentsByDay: Object.values(paymentsByDay)
+    });
+  } catch (err) {
+    console.error('Error fetching payment data:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 console.log('\n🔧 Setting up error handlers...');
 
 // Handle uncaught errors

@@ -165,3 +165,69 @@ export function ProductUsageCharts({ productUsageData }) {
     </div>
   );
 }
+
+export function PaymentMethodChart({ cardTotal, cashTotal }) {
+  const total = cardTotal + cashTotal;
+  const cardPercent = total > 0 ? ((cardTotal / total) * 100).toFixed(1) : 0;
+  const cashPercent = total > 0 ? ((cashTotal / total) * 100).toFixed(1) : 0;
+
+  const data = {
+    labels: ["Card Payments", "Cash Payments"],
+    datasets: [
+      {
+        data: [cardTotal, cashTotal],
+        backgroundColor: [
+          "rgba(54, 162, 235, 0.8)", // Blue for card
+          "rgba(75, 192, 75, 0.8)", // Green for cash
+        ],
+        borderColor: [
+          "rgba(54, 162, 235, 1)",
+          "rgba(75, 192, 75, 1)",
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "bottom" },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const label = context.label || "";
+            const value = context.parsed || 0;
+            const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            return `${label}: $${value.toFixed(2)} (${percent}%)`;
+          },
+        },
+      },
+    },
+  };
+
+  return (
+    <div className="chart-wrapper">
+      <h3>Payment Method Distribution</h3>
+      <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+        <div style={{ flex: 1 }}>
+          <Pie data={data} options={options} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: "0.95rem" }}>
+            <div style={{ marginBottom: "12px" }}>
+              <strong style={{ color: "rgba(54, 162, 235, 1)" }}>Card Payments:</strong>
+              <br />
+              ${cardTotal.toFixed(2)} ({cardPercent}%)
+            </div>
+            <div>
+              <strong style={{ color: "rgba(75, 192, 75, 1)" }}>Cash Payments:</strong>
+              <br />
+              ${cashTotal.toFixed(2)} ({cashPercent}%)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

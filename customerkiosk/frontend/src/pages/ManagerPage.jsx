@@ -9,6 +9,7 @@ import {
   IngredientAmountChart,
   XReportCharts,
   ProductUsageCharts,
+  PaymentMethodChart,
 } from "../components/ManagerCharts";
 
 export default function ManagerPage() {
@@ -82,6 +83,12 @@ export default function ManagerPage() {
           {i18nT("Manage Employees")}
         </button>
         <button
+          className={`tab-button ${activeTab === "payments" ? "active" : ""}`}
+          onClick={() => setActiveTab("payments")}
+        >
+          {i18nT("Payment Tracking")}
+        </button>
+        <button
           className={`tab-button ${activeTab === "reports" ? "active" : ""}`}
           onClick={() => setActiveTab("reports")}
         >
@@ -95,6 +102,7 @@ export default function ManagerPage() {
         {activeTab === "products" && <ProductsTab />}
         {activeTab === "ingredients" && <IngredientsTab />}
         {activeTab === "employees" && <EmployeesTab />}
+        {activeTab === "payments" && <PaymentsTab />}
         {activeTab === "reports" && <ReportsTab />}
       </div>
     </div>
@@ -1234,6 +1242,153 @@ function EmployeeFormRow({ employee, onSave, onCancel }) {
         </button>
       </td>
     </>
+  );
+}
+
+// Payment Tracking Tab
+function PaymentsTab() {
+  const { t: i18nT } = useTranslation();
+  const [paymentData, setPaymentData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
+  const fetchPaymentData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const url = `${
+        import.meta.env.VITE_API_URL
+      }/api/manager/payments?startDate=${startDate}&endDate=${endDate}`;
+      console.log('Fetching payment data from:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Payment data received:', data);
+      setPaymentData(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching payment data:", err);
+      setError(err.message);
+      setPaymentData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentData();
+  }, []);
+
+  return (
+    <div className="tab-content">
+      <h2>{i18nT("Payment Tracking")}</h2>
+      
+      <div className="date-range">
+        <label>
+          {i18nT("Start Date")}:
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </label>
+        <label>
+          {i18nT("End Date")}:
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </label>
+        <button
+          className="generate-report-btn"
+          onClick={fetchPaymentData}
+        >
+          {i18nT("Fetch Payment Data")}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="loading">{i18nT("Loading payment data...")}</div>
+      ) : error ? (
+        <div className="error-message">
+          <p><strong>{i18nT("Error loading payment data:")}</strong></p>
+          <p>{error}</p>
+          <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "10px" }}>
+            {i18nT("Please check that the API server is running and accessible at")}: {import.meta.env.VITE_API_URL}
+          </p>
+        </div>
+      ) : paymentData ? (
+        <div className="payment-summary">
+          <div className="summary-cards">
+            <div className="summary-card">
+              <h3>{i18nT("Total Card Payments")}</h3>
+              <p className="amount">${paymentData.cardTotal?.toFixed(2) || "0.00"}</p>
+              <p className="count">{paymentData.cardCount || 0} {i18nT("transactions")}</p>
+            </div>
+            <div className="summary-card">
+              <h3>{i18nT("Total Cash Payments")}</h3>
+              <p className="amount">${paymentData.cashTotal?.toFixed(2) || "0.00"}</p>
+              <p className="count">{paymentData.cashCount || 0} {i18nT("transactions")}</p>
+            </div>
+            <div className="summary-card">
+              <h3>{i18nT("Total Revenue")}</h3>
+              <p className="amount total">${(paymentData.cardTotal + paymentData.cashTotal)?.toFixed(2) || "0.00"}</p>
+              <p className="count">{(paymentData.cardCount + paymentData.cashCount) || 0} {i18nT("total")}</p>
+            </div>
+          </div>
+
+          <div className="payment-chart">
+            {paymentData.cardTotal !== undefined && paymentData.cashTotal !== undefined && (
+              <PaymentMethodChart
+                cardTotal={paymentData.cardTotal}
+                cashTotal={paymentData.cashTotal}
+              />
+            )}
+          </div>
+
+          {paymentData.paymentsByDay && paymentData.paymentsByDay.length > 0 && (
+            <div className="payment-history">
+              <h3>{i18nT("Payment Breakdown by Day")}</h3>
+              <table className="report-table">
+                <thead>
+                  <tr>
+                    <th>{i18nT("Date")}</th>
+                    <th>{i18nT("Card Payments")}</th>
+                    <th>{i18nT("Cash Payments")}</th>
+                    <th>{i18nT("Total")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paymentData.paymentsByDay.map((day, idx) => (
+                    <tr key={idx}>
+                      <td>{day.date}</td>
+                      <td>${day.cardAmount?.toFixed(2) || "0.00"}</td>
+                      <td>${day.cashAmount?.toFixed(2) || "0.00"}</td>
+                      <td>${(day.cardAmount + day.cashAmount)?.toFixed(2) || "0.00"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="no-data">{i18nT("No payment data available for the selected date range.")}</div>
+      )}
+    </div>
   );
 }
 
