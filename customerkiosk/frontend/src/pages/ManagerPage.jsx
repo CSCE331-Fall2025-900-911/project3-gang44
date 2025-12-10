@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import "../styles/ManagerPage.css";
+import {
+  MenuStatsChart,
+  InventoryChart,
+  IngredientAmountChart,
+  XReportCharts,
+  ProductUsageCharts,
+} from "../components/ManagerCharts";
 
 export default function ManagerPage() {
   const [activeTab, setActiveTab] = useState("menu-stats");
@@ -149,31 +156,34 @@ function MenuStatsTab() {
       {loading ? (
         <div className="loading">{i18nT("Loading statistics...")}</div>
       ) : (
-        <table className="stats-table">
-          <thead>
-            <tr>
-              <th>{i18nT("Item")}</th>
-              <th>
-                {i18nT("Sales")}{" "}
-                {period === "day"
-                  ? i18nT("Today")
-                  : i18nT("This {period}", {
-                      period: i18nT(period === "week" ? "Week" : "Month"),
-                    })}
-              </th>
-              <th>{i18nT("Sold/Day")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.map((item, index) => (
-              <tr key={index}>
-                <td>{t(item.name)}</td>
-                <td>{item.totalSold}</td>
-                <td>{item.avgPerDay}</td>
+        <>
+          <MenuStatsChart stats={stats} />
+          <table className="stats-table">
+            <thead>
+              <tr>
+                <th>{i18nT("Item")}</th>
+                <th>
+                  {i18nT("Sales")} {" "}
+                  {period === "day"
+                    ? i18nT("Today")
+                    : i18nT("This {period}", {
+                        period: i18nT(period === "week" ? "Week" : "Month"),
+                      })}
+                </th>
+                <th>{i18nT("Sold/Day")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {stats.map((item, index) => (
+                <tr key={index}>
+                  <td>{t(item.name)}</td>
+                  <td>{item.totalSold}</td>
+                  <td>{item.avgPerDay}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
     </div>
   );
@@ -210,7 +220,9 @@ function InventoryTab() {
       {loading ? (
         <div className="loading">{i18nT("Loading inventory...")}</div>
       ) : (
-        <table className="inventory-table">
+        <>
+          <InventoryChart ingredients={ingredients} />
+          <table className="inventory-table">
           <thead>
             <tr>
               <th>{i18nT("Item")}</th>
@@ -236,7 +248,8 @@ function InventoryTab() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </>
       )}
     </div>
   );
@@ -850,7 +863,9 @@ function IngredientsTab() {
       {loading ? (
         <div className="loading">{i18nT("Loading ingredients...")}</div>
       ) : (
-        <table className="management-table">
+        <>
+          <IngredientAmountChart ingredients={ingredients} />
+          <table className="management-table">
           <thead>
             <tr>
               <th>{i18nT("ID")}</th>
@@ -897,6 +912,7 @@ function IngredientsTab() {
             ))}
           </tbody>
         </table>
+        </>
       )}
     </div>
   );
@@ -1314,6 +1330,9 @@ function ReportsTab() {
             <p>
               {i18nT("Average Wage")}: ${xReportData.avgWage.toFixed(2)}/hr
             </p>
+
+            {/* Charts for X-Report */}
+            <XReportCharts xReportData={xReportData} />
           </div>
         )}
       </div>
@@ -1351,6 +1370,7 @@ function ReportsTab() {
               {i18nT("Products Sold")} ({productUsageData.startDate} to{" "}
               {productUsageData.endDate})
             </h4>
+            <ProductUsageCharts productUsageData={productUsageData} />
             <table className="report-table">
               <thead>
                 <tr>
