@@ -18,6 +18,14 @@ export default function ManagerPage() {
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation();
 
+  // Add manager-view class to document root for styling
+  useEffect(() => {
+    document.documentElement.classList.add("manager-view");
+    return () => {
+      document.documentElement.classList.remove("manager-view");
+    };
+  }, []);
+
   // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,8 +50,8 @@ export default function ManagerPage() {
           <button className="back-button" onClick={() => navigate("/")}>
             ← {i18nT("Back to Landing Page")}
           </button>
-          <h1>{i18nT("Manager Dashboard")}</h1>
         </div>
+        <h1>{i18nT("Manager Dashboard")}</h1>
         <div className="header-right">
           <span className="current-time">{formatTime(currentTime)}</span>
         </div>
@@ -171,7 +179,7 @@ function MenuStatsTab() {
               <tr>
                 <th>{i18nT("Item")}</th>
                 <th>
-                  {i18nT("Sales")} {" "}
+                  {i18nT("Sales")}{" "}
                   {period === "day"
                     ? i18nT("Today")
                     : period === "week"
@@ -231,31 +239,31 @@ function InventoryTab() {
         <>
           <InventoryChart ingredients={ingredients} />
           <table className="inventory-table">
-          <thead>
-            <tr>
-              <th>{i18nT("Item")}</th>
-              <th>{i18nT("Amount")}</th>
-              <th>{i18nT("Status")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ingredients.map((item) => (
-              <tr
-                key={item.id}
-                className={item.quantity < 10 ? "low-stock" : ""}
-              >
-                <td>{t(item.name)}</td>
-                <td>{item.quantity}</td>
-                <td>
-                  {item.quantity < 10 ? (
-                    <span className="status-low">{i18nT("Low Stock")}</span>
-                  ) : (
-                    <span className="status-ok">{i18nT("OK")}</span>
-                  )}
-                </td>
+            <thead>
+              <tr>
+                <th>{i18nT("Item")}</th>
+                <th>{i18nT("Amount")}</th>
+                <th>{i18nT("Status")}</th>
               </tr>
-            ))}
-          </tbody>
+            </thead>
+            <tbody>
+              {ingredients.map((item) => (
+                <tr
+                  key={item.id}
+                  className={item.quantity < 10 ? "low-stock" : ""}
+                >
+                  <td>{t(item.name)}</td>
+                  <td>{item.quantity}</td>
+                  <td>
+                    {item.quantity < 10 ? (
+                      <span className="status-low">{i18nT("Low Stock")}</span>
+                    ) : (
+                      <span className="status-ok">{i18nT("OK")}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </>
       )}
@@ -361,7 +369,9 @@ function ProductsTab() {
       // Update ingredients if provided
       if (formData.ingredients !== undefined) {
         await fetch(
-          `${import.meta.env.VITE_API_URL}/api/manager/products/${id}/ingredients`,
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/manager/products/${id}/ingredients`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -746,7 +756,10 @@ function ProductFormRow({ product, onSave, onCancel, availableIngredients }) {
                             step="1"
                             value={selected.quantity_needed}
                             onChange={(e) =>
-                              handleQuantityChange(ingredient.id, e.target.value)
+                              handleQuantityChange(
+                                ingredient.id,
+                                e.target.value
+                              )
                             }
                             placeholder="Qty"
                             className="quantity-input"
@@ -874,52 +887,52 @@ function IngredientsTab() {
         <>
           <IngredientAmountChart ingredients={ingredients} />
           <table className="management-table">
-          <thead>
-            <tr>
-              <th>{i18nT("ID")}</th>
-              <th>{i18nT("Name")}</th>
-              <th>{i18nT("Category")}</th>
-              <th>{i18nT("Price")}</th>
-              <th>{i18nT("Quantity")}</th>
-              <th>{i18nT("Actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ingredients.map((ingredient) => (
-              <tr key={ingredient.id}>
-                {editingIngredient?.id === ingredient.id ? (
-                  <IngredientFormRow
-                    ingredient={ingredient}
-                    onSave={(data) => handleUpdate(ingredient.id, data)}
-                    onCancel={() => setEditingIngredient(null)}
-                  />
-                ) : (
-                  <>
-                    <td>{ingredient.id}</td>
-                    <td>{t(ingredient.name)}</td>
-                    <td>{t(ingredient.category)}</td>
-                    <td>${parseFloat(ingredient.price).toFixed(2)}</td>
-                    <td>{ingredient.quantity}</td>
-                    <td>
-                      <button
-                        className="edit-btn"
-                        onClick={() => setEditingIngredient(ingredient)}
-                      >
-                        {i18nT("Edit")}
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(ingredient.id)}
-                      >
-                        {i18nT("Delete")}
-                      </button>
-                    </td>
-                  </>
-                )}
+            <thead>
+              <tr>
+                <th>{i18nT("ID")}</th>
+                <th>{i18nT("Name")}</th>
+                <th>{i18nT("Category")}</th>
+                <th>{i18nT("Price")}</th>
+                <th>{i18nT("Quantity")}</th>
+                <th>{i18nT("Actions")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {ingredients.map((ingredient) => (
+                <tr key={ingredient.id}>
+                  {editingIngredient?.id === ingredient.id ? (
+                    <IngredientFormRow
+                      ingredient={ingredient}
+                      onSave={(data) => handleUpdate(ingredient.id, data)}
+                      onCancel={() => setEditingIngredient(null)}
+                    />
+                  ) : (
+                    <>
+                      <td>{ingredient.id}</td>
+                      <td>{t(ingredient.name)}</td>
+                      <td>{t(ingredient.category)}</td>
+                      <td>${parseFloat(ingredient.price).toFixed(2)}</td>
+                      <td>{ingredient.quantity}</td>
+                      <td>
+                        <button
+                          className="edit-btn"
+                          onClick={() => setEditingIngredient(ingredient)}
+                        >
+                          {i18nT("Edit")}
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDelete(ingredient.id)}
+                        >
+                          {i18nT("Delete")}
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </div>
@@ -1265,17 +1278,23 @@ function PaymentsTab() {
       const url = `${
         import.meta.env.VITE_API_URL
       }/api/manager/payments?startDate=${startDate}&endDate=${endDate}`;
-      console.log('Fetching payment data from:', url);
-      
+      console.log("Fetching payment data from:", url);
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          `API Error: ${response.status} - ${
+            errorData.error || response.statusText
+          }`
+        );
       }
-      
+
       const data = await response.json();
-      console.log('Payment data received:', data);
+      console.log("Payment data received:", data);
       setPaymentData(data);
       setError(null);
     } catch (err) {
@@ -1294,7 +1313,7 @@ function PaymentsTab() {
   return (
     <div className="tab-content">
       <h2>{i18nT("Payment Tracking")}</h2>
-      
+
       <div className="date-range">
         <label>
           {i18nT("Start Date")}:
@@ -1312,10 +1331,7 @@ function PaymentsTab() {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </label>
-        <button
-          className="generate-report-btn"
-          onClick={fetchPaymentData}
-        >
+        <button className="generate-report-btn" onClick={fetchPaymentData}>
           {i18nT("Fetch Payment Data")}
         </button>
       </div>
@@ -1324,10 +1340,15 @@ function PaymentsTab() {
         <div className="loading">{i18nT("Loading payment data...")}</div>
       ) : error ? (
         <div className="error-message">
-          <p><strong>{i18nT("Error loading payment data:")}</strong></p>
+          <p>
+            <strong>{i18nT("Error loading payment data:")}</strong>
+          </p>
           <p>{error}</p>
           <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "10px" }}>
-            {i18nT("Please check that the API server is running and accessible at")}: {import.meta.env.VITE_API_URL}
+            {i18nT(
+              "Please check that the API server is running and accessible at"
+            )}
+            : {import.meta.env.VITE_API_URL}
           </p>
         </div>
       ) : paymentData ? (
@@ -1335,58 +1356,81 @@ function PaymentsTab() {
           <div className="summary-cards">
             <div className="summary-card">
               <h3>{i18nT("Total Card Payments")}</h3>
-              <p className="amount">${paymentData.cardTotal?.toFixed(2) || "0.00"}</p>
-              <p className="count">{paymentData.cardCount || 0} {i18nT("transactions")}</p>
+              <p className="amount">
+                ${paymentData.cardTotal?.toFixed(2) || "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cardCount || 0} {i18nT("transactions")}
+              </p>
             </div>
             <div className="summary-card">
               <h3>{i18nT("Total Cash Payments")}</h3>
-              <p className="amount">${paymentData.cashTotal?.toFixed(2) || "0.00"}</p>
-              <p className="count">{paymentData.cashCount || 0} {i18nT("transactions")}</p>
+              <p className="amount">
+                ${paymentData.cashTotal?.toFixed(2) || "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cashCount || 0} {i18nT("transactions")}
+              </p>
             </div>
             <div className="summary-card">
               <h3>{i18nT("Total Revenue")}</h3>
-              <p className="amount total">${(paymentData.cardTotal + paymentData.cashTotal)?.toFixed(2) || "0.00"}</p>
-              <p className="count">{(paymentData.cardCount + paymentData.cashCount) || 0} {i18nT("total")}</p>
+              <p className="amount total">
+                $
+                {(paymentData.cardTotal + paymentData.cashTotal)?.toFixed(2) ||
+                  "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cardCount + paymentData.cashCount || 0}{" "}
+                {i18nT("total")}
+              </p>
             </div>
           </div>
 
           <div className="payment-chart">
-            {paymentData.cardTotal !== undefined && paymentData.cashTotal !== undefined && (
-              <PaymentMethodChart
-                cardTotal={paymentData.cardTotal}
-                cashTotal={paymentData.cashTotal}
-              />
-            )}
+            {paymentData.cardTotal !== undefined &&
+              paymentData.cashTotal !== undefined && (
+                <PaymentMethodChart
+                  cardTotal={paymentData.cardTotal}
+                  cashTotal={paymentData.cashTotal}
+                />
+              )}
           </div>
 
-          {paymentData.paymentsByDay && paymentData.paymentsByDay.length > 0 && (
-            <div className="payment-history">
-              <h3>{i18nT("Payment Breakdown by Day")}</h3>
-              <table className="report-table">
-                <thead>
-                  <tr>
-                    <th>{i18nT("Date")}</th>
-                    <th>{i18nT("Card Payments")}</th>
-                    <th>{i18nT("Cash Payments")}</th>
-                    <th>{i18nT("Total")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paymentData.paymentsByDay.map((day, idx) => (
-                    <tr key={idx}>
-                      <td>{day.date}</td>
-                      <td>${day.cardAmount?.toFixed(2) || "0.00"}</td>
-                      <td>${day.cashAmount?.toFixed(2) || "0.00"}</td>
-                      <td>${(day.cardAmount + day.cashAmount)?.toFixed(2) || "0.00"}</td>
+          {paymentData.paymentsByDay &&
+            paymentData.paymentsByDay.length > 0 && (
+              <div className="payment-history">
+                <h3>{i18nT("Payment Breakdown by Day")}</h3>
+                <table className="report-table">
+                  <thead>
+                    <tr>
+                      <th>{i18nT("Date")}</th>
+                      <th>{i18nT("Card Payments")}</th>
+                      <th>{i18nT("Cash Payments")}</th>
+                      <th>{i18nT("Total")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {paymentData.paymentsByDay.map((day, idx) => (
+                      <tr key={idx}>
+                        <td>{day.date}</td>
+                        <td>${day.cardAmount?.toFixed(2) || "0.00"}</td>
+                        <td>${day.cashAmount?.toFixed(2) || "0.00"}</td>
+                        <td>
+                          $
+                          {(day.cardAmount + day.cashAmount)?.toFixed(2) ||
+                            "0.00"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
       ) : (
-        <div className="no-data">{i18nT("No payment data available for the selected date range.")}</div>
+        <div className="no-data">
+          {i18nT("No payment data available for the selected date range.")}
+        </div>
       )}
     </div>
   );
