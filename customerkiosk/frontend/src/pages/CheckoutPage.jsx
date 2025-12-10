@@ -99,7 +99,7 @@ export default function CheckoutPage() {
       console.log('Cash order successful! Order ID:', data.orderId);
 
       // Show confirmation popup
-      alert(`Order Confirmed!\n\nYour Order Number: #${data.orderId}\n\nPlease proceed to the counter to pay with cash and pick up your order.`);
+      alert(`${i18nT('Order Confirmed!')}\n\n${i18nT('Your Order Number:')} #${data.orderId}\n\n${i18nT('Please proceed to the counter to pay with cash and pick up your order.')}`);
 
       clearCart();
       navigate('/confirmation', { state: { orderId: data.orderId } });
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
       console.log('Card order successful! Order ID:', data.orderId);
 
       // Show confirmation popup
-      alert(`Order Confirmed!\n\nYour Order Number: #${data.orderId}\n\nPayment successful! Please proceed to the counter to pick up your order.`);
+      alert(`${i18nT('Order Confirmed!')}\n\n${i18nT('Your Order Number:')} #${data.orderId}\n\n${i18nT('Payment successful! Please proceed to the counter to pick up your order.')}`);
 
       clearCart();
       navigate('/confirmation', { state: { orderId: data.orderId } });
@@ -161,12 +161,12 @@ export default function CheckoutPage() {
         <button className="back-button" onClick={() => navigate('/cart')}>
           ← {i18nT('backToMenu')}
         </button>
-        <h1>Checkout</h1>
+        <h1>{i18nT('checkout')}</h1>
       </div>
 
       {/* Order Summary */}
       <div className="order-summary">
-        <h2>Order Summary</h2>
+        <h2>{i18nT('Order Summary')}</h2>
         <div className="summary-items">
           {cart.map(item => (
             <div key={item.id} className="summary-item">
@@ -184,28 +184,28 @@ export default function CheckoutPage() {
           ))}
         </div>
         <div className="summary-total">
-          <strong>Total</strong>
+          <strong>{i18nT('total')}</strong>
           <strong>${cartTotal.toFixed(2)}</strong>
         </div>
       </div>
 
       {/* Payment Method Selection */}
       <div className="payment-method-selector">
-        <h2>Payment Method</h2>
+        <h2>{i18nT('Payment Method')}</h2>
         <div className="payment-options">
           <button
             className={`payment-option ${paymentMethod === 'CASH' ? 'selected' : ''}`}
             onClick={() => setPaymentMethod('CASH')}
           >
             <div className="payment-icon">💵</div>
-            <span>Cash</span>
+            <span>{i18nT('Cash')}</span>
           </button>
           <button
             className={`payment-option ${paymentMethod === 'CARD' ? 'selected' : ''}`}
             onClick={() => setPaymentMethod('CARD')}
           >
             <div className="payment-icon">💳</div>
-            <span>Card</span>
+            <span>{i18nT('Card')}</span>
           </button>
         </div>
       </div>
@@ -221,20 +221,20 @@ export default function CheckoutPage() {
         {paymentMethod === 'CASH' ? (
           <div className="cash-payment">
             <p className="payment-info">
-              Pay with cash when you pick up your order at the counter.
+              {i18nT('Pay with cash when you pick up your order at the counter.')}
             </p>
             <button
               className="complete-order-btn"
               onClick={handleCashPayment}
               disabled={loading}
             >
-              {loading ? 'Processing...' : 'Complete Order (Cash)'}
+              {loading ? i18nT('Processing...') : i18nT('Complete Order (Cash)')}
             </button>
           </div>
         ) : (
           <div className="card-payment">
             {loading && !clientSecret ? (
-              <div className="loading-spinner">Preparing payment...</div>
+              <div className="loading-spinner">{i18nT('Preparing payment...')}</div>
             ) : clientSecret && stripe ? (
               <Elements stripe={stripe} options={{ clientSecret }}>
                 <StripePaymentForm
@@ -244,16 +244,16 @@ export default function CheckoutPage() {
                 />
               </Elements>
             ) : (
-              <div className="loading-spinner">Loading payment form...</div>
+              <div className="loading-spinner">{i18nT('Loading payment form...')}</div>
             )}
 
             <div className="test-cards-info">
-              <h4>Test Cards (For Development)</h4>
+              <h4>{i18nT('Test Cards (For Development)')}</h4>
               <ul>
                 <li>Visa: <code>4242 4242 4242 4242</code></li>
                 <li>Visa (debit): <code>4000 0566 5566 5556</code></li>
                 <li>Mastercard: <code>5555 5555 5555 4444</code></li>
-                <li>Any future expiration date, any CVC, any postal code</li>
+                <li>{i18nT('Any future expiration date, any CVC, any postal code')}</li>
               </ul>
             </div>
           </div>

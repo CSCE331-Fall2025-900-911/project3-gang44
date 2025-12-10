@@ -20,10 +20,10 @@ export default function ConfirmationPage() {
         borderRadius: '12px',
         border: '3px solid #4caf50'
       }}>
-        Order #{orderId}
+        {t('orderNumber')}{orderId}
       </div>
       <p style={{ fontSize: '18px', color: '#666', marginBottom: '30px' }}>
-        Please show this number at the counter
+        {t('showOrderNumber')}
       </p>
       <button onClick={() => navigate('/menu')}>
         {t('orderAgain')}
