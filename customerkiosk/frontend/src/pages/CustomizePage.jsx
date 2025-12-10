@@ -355,12 +355,12 @@ export default function CustomizePage() {
         <h3>
           {i18nT("toppings")}{" "}
           <span
-            style={{ fontSize: "18px", fontWeight: "normal", color: "#666" }}
+            style={{ fontSize: "1.125rem", fontWeight: "normal", color: "#666" }}
           >
             ({i18nT("Select multiple")})
           </span>
         </h3>
-        <div style={{ marginBottom: "10px", fontSize: "14px", color: "#666" }}>
+        <div style={{ marginBottom: "10px", fontSize: "0.875rem", color: "#666" }}>
           {i18nT("Selected")} : {selectedToppings.length} {i18nT("toppings")} -
           IDs: [{selectedToppings.map((topping) => topping.id).join(", ")}]
         </div>
