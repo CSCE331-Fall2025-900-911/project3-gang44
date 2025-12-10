@@ -114,20 +114,20 @@ export default function CartPage() {
             }}
             onClick={handleRecommendationClick}
           >
-            <div style={{ fontSize: "40px", marginBottom: "10px" }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>
               {recommendation.emoji}
             </div>
             <h3
-              style={{ fontSize: "20px", marginBottom: "10px", color: "#333" }}
+              style={{ fontSize: "1.25rem", marginBottom: "10px", color: "#333" }}
             >
               {i18nT("Try")}: {t(recommendation.name)}
             </h3>
-            <p style={{ fontSize: "14px", color: "#666" }}>
+            <p style={{ fontSize: "0.875rem", color: "#666" }}>
               {translateReason(recommendation.reason)}
             </p>
             <p
               style={{
-                fontSize: "14px",
+                fontSize: "0.875rem",
                 color: "#1976d2",
                 fontWeight: "bold",
                 marginTop: "10px",
@@ -170,18 +170,18 @@ export default function CartPage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <div style={{ fontSize: "50px" }}>{recommendation.emoji}</div>
+            <div style={{ fontSize: "3.125rem" }}>{recommendation.emoji}</div>
             <div>
               <h3
                 style={{
-                  fontSize: "20px",
+                  fontSize: "1.25rem",
                   fontWeight: "bold",
                   marginBottom: "5px",
                 }}
               >
                 {i18nT("Try this")}: {t(recommendation.name)}
               </h3>
-              <p style={{ fontSize: "14px", color: "#e3f2fd" }}>
+              <p style={{ fontSize: "0.875rem", color: "#e3f2fd" }}>
                 {translateReason(recommendation.reason)}
               </p>
             </div>
@@ -235,7 +235,7 @@ export default function CartPage() {
                   onClick={() => handleEditItem(item)}
                   style={{
                     padding: "6px 12px",
-                    fontSize: "14px",
+                    fontSize: "0.875rem",
                     fontWeight: "bold",
                     borderRadius: "4px",
                     border: "2px solid #2196f3",
@@ -254,7 +254,7 @@ export default function CartPage() {
                   style={{
                     width: "32px",
                     height: "32px",
-                    fontSize: "18px",
+                    fontSize: "1.125rem",
                     fontWeight: "bold",
                     borderRadius: "4px",
                     border: "2px solid #333",
@@ -269,7 +269,7 @@ export default function CartPage() {
                 </button>
                 <span
                   style={{
-                    fontSize: "16px",
+                    fontSize: "1rem",
                     fontWeight: "bold",
                     minWidth: "25px",
                     textAlign: "center",
@@ -284,7 +284,7 @@ export default function CartPage() {
                   style={{
                     width: "32px",
                     height: "32px",
-                    fontSize: "18px",
+                    fontSize: "1.125rem",
                     fontWeight: "bold",
                     borderRadius: "4px",
                     border: "2px solid #333",
@@ -329,12 +329,12 @@ export default function CartPage() {
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <p
                   className="price"
-                  style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}
+                  style={{ margin: 0, fontSize: "1.125rem", fontWeight: "bold" }}
                 >
                   ${item.price.toFixed(2)}
                 </p>
                 {itemQuantity > 1 && (
-                  <p style={{ fontSize: "12px", color: "#666", margin: 0 }}>
+                  <p style={{ fontSize: "0.75rem", color: "#666", margin: 0 }}>
                     ${pricePerItem.toFixed(2)} × {itemQuantity}
                   </p>
                 )}

@@ -438,7 +438,7 @@ body {
 .loading {
   text-align: center;
   padding-top: 200px;
-  font-size: 20px;
+  font-size: 1.25rem;
   color: #333;
 }
 
@@ -464,7 +464,7 @@ body {
 }
 
 .auth-container h1 {
-  font-size: 48px;
+  font-size: 3rem;
   color: #333;
   margin-bottom: 40px;
 }
@@ -600,7 +600,7 @@ body {
   bottom: 20px;
   right: 20px;
   padding: 15px 30px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -624,7 +624,7 @@ body {
 
 .back-button {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   /* Default (non-high-contrast): white background with black border */
   background: #fff;
   color: #000;
@@ -638,13 +638,13 @@ body {
 }
 
 .customize-page h1 {
-  font-size: 32px;
+  font-size: 2rem;
   margin-bottom: 10px;
   color: #333;
 }
 
 .customize-page h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   margin-bottom: 30px;
   color: #666;
 }
@@ -654,7 +654,7 @@ body {
 }
 
 .customization-section h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-bottom: 15px;
   color: #333;
 }
@@ -667,7 +667,7 @@ body {
 
 .customization-section button {
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -694,14 +694,14 @@ body {
 }
 
 .price-section h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   color: #333;
   margin-bottom: 20px;
 }
 
 .add-to-cart-btn {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -736,7 +736,7 @@ body {
 
 .cart-page h1 {
   text-align: center;
-  font-size: 36px;
+  font-size: 2.25rem;
   color: #333;
   margin: 0;
 }
@@ -752,14 +752,14 @@ body {
 }
 
 .cart-item h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-bottom: 10px;
   color: #333;
   text-align: left;
 }
 
 .cart-item p {
-  font-size: 14px;
+  font-size: 0.875rem;
   margin: 5px 0;
   color: #666;
   display: block;
@@ -767,7 +767,7 @@ body {
 }
 
 .cart-item .price {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: bold;
   color: #333;
   margin: 10px 0;
@@ -776,7 +776,7 @@ body {
 .cart-item button {
   margin-top: 10px;
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: #f44336;
   color: white;
   border: 1px solid #333;
@@ -797,14 +797,14 @@ body {
 }
 
 .cart-total h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   color: #333;
   margin-bottom: 20px;
 }
 
 .place-order-btn {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -824,18 +824,18 @@ body {
 }
 
 .confirmation-page h1 {
-  font-size: 48px;
+  font-size: 3rem;
   margin-bottom: 20px;
 }
 
 .confirmation-page p {
-  font-size: 24px;
+  font-size: 1.5rem;
   margin-bottom: 40px;
 }
 
 .confirmation-page button {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -854,13 +854,13 @@ body {
 }
 
 .empty-cart h2 {
-  font-size: 36px;
+  font-size: 2.25rem;
   margin-bottom: 30px;
 }
 
 .empty-cart button {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -885,7 +885,7 @@ body {
 /* Default (unselected) category tab */
 .category-tab {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: #f7fafc;
   color: #2d3748;
   border: 2px solid #cbd5e0;

@@ -121,7 +121,7 @@ export default function MenuPage() {
           <button
             style={{
               padding: "10px 20px",
-              fontSize: "16px",
+              fontSize: "1rem",
               cursor: "pointer",
               backgroundColor: "#fff",
               border: "2px solid #333",
@@ -159,7 +159,7 @@ export default function MenuPage() {
             width: "100%",
             maxWidth: "500px",
             padding: "12px 20px",
-            fontSize: "18px",
+            fontSize: "1.125rem",
             border: "2px solid #333",
             borderRadius: "8px",
             outline: "none",
@@ -172,7 +172,7 @@ export default function MenuPage() {
             style={{
               marginLeft: "10px",
               padding: "12px 20px",
-              fontSize: "16px",
+              fontSize: "1rem",
               cursor: "pointer",
               backgroundColor: "#f0f0f0",
               border: "2px solid #333",
@@ -189,7 +189,7 @@ export default function MenuPage() {
         <div style={{
           textAlign: "center",
           marginBottom: "15px",
-          fontSize: "16px",
+          fontSize: "1rem",
           color: "#666"
         }}>
           {drinksToShow.length === 0 

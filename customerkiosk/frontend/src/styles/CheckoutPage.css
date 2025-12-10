@@ -14,7 +14,7 @@
 }
 
 .checkout-header h1 {
-  font-size: 32px;
+  font-size: 2rem;
   color: #333;
   text-align: center;
 }
@@ -27,7 +27,7 @@
   border: 2px solid #333;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
   transition: all 0.3s ease;
 }
 
@@ -50,7 +50,7 @@
   margin-top: 0;
   margin-bottom: 20px;
   color: #333;
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 .summary-items {
@@ -72,20 +72,20 @@
 }
 
 .summary-item strong {
-  font-size: 16px;
+  font-size: 1rem;
   color: #333;
 }
 
 .item-price {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 1rem;
   color: #4caf50;
 }
 
 .summary-total {
   display: flex;
   justify-content: space-between;
-  font-size: 20px;
+  font-size: 1.25rem;
   padding-top: 10px;
 }
 
@@ -97,7 +97,7 @@
 .payment-method-selector h2 {
   margin-bottom: 20px;
   color: #333;
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 .payment-options {
@@ -117,7 +117,7 @@
   align-items: center;
   gap: 12px;
   transition: all 0.3s ease;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
 }
 
@@ -134,7 +134,7 @@
 }
 
 .payment-icon {
-  font-size: 48px;
+  font-size: 3rem;
 }
 
 /* Payment Section */
@@ -151,7 +151,7 @@
 }
 
 .payment-info {
-  font-size: 16px;
+  font-size: 1rem;
   color: #666;
   margin-bottom: 20px;
   line-height: 1.5;
@@ -179,7 +179,7 @@
   color: white;
   border: 2px solid white;
   border-radius: 12px;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -208,7 +208,7 @@
   text-align: center;
   padding: 40px;
   color: #666;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 /* Test Cards Info */
@@ -224,13 +224,13 @@
   margin-top: 0;
   margin-bottom: 12px;
   color: #f57f17;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .test-cards-info ul {
   margin: 0;
   padding-left: 20px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .test-cards-info li {
