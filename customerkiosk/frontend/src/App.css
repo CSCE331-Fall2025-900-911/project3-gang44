@@ -9,12 +9,278 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* High contrast mode (applies when .high-contrast is on documentElement) */
+.high-contrast body,
+.high-contrast .app {
+  background: #2b5726 !important;
+  color: #fff !important;
+}
+.high-contrast .drink-card {
+  background: white !important;
+  color: #000 !important;
+  border-color: #000 !important;
+  box-shadow: none !important;
+}
+
+/* Make most interactive controls white with black text in high-contrast */
+.high-contrast button,
+.high-contrast .language-toggle,
+.high-contrast .high-contrast-toggle,
+.high-contrast .add-to-cart-btn,
+.high-contrast .cart-button,
+.high-contrast .cashier-mode-button,
+.high-contrast .manager-mode-button,
+.high-contrast .category-tab,
+.high-contrast .customization-section button,
+.high-contrast .back-button,
+.high-contrast .place-order-btn,
+.high-contrast .confirmation-page button,
+.high-contrast .empty-cart button,
+.high-contrast .cart-item button {
+  background: white !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
+
+/* Specific override: when high-contrast is active, the back button should be green (#2b5726)
+   with white text. We place this after the broad high-contrast rule and use !important
+   so it wins against the multi-selector above. */
+.high-contrast .back-button {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border-color: #1f3f1b !important;
+}
+
+.high-contrast .back-button:hover {
+  background: #25461b !important;
+}
+
+/* Cart page specific high-contrast overrides */
+.high-contrast .cart-page .back-button {
+  /* Make the cart page back button white with black text and white border */
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast .cart-header h1,
+.high-contrast .cart-page h1 {
+  color: #ffffff !important;
+}
+
+/* Recommendation card (used in both empty and non-empty views) */
+.high-contrast .recommendation-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+/* Ensure recommendation contents use dark text in high-contrast */
+.high-contrast .recommendation-card h3,
+.high-contrast .recommendation-card p {
+  color: #000000 !important;
+}
+
+/* Cart page: make the "Proceed to Checkout" button green with white text in high-contrast */
+.high-contrast .cart-page .place-order-btn {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border-color: #2b5726 !important;
+}
+
+.high-contrast .cart-page .place-order-btn:hover {
+  background: #25461b !important;
+}
+
+/* Cart page: make the "Add to Order" button in recommendation card green with white text in high-contrast */
+.high-contrast .recommendation-card button {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border-color: #2b5726 !important;
+}
+
+/* Checkout page high-contrast rules */
+.high-contrast .checkout-header h1,
+.high-contrast .checkout-page h1 {
+  color: #ffffff !important;
+}
+
+.high-contrast .payment-method-selector h2 {
+  color: #ffffff !important;
+}
+
+.high-contrast .complete-order-btn {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border-color: #2b5726 !important;
+}
+
+.high-contrast .complete-order-btn:hover:not(:disabled) {
+  background: #25461b !important;
+}
+
+/* Checkout page: make back button white with black text and all borders white */
+.high-contrast .checkout-page .back-button {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast .checkout-page,
+.high-contrast .checkout-page *,
+.high-contrast .order-summary,
+.high-contrast .payment-section,
+.high-contrast .payment-option,
+.high-contrast .summary-item {
+  border-color: #ffffff !important;
+}
+
+/* Make test cards info text black in high-contrast */
+.high-contrast .test-cards-info,
+.high-contrast .test-cards-info h4,
+.high-contrast .test-cards-info ul,
+.high-contrast .test-cards-info li,
+.high-contrast .test-cards-info code {
+  color: #000000 !important;
+}
+
+/* Ensure category tabs use the white button look when high-contrast */
+.high-contrast .category-tab.active {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* High contrast toggle button */
+.high-contrast-toggle {
+  padding: 10px 16px;
+  font-size: 16px;
+  background: white;
+  color: #333;
+  border: 2px solid #333;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.high-contrast-toggle.active {
+  background: #333;
+  color: white;
+}
+
+/* Weather display (top bar) - match high-contrast toggle look */
+.weather-display {
+  padding: 8px 12px;
+  font-size: 14px;
+  background: white;
+  color: #333;
+  border: 2px solid #333;
+  cursor: default;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.weather-display .weather-temp {
+  font-weight: 700;
+}
+
+.high-contrast .weather-display {
+  background: white !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
+
+/* Prices should be black in high-contrast mode for visibility */
+.high-contrast .drink-card p,
+.high-contrast .product-price,
+.high-contrast .price,
+.high-contrast .item-price,
+.high-contrast .cart-item .price,
+.high-contrast .drink-card .price {
+  color: #000 !important;
+}
+
+/* Menu title in high-contrast should be white */
+.high-contrast .menu-header h1 {
+  color: #fff !important;
+}
+
+/* Ensure any borders on the Menu page become white in high-contrast mode */
+.high-contrast .menu-page,
+.high-contrast .menu-page * {
+  border-color: #fff !important;
+}
+
+/* Specific toggles: make their borders white in high-contrast mode */
+.high-contrast .language-toggle,
+.high-contrast .high-contrast-toggle,
+.high-contrast .text-size-adjuster,
+.high-contrast .text-size-adjuster button,
+.high-contrast .text-size-dropdown,
+.high-contrast .text-size-control {
+  border-color: #fff !important;
+}
+
+/* Except the small control buttons (+ / Reset / -) should keep black borders for clarity */
+.high-contrast .text-size-control {
+  border-color: #000 !important;
+}
+
+/* Stronger selector to override earlier rules: target the controls inside the adjuster explicitly */
+.high-contrast .text-size-adjuster button.text-size-control,
+.high-contrast button.text-size-control {
+  border: 2px solid #000 !important;
+  border-color: #000 !important;
+  background: white !important;
+  color: #000 !important;
+}
+
 /* Main app container - pastel green background */
 .app {
   min-height: 100vh;
   background: #c8e6c9;
   padding: 0;
   width: 100%;
+}
+
+/* When on the customize screen and high-contrast is active, show a white page
+   background while keeping the customize card green on top. We toggle the
+   document root class `on-customize` from the CustomizePage component so we
+   can safely change the app background without using a full-screen overlay. */
+.high-contrast.on-customize .app {
+  /* page background green when on customize in high-contrast */
+  background: #2b5726 !important;
+  color: #fff !important;
+}
+
+.high-contrast .customize-page {
+  /* make the customize card white on top of the green page */
+  position: relative;
+  z-index: 2;
+  background: white !important;
+  color: #000 !important;
+  border-color: #fff !important;
+}
+
+/* Buttons (size/ice/sweetness/toppings) in customize: unselected use green (page color) with white text */
+.high-contrast .customize-page .customization-section button {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* Selected option should be black with white text */
+.high-contrast .customize-page .customization-section button.selected {
+  /* Selected options: white background with green text and border */
+  background: #ffffff !important;
+  color: #2b5726 !important;
+  border-color: #2b5726 !important;
+}
+
+/* Ensure add-to-cart button is visible on the white card: use green background */
+.high-contrast .customize-page .add-to-cart-btn {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #2b5726 !important;
 }
 
 .loading {
@@ -89,7 +355,7 @@ body {
 .manager-mode-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  color: #333;
+  color: white;
   border: 2px solid #333;
   cursor: pointer;
   font-weight: bold;
@@ -97,13 +363,15 @@ body {
   border-radius: 6px;
 }
 
-/* Pastel button colors */
+/* Pastel button colors restored: cashier = green, manager = purple */
 .cashier-mode-button {
-  background: #ffb3ba; /* pastel pink */
+  background: #4caf50;
+  color: white;
 }
 
 .manager-mode-button {
-  background: #bae1ff; /* pastel blue */
+  background: #667eea;
+  color: white;
 }
 
 /* Hover styling */
@@ -122,12 +390,13 @@ body {
 }
 
 .drink-card {
-  background: #E9D8FD; /* light pastel purple */
-  padding: 20px;
-  border: 2px solid #333;
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
   cursor: pointer;
   text-align: center;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -136,7 +405,8 @@ body {
 }
 
 .drink-card:hover {
-  background: #D6BCFA; /* slightly darker purple on hover */
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* Drink image container */
@@ -160,15 +430,15 @@ body {
 }
 
 .drink-card h3 {
-  margin: 0.625rem 0;
-  font-size: 1.125rem;
+  margin: 15px 0;
+  font-size: 1.5rem;
   color: #333;
 }
 
 .drink-card p {
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #333;
+  color: #667eea;
   margin-top: auto;
 }
 
@@ -201,14 +471,16 @@ body {
 .back-button {
   padding: 8px 16px;
   font-size: 14px;
-  background: #ddd;
-  border: 1px solid #333;
+  /* Default (non-high-contrast): white background with black border */
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
   cursor: pointer;
   margin-bottom: 20px;
 }
 
 .back-button:hover {
-  background: #ccc;
+  background: #f0f0f0;
 }
 
 .customize-page h1 {
@@ -310,18 +582,23 @@ body {
   padding: 20px;
   margin: 15px 0;
   border: 2px solid #333;
+  display: flex;
+  flex-direction: column;
 }
 
 .cart-item h3 {
   font-size: 20px;
   margin-bottom: 10px;
   color: #333;
+  text-align: left;
 }
 
 .cart-item p {
   font-size: 14px;
   margin: 5px 0;
   color: #666;
+  display: block;
+  width: 100%;
 }
 
 .cart-item .price {
@@ -442,9 +719,9 @@ body {
 .category-tab {
   padding: 8px 16px;
   font-size: 14px;
-  background: #d9b3ff;        /* light purple */
-  color: #333;
-  border: 2px solid #333;
+  background: #f7fafc;
+  color: #2d3748;
+  border: 2px solid #cbd5e0;
   cursor: pointer;
   border-radius: 6px;
   transition: background 0.2s ease, color 0.2s ease;
@@ -452,12 +729,12 @@ body {
 
 /* Hover effect for unselected tabs */
 .category-tab:hover:not(.active) {
-  background: #c68cff;        /* darker purple */
-  color: black;
+  background: #edf2f7;
+  color: #667eea;
 }
 
-/* Selected/active tab stays black */
+/* Selected/active tab uses accent color */
 .category-tab.active {
-  background: #333;
+  background: #667eea;
   color: white;
 }
