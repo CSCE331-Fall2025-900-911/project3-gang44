@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { WeatherWidget } from "../components/weather";
+import { getDrinkImage } from "../config/drinkImages";
 
 export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
@@ -132,6 +133,7 @@ export default function MenuPage() {
         {drinksToShow.map((drink) => {
           const productId = drink.product_id || drink.item_id;
           const translatedName = t(drink.name); // API translation
+          const imageUrl = getDrinkImage(drink.name);
 
           return (
             <div
@@ -139,6 +141,19 @@ export default function MenuPage() {
               className="drink-card"
               onClick={() => navigate(`/customize/${productId}`)}
             >
+              {imageUrl && (
+                <div className="drink-image-container">
+                  <img
+                    src={imageUrl}
+                    alt={translatedName}
+                    className="drink-image"
+                    onError={(e) => {
+                      // Hide image if it fails to load
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
               <h3>{translatedName}</h3>
               <p>${parseFloat(drink.price).toFixed(2)}</p>
             </div>

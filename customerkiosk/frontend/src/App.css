@@ -128,12 +128,36 @@ body {
   cursor: pointer;
   text-align: center;
   transition: background 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 250px;
 }
 
 .drink-card:hover {
   background: #D6BCFA; /* slightly darker purple on hover */
 }
 
+/* Drink image container */
+.drink-image-container {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+/* Drink image styling */
+.drink-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
 
 .drink-card h3 {
   margin: 0.625rem 0;
@@ -145,6 +169,7 @@ body {
   font-size: 1rem;
   font-weight: bold;
   color: #333;
+  margin-top: auto;
 }
 
 /* Cart Button */
