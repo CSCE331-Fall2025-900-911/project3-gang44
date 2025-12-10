@@ -19,15 +19,22 @@ export default function MenuPage() {
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL;
-    console.log("Fetching menu from:", apiUrl ? `${apiUrl}/api/menu` : 'VITE_API_URL not set!');
-    
+    console.log(
+      "Fetching menu from:",
+      apiUrl ? `${apiUrl}/api/menu` : "VITE_API_URL not set!"
+    );
+
     if (!apiUrl) {
-      console.error("VITE_API_URL is not set! Please check your .env file and restart the dev server.");
-      alert("Configuration error: VITE_API_URL is not set. Please check your .env file and restart the dev server.");
+      console.error(
+        "VITE_API_URL is not set! Please check your .env file and restart the dev server."
+      );
+      alert(
+        "Configuration error: VITE_API_URL is not set. Please check your .env file and restart the dev server."
+      );
       setLoading(false);
       return;
     }
-    
+
     fetch(`${apiUrl}/api/menu`)
       .then((res) => {
         console.log("Response status:", res.status, res.statusText);
@@ -49,7 +56,9 @@ export default function MenuPage() {
       .catch((err) => {
         console.error("Error fetching menu:", err);
         console.error("API URL was:", apiUrl);
-        alert(`Failed to load menu: ${err.message}. Check console for details.`);
+        alert(
+          `Failed to load menu: ${err.message}. Check console for details.`
+        );
         setDrinks([]);
         setLoading(false);
       });
@@ -85,28 +94,46 @@ export default function MenuPage() {
 
   return (
     <div className="menu-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-        <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "20px",
+        }}
+      >
+        <div
+          style={{
+            flex: "0 0 auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            alignItems: "flex-start",
+          }}
+        >
           <button
             style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              cursor: 'pointer',
-              backgroundColor: '#f0f0f0',
-              border: '1px solid #ccc',
-              borderRadius: '5px',
-              whiteSpace: 'nowrap'
+              padding: "10px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              backgroundColor: "#fff",
+              border: "2px solid #333",
+              borderRadius: "4px",
+              whiteSpace: "nowrap",
             }}
             onClick={() => navigate("/")}
           >
             ← {i18nT("Back to Landing Page")}
           </button>
-          <WeatherWidget drinks={drinks} onDrinkClick={handleWeatherDrinkClick} />
+          <WeatherWidget
+            drinks={drinks}
+            onDrinkClick={handleWeatherDrinkClick}
+          />
         </div>
-        <div className="menu-header" style={{ flex: '1', textAlign: 'center' }}>
+        <div className="menu-header" style={{ flex: "1", textAlign: "center" }}>
           <h1>{i18nT("menu")}</h1>
         </div>
-        <div style={{ flex: '0 0 auto', width: '200px' }}></div>
+        <div style={{ flex: "0 0 auto", width: "200px" }}></div>
       </div>
 
       {/* Category tabs */}
@@ -149,7 +176,7 @@ export default function MenuPage() {
                     className="drink-image"
                     onError={(e) => {
                       // Hide image if it fails to load
-                      e.target.style.display = 'none';
+                      e.target.style.display = "none";
                     }}
                   />
                 </div>

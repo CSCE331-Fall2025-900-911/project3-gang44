@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useApp } from "../context/AppContext";
 
 export const useWeather = () => {
   const [weather, setWeather] = useState(null);
@@ -171,11 +172,14 @@ export const findRecommendedDrinkId = (drinks, recommendedName) => {
   const recommendedNameNormalized = normalizeName(recommendedName);
 
   console.log("Looking for recommended drink:", recommendedName);
-  console.log("Available drinks:", drinks.map(d => d.name));
+  console.log(
+    "Available drinks:",
+    drinks.map((d) => d.name)
+  );
 
   // First try: exact match
-  let drink = drinks.find((d) =>
-    normalizeName(d.name) === recommendedNameNormalized
+  let drink = drinks.find(
+    (d) => normalizeName(d.name) === recommendedNameNormalized
   );
 
   if (drink) {
@@ -249,6 +253,7 @@ export const findRecommendedDrinkId = (drinks, recommendedName) => {
 
 // Simple Weather Component for MenuPage - shows temperature and recommended drink
 export const WeatherWidget = ({ drinks, onDrinkClick }) => {
+  const { t } = useApp();
   const { weather, loading, error } = useWeather();
   const recommendedDrink = weather
     ? getDrinkRecommendation(weather.temperature, weather.weatherCode)
@@ -257,7 +262,7 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
   if (loading) {
     return (
       <div className="weather-display" style={{ cursor: "default" }}>
-        Loading weather...
+        {t("Loading weather...")}
       </div>
     );
   }
@@ -271,7 +276,10 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
 
     const handleClick = () => {
       if (drinks && onDrinkClick) {
-        const productId = findRecommendedDrinkId(drinks, defaultRecommendation.name);
+        const productId = findRecommendedDrinkId(
+          drinks,
+          defaultRecommendation.name
+        );
         if (productId) {
           onDrinkClick(productId);
         }
@@ -281,8 +289,8 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
     return (
       <div onClick={handleClick} className="weather-display">
         <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-          {defaultRecommendation.emoji} Recommended:{" "}
-          {defaultRecommendation.name}
+          {defaultRecommendation.emoji} {t("Recommended")}:{" "}
+          {t(defaultRecommendation.name)}
         </div>
       </div>
     );
@@ -303,7 +311,7 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
         🌡️ {weather.temperature}°F
       </div>
       <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-        {recommendedDrink.emoji} {recommendedDrink.name}
+        {recommendedDrink.emoji} {t("Recommended")}: {t(recommendedDrink.name)}
       </div>
     </div>
   );

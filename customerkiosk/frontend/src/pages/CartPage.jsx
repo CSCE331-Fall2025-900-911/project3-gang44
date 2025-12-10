@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
-import { useWeather, getDrinkRecommendation, findRecommendedDrinkId } from "../components/weather";
+import {
+  useWeather,
+  getDrinkRecommendation,
+  findRecommendedDrinkId,
+} from "../components/weather";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -18,6 +22,38 @@ export default function CartPage() {
   } = useApp();
 
   const [drinks, setDrinks] = useState([]);
+
+  // Helper function to translate weather recommendation reasons
+  const translateReason = (reason) => {
+    if (!reason) return "";
+
+    // Extract temperature from the string (including decimals)
+    const tempMatch = reason.match(/(\d+\.?\d*)°F/);
+    const temp = tempMatch ? tempMatch[1] : "";
+
+    // Match patterns and translate
+    if (reason.includes("perfect weather for something refreshing")) {
+      return `${t("It's")} ${temp}°F - ${t(
+        "perfect weather for something refreshing!"
+      )}`;
+    }
+    if (reason.includes("warm up with a hot drink")) {
+      return `${t("It's only")} ${temp}°F - ${t("warm up with a hot drink!")}`;
+    }
+    if (reason.includes("cozy up with something warm")) {
+      return `${t("Rainy day at")} ${temp}°F - ${t(
+        "cozy up with something warm!"
+      )}`;
+    }
+    if (reason.includes("stay cozy")) {
+      return `${t("Snowy weather at")} ${temp}°F - ${t("stay cozy!")}`;
+    }
+    if (reason.includes("weather for our bestseller")) {
+      return `${t("Perfect")} ${temp}°F ${t("weather for our bestseller!")}`;
+    }
+
+    return reason;
+  };
 
   const handleEditItem = (item) => {
     // Navigate to customize page with edit mode
@@ -74,7 +110,6 @@ export default function CartPage() {
               borderRadius: "12px",
               margin: "20px auto",
               maxWidth: "500px",
-              border: "2px solid #333",
               cursor: "pointer",
             }}
             onClick={handleRecommendationClick}
@@ -85,13 +120,20 @@ export default function CartPage() {
             <h3
               style={{ fontSize: "20px", marginBottom: "10px", color: "#333" }}
             >
-              Try: {t(recommendation.name)}
+              {i18nT("Try")}: {t(recommendation.name)}
             </h3>
             <p style={{ fontSize: "14px", color: "#666" }}>
-              {recommendation.reason}
+              {translateReason(recommendation.reason)}
             </p>
-            <p style={{ fontSize: "14px", color: "#1976d2", fontWeight: "bold", marginTop: "10px" }}>
-              Click to customize →
+            <p
+              style={{
+                fontSize: "14px",
+                color: "#1976d2",
+                fontWeight: "bold",
+                marginTop: "10px",
+              }}
+            >
+              {i18nT("Click to customize →")}
             </p>
           </div>
         )}
@@ -120,7 +162,6 @@ export default function CartPage() {
             borderRadius: "12px",
             marginBottom: "20px",
             color: "white",
-            border: "2px solid #333",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -138,10 +179,10 @@ export default function CartPage() {
                   marginBottom: "5px",
                 }}
               >
-                Try this: {t(recommendation.name)}
+                {i18nT("Try this")}: {t(recommendation.name)}
               </h3>
               <p style={{ fontSize: "14px", color: "#e3f2fd" }}>
-                {recommendation.reason}
+                {translateReason(recommendation.reason)}
               </p>
             </div>
           </div>
@@ -157,7 +198,7 @@ export default function CartPage() {
             }}
             onClick={handleRecommendationClick}
           >
-            Add to Order
+            {i18nT("Add to Order")}
           </button>
         </div>
       )}
@@ -190,6 +231,7 @@ export default function CartPage() {
                 }}
               >
                 <button
+                  className="cart-edit-btn"
                   onClick={() => handleEditItem(item)}
                   style={{
                     padding: "6px 12px",
@@ -207,6 +249,7 @@ export default function CartPage() {
                   {i18nT("Edit")}
                 </button>
                 <button
+                  className="cart-quantity-btn"
                   onClick={() => updateCartItemQuantity(item.id, -1)}
                   style={{
                     width: "32px",
@@ -236,6 +279,7 @@ export default function CartPage() {
                   {itemQuantity}
                 </span>
                 <button
+                  className="cart-quantity-btn"
                   onClick={() => updateCartItemQuantity(item.id, 1)}
                   style={{
                     width: "32px",
@@ -266,9 +310,12 @@ export default function CartPage() {
               <div style={{ flexShrink: 0 }}>
                 <p>
                   <strong>{i18nT("size")}:</strong> {t(item.size)},{" "}
-                  <strong>{i18nT("Temperature")}:</strong> {t(item.temperature || "Cold")}
+                  <strong>{i18nT("Temperature")}:</strong>{" "}
+                  {t(item.temperature || "Cold")}
                   {item.temperature !== "Hot" && item.iceLevel && (
-                    <>, <strong>{i18nT("ice")}:</strong> {t(item.iceLevel)}</>
+                    <>
+                      , <strong>{i18nT("ice")}:</strong> {t(item.iceLevel)}
+                    </>
                   )}
                   , <strong>{i18nT("sweetness")}:</strong>{" "}
                   {t(item.sweetnessLevel)}
@@ -302,7 +349,7 @@ export default function CartPage() {
           {i18nT("total")}: ${cartTotal.toFixed(2)}
         </h2>
         <button className="place-order-btn" onClick={handleProceedToCheckout}>
-          Proceed to Checkout
+          {i18nT("Proceed to Checkout")}
         </button>
       </div>
     </div>
