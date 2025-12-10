@@ -174,9 +174,9 @@ function MenuStatsTab() {
                   {i18nT("Sales")} {" "}
                   {period === "day"
                     ? i18nT("Today")
-                    : i18nT("This {period}", {
-                        period: i18nT(period === "week" ? "Week" : "Month"),
-                      })}
+                    : period === "week"
+                    ? i18nT("This Week")
+                    : i18nT("This Month")}
                 </th>
                 <th>{i18nT("Sold/Day")}</th>
               </tr>
