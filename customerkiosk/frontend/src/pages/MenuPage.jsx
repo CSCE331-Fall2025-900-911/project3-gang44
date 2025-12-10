@@ -9,6 +9,7 @@ export default function MenuPage() {
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All"); // NEW
+  const [searchQuery, setSearchQuery] = useState(""); // Search state
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels from i18n
   const { cart, t, isTranslating } = useApp(); // For API translations of database items
@@ -83,14 +84,20 @@ export default function MenuPage() {
     new Set(drinks.map((drink) => drink.category || drink.type || "Other"))
   );
 
-  // Figure out which drinks to show based on selected category
-  const drinksToShow =
-    activeCategory === "All"
-      ? drinks
-      : drinks.filter(
-          (drink) =>
-            (drink.category || drink.type || "Other") === activeCategory
-        );
+  // Figure out which drinks to show based on selected category and search query
+  const drinksToShow = drinks.filter((drink) => {
+    // Filter by category
+    const matchesCategory =
+      activeCategory === "All" ||
+      (drink.category || drink.type || "Other") === activeCategory;
+
+    // Filter by search query (case-insensitive, matches drink name)
+    const matchesSearch = searchQuery.trim() === "" || 
+      t(drink.name).toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+      drink.name.toLowerCase().includes(searchQuery.toLowerCase().trim());
+
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="menu-page">
@@ -135,6 +142,62 @@ export default function MenuPage() {
         </div>
         <div style={{ flex: "0 0 auto", width: "200px" }}></div>
       </div>
+
+      {/* Search Bar */}
+      <div style={{
+        marginBottom: "20px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
+        <input
+          type="text"
+          placeholder={i18nT("Search drinks...") || "Search drinks..."}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "500px",
+            padding: "12px 20px",
+            fontSize: "18px",
+            border: "2px solid #333",
+            borderRadius: "8px",
+            outline: "none",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+          }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            style={{
+              marginLeft: "10px",
+              padding: "12px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              backgroundColor: "#f0f0f0",
+              border: "2px solid #333",
+              borderRadius: "8px"
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Show search results count */}
+      {searchQuery && (
+        <div style={{
+          textAlign: "center",
+          marginBottom: "15px",
+          fontSize: "16px",
+          color: "#666"
+        }}>
+          {drinksToShow.length === 0 
+            ? i18nT("No drinks found") || "No drinks found"
+            : `${drinksToShow.length} ${i18nT("drink(s) found") || "drink(s) found"}`
+          }
+        </div>
+      )}
 
       {/* Category tabs */}
       <div className="category-tabs">
