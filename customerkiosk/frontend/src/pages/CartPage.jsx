@@ -15,6 +15,11 @@ export default function CartPage() {
     user,
     t,
   } = useApp();
+
+  const handleEditItem = (item) => {
+    // Navigate to customize page with edit mode
+    navigate(`/customize/${item.menuItemId}?edit=${item.id}`);
+  };
   const { weather, loading } = useWeather();
   const recommendation = weather
     ? getDrinkRecommendation(weather.temperature, weather.weatherCode)
@@ -147,6 +152,23 @@ export default function CartPage() {
                   flexShrink: 0,
                 }}
               >
+                <button
+                  onClick={() => handleEditItem(item)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    borderRadius: "4px",
+                    border: "2px solid #2196f3",
+                    background: "#e3f2fd",
+                    color: "#1976d2",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                  title="Edit this item"
+                >
+                  {i18nT("Edit")}
+                </button>
                 <button
                   onClick={() => updateCartItemQuantity(item.id, -1)}
                   style={{
