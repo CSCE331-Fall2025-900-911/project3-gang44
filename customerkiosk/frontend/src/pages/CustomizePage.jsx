@@ -201,6 +201,19 @@ export default function CustomizePage() {
       }
     });
   };
+  const getSizePriceDifference = (sizeOption) => {
+    if (!drink) return 0;
+    const basePrice = parseFloat(drink.price);
+    let sizePrice = basePrice;
+
+    // Calculate price for each size
+    if (sizeOption === "Large") sizePrice = basePrice * 1.5;
+    else if (sizeOption === "Small") sizePrice = basePrice * 0.8;
+    // Medium is base price (no change)
+
+    // Return the difference from base price
+    return (sizePrice - basePrice).toFixed(2);
+  };
 
   const calculatePrice = () => {
     if (!drink) return 0;
@@ -270,15 +283,24 @@ export default function CustomizePage() {
       <div className="customization-section">
         <h3>{i18nT("size")}</h3>
         <div className="button-group">
-          {customizations.sizes.map((s) => (
-            <button
-              key={s}
-              className={size === s ? "selected" : ""}
-              onClick={() => setSize(s)}
-            >
-              {t(s)}
-            </button>
-          ))}
+        {customizations.sizes.map((s) => {
+            const priceDiff = getSizePriceDifference(s);
+            const priceDisplay = parseFloat(priceDiff) === 0 
+              ? "" 
+              : parseFloat(priceDiff) > 0 
+                ? ` (+$${Math.abs(priceDiff)})` 
+                : ` (-$${Math.abs(priceDiff)})`;
+            
+            return (
+              <button
+                key={s}
+                className={size === s ? "selected" : ""}
+                onClick={() => setSize(s)}
+              >
+                {t(s)}{priceDisplay}
+              </button>
+            );
+          })}
         </div>
       </div>
 
