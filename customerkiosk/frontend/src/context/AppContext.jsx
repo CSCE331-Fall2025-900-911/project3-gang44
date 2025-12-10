@@ -43,6 +43,12 @@ export const AppProvider = ({ children }) => {
     );
   };
 
+  const updateCartItem = (id, updatedItem) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => (item.id === id ? { ...updatedItem, id } : item))
+    );
+  };
+
   const clearCart = () => {
     setCart([]);
   };
@@ -261,6 +267,7 @@ export const AppProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateCartItemQuantity,
+        updateCartItem,
         clearCart,
         cartTotal,
         user,

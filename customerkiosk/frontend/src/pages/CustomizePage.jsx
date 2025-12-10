@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 
 export default function CustomizePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editItemId = searchParams.get("edit");
   const { t: i18nT } = useTranslation(); // For UI labels
-  const { addToCart, t, translate, language } = useApp(); // For API translations
+  const { addToCart, updateCartItem, cart, t, translate, language } = useApp(); // For API translations
 
   console.log("CustomizePage rendered with id:", id, "from useParams");
+  console.log("Edit mode:", editItemId ? `Editing item ${editItemId}` : "Adding new item");
 
   const [drink, setDrink] = useState(null);
   const [customizations, setCustomizations] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [size, setSize] = useState("Medium");
+  const [temperature, setTemperature] = useState("Cold");
   const [iceLevel, setIceLevel] = useState("Regular Ice");
   const [sweetnessLevel, setSweetnessLevel] = useState("50%");
   const [selectedToppings, setSelectedToppings] = useState([]); // Array of full topping objects
@@ -27,13 +31,27 @@ export default function CustomizePage() {
       return;
     }
 
-    // Reset selections and drink when ID changes
-    setDrink(null);
-    setSelectedToppings([]);
-    setSize("Medium");
-    setIceLevel("Regular Ice");
-    setSweetnessLevel("50%");
+    // If in edit mode, load existing item data
+    if (editItemId) {
+      const itemToEdit = cart.find((item) => item.id === parseInt(editItemId));
+      if (itemToEdit) {
+        console.log("Found item to edit:", itemToEdit);
+        setSize(itemToEdit.size || "Medium");
+        setTemperature(itemToEdit.temperature || "Cold");
+        setIceLevel(itemToEdit.iceLevel || "Regular Ice");
+        setSweetnessLevel(itemToEdit.sweetnessLevel || "50%");
+        setSelectedToppings(itemToEdit.toppings || []);
+      }
+    } else {
+      // Reset selections and drink when ID changes (new item mode)
+      setSelectedToppings([]);
+      setSize("Medium");
+      setTemperature("Cold");
+      setIceLevel("Regular Ice");
+      setSweetnessLevel("50%");
+    }
 
+    setDrink(null);
     setLoading(true);
     let loadedCount = 0;
     const totalRequests = 2;
@@ -108,7 +126,7 @@ export default function CustomizePage() {
         console.error("Error fetching customizations:", err);
         markLoaded();
       });
-  }, [id]);
+  }, [id, editItemId, cart]);
 
   // Ensure toppings added dynamically are seeded into translations cache
   useEffect(() => {
@@ -206,17 +224,27 @@ export default function CustomizePage() {
       menuItemId: productId,
       name: drink.name,
       size,
-      iceLevel,
+      temperature,
+      iceLevel: temperature === "Hot" ? null : iceLevel,
       sweetnessLevel,
       toppings: selectedToppings,
       price: parseFloat(calculatePrice()),
       quantity: 1,
     };
-    console.log("Adding to cart:", cartItem);
-    console.log("Drink name:", drink.name);
-    console.log("Drink object:", drink);
-    addToCart(cartItem);
-    navigate("/menu");
+
+    if (editItemId) {
+      // Update existing item
+      console.log("Updating cart item:", editItemId, cartItem);
+      updateCartItem(parseInt(editItemId), cartItem);
+      navigate("/cart");
+    } else {
+      // Add new item
+      console.log("Adding to cart:", cartItem);
+      console.log("Drink name:", drink.name);
+      console.log("Drink object:", drink);
+      addToCart(cartItem);
+      navigate("/menu");
+    }
   };
 
   if (loading) return <div className="loading">{i18nT("Loading...")}</div>;
@@ -232,11 +260,11 @@ export default function CustomizePage() {
 
   return (
     <div className="customize-page">
-      <button className="back-button" onClick={() => navigate("/menu")}>
-        ← {i18nT("backToMenu")}
+      <button className="back-button" onClick={() => navigate(editItemId ? "/cart" : "/menu")}>
+        ← {editItemId ? i18nT("Back to Cart") : i18nT("backToMenu")}
       </button>
 
-      <h1>{i18nT("customize")}</h1>
+      <h1>{editItemId ? i18nT("Edit Item") : i18nT("customize")}</h1>
       <h2>{t(drink.name)}</h2>
 
       <div className="customization-section">
@@ -255,19 +283,36 @@ export default function CustomizePage() {
       </div>
 
       <div className="customization-section">
-        <h3>{i18nT("ice")}</h3>
+        <h3>{i18nT("Temperature")}</h3>
         <div className="button-group">
-          {customizations.iceOptions.map((option) => (
+          {customizations.temperatureOptions.map((temp) => (
             <button
-              key={option}
-              className={iceLevel === option ? "selected" : ""}
-              onClick={() => setIceLevel(option)}
+              key={temp}
+              className={temperature === temp ? "selected" : ""}
+              onClick={() => setTemperature(temp)}
             >
-              {t(option)}
+              {t(temp)}
             </button>
           ))}
         </div>
       </div>
+
+      {temperature !== "Hot" && (
+        <div className="customization-section">
+          <h3>{i18nT("ice")}</h3>
+          <div className="button-group">
+            {customizations.iceOptions.map((option) => (
+              <button
+                key={option}
+                className={iceLevel === option ? "selected" : ""}
+                onClick={() => setIceLevel(option)}
+              >
+                {t(option)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="customization-section">
         <h3>{i18nT("sweetness")}</h3>
@@ -338,7 +383,7 @@ export default function CustomizePage() {
           {i18nT("total")}: ${calculatePrice()}
         </h2>
         <button className="add-to-cart-btn" onClick={handleAddToCart}>
-          {i18nT("addToCart")}
+          {editItemId ? i18nT("Update Item") : i18nT("addToCart")}
         </button>
       </div>
     </div>

@@ -1,7 +1,8 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
-import { useWeather, getDrinkRecommendation } from "../components/weather";
+import { useWeather, getDrinkRecommendation, findRecommendedDrinkId } from "../components/weather";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -15,10 +16,46 @@ export default function CartPage() {
     user,
     t,
   } = useApp();
+
+  const [drinks, setDrinks] = useState([]);
+
+  const handleEditItem = (item) => {
+    // Navigate to customize page with edit mode
+    navigate(`/customize/${item.menuItemId}?edit=${item.id}`);
+  };
   const { weather, loading } = useWeather();
   const recommendation = weather
     ? getDrinkRecommendation(weather.temperature, weather.weatherCode)
     : null;
+
+  // Fetch drinks list for recommendation matching
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) return;
+
+    fetch(`${apiUrl}/api/menu`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setDrinks(data);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching menu for recommendations:", err);
+      });
+  }, []);
+
+  const handleRecommendationClick = () => {
+    if (recommendation && drinks.length > 0) {
+      const productId = findRecommendedDrinkId(drinks, recommendation.name);
+      if (productId) {
+        navigate(`/customize/${productId}`);
+      } else {
+        // Fallback to menu if we can't find the drink
+        navigate("/menu");
+      }
+    }
+  };
 
   const handleProceedToCheckout = () => {
     navigate("/checkout");
@@ -38,7 +75,9 @@ export default function CartPage() {
               margin: "20px auto",
               maxWidth: "500px",
               border: "2px solid #333",
+              cursor: "pointer",
             }}
+            onClick={handleRecommendationClick}
           >
             <div style={{ fontSize: "40px", marginBottom: "10px" }}>
               {recommendation.emoji}
@@ -50,6 +89,9 @@ export default function CartPage() {
             </h3>
             <p style={{ fontSize: "14px", color: "#666" }}>
               {recommendation.reason}
+            </p>
+            <p style={{ fontSize: "14px", color: "#1976d2", fontWeight: "bold", marginTop: "10px" }}>
+              Click to customize →
             </p>
           </div>
         )}
@@ -113,7 +155,7 @@ export default function CartPage() {
               fontWeight: "bold",
               cursor: "pointer",
             }}
-            onClick={() => navigate("/menu")}
+            onClick={handleRecommendationClick}
           >
             Add to Order
           </button>
@@ -147,6 +189,23 @@ export default function CartPage() {
                   flexShrink: 0,
                 }}
               >
+                <button
+                  onClick={() => handleEditItem(item)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    borderRadius: "4px",
+                    border: "2px solid #2196f3",
+                    background: "#e3f2fd",
+                    color: "#1976d2",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                  title="Edit this item"
+                >
+                  {i18nT("Edit")}
+                </button>
                 <button
                   onClick={() => updateCartItemQuantity(item.id, -1)}
                   style={{
@@ -207,8 +266,11 @@ export default function CartPage() {
               <div style={{ flexShrink: 0 }}>
                 <p>
                   <strong>{i18nT("size")}:</strong> {t(item.size)},{" "}
-                  <strong>{i18nT("ice")}:</strong> {t(item.iceLevel)},{" "}
-                  <strong>{i18nT("sweetness")}:</strong>{" "}
+                  <strong>{i18nT("Temperature")}:</strong> {t(item.temperature || "Cold")}
+                  {item.temperature !== "Hot" && item.iceLevel && (
+                    <>, <strong>{i18nT("ice")}:</strong> {t(item.iceLevel)}</>
+                  )}
+                  , <strong>{i18nT("sweetness")}:</strong>{" "}
                   {t(item.sweetnessLevel)}
                 </p>
                 {item.toppings.length > 0 && (

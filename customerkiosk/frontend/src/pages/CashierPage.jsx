@@ -36,6 +36,7 @@ export default function CashierPage() {
   const [stripe, setStripe] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [editingCartItem, setEditingCartItem] = useState(null);
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation(); // For UI labels
   const { t } = useApp(); // For API translations
@@ -87,18 +88,33 @@ export default function CashierPage() {
   };
 
   const addToCartWithCustomization = (customizedItem) => {
-    // Add customized item to cart with unique ID based on timestamp
-    const cartItem = {
-      cart_item_id: Date.now(), // Unique ID for each cart item
-      product_id: customizedItem.product_id,
-      product_name: customizedItem.product_name,
-      quantity: 1,
-      price_per_unit: customizedItem.price_per_unit,
-      subtotal: customizedItem.price_per_unit,
-      customizations: customizedItem.customizations, // Store customization details
-    };
+    if (editingCartItem) {
+      // Update existing item
+      setCart(cart.map((item) =>
+        item.cart_item_id === editingCartItem.cart_item_id
+          ? {
+              ...item,
+              price_per_unit: customizedItem.price_per_unit,
+              subtotal: customizedItem.price_per_unit * item.quantity,
+              customizations: customizedItem.customizations,
+            }
+          : item
+      ));
+      setEditingCartItem(null);
+    } else {
+      // Add new customized item to cart with unique ID based on timestamp
+      const cartItem = {
+        cart_item_id: Date.now(), // Unique ID for each cart item
+        product_id: customizedItem.product_id,
+        product_name: customizedItem.product_name,
+        quantity: 1,
+        price_per_unit: customizedItem.price_per_unit,
+        subtotal: customizedItem.price_per_unit,
+        customizations: customizedItem.customizations, // Store customization details
+      };
+      setCart([...cart, cartItem]);
+    }
 
-    setCart([...cart, cartItem]);
     setShowCustomizeModal(false);
     setSelectedProduct(null);
   };
@@ -106,6 +122,16 @@ export default function CashierPage() {
   const removeFromCart = (cartItemId) => {
     // Remove item by cart_item_id (unique for each customization)
     setCart(cart.filter((item) => item.cart_item_id !== cartItemId));
+  };
+
+  const editCartItem = (cartItem) => {
+    // Open customization modal with existing item data
+    const product = products.find((p) => p.product_id === cartItem.product_id);
+    if (product) {
+      setSelectedProduct(product);
+      setEditingCartItem(cartItem);
+      setShowCustomizeModal(true);
+    }
   };
 
   const updateCartItemQuantity = (cartItemId, delta) => {
@@ -310,8 +336,8 @@ export default function CashierPage() {
     <div className="cashier-page">
       <div className="cashier-header">
         <div className="header-left">
-          <button className="back-button" onClick={() => navigate("/menu")}>
-            ← {i18nT("Back to Customer View")}
+          <button className="back-button" onClick={() => navigate("/")}>
+            ← {i18nT("Back to Landing Page")}
           </button>
           <h1>{i18nT("Cashier Mode")}</h1>
         </div>
@@ -367,8 +393,11 @@ export default function CashierPage() {
                           <br />
                           <small>
                             {t(item.customizations.size)} |{" "}
-                            {t(item.customizations.iceLevel)} |{" "}
-                            {t(item.customizations.sweetnessLevel)}
+                            {t(item.customizations.temperature || "Cold")}
+                            {item.customizations.temperature !== "Hot" && item.customizations.iceLevel && (
+                              <> | {t(item.customizations.iceLevel)}</>
+                            )}
+                            {" "} | {t(item.customizations.sweetnessLevel)}
                             {item.customizations.toppings.length > 0 && (
                               <>
                                 {" "}
@@ -388,6 +417,23 @@ export default function CashierPage() {
                       ${item.subtotal.toFixed(2)}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => editCartItem(item)}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: '2px solid #2196f3',
+                          background: '#e3f2fd',
+                          color: '#1976d2',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                        title="Edit this item"
+                      >
+                        {i18nT("Edit")}
+                      </button>
                       <button
                         onClick={() => updateCartItemQuantity(item.cart_item_id, -1)}
                         style={{
@@ -509,7 +555,9 @@ export default function CashierPage() {
           onCancel={() => {
             setShowCustomizeModal(false);
             setSelectedProduct(null);
+            setEditingCartItem(null);
           }}
+          editMode={editingCartItem}
         />
       )}
 
@@ -615,13 +663,14 @@ export default function CashierPage() {
 }
 
 // Customization Modal Component
-function CustomizeModal({ product, customizations, onAdd, onCancel }) {
+function CustomizeModal({ product, customizations, onAdd, onCancel, editMode }) {
   const { t: i18nT } = useTranslation(); // For UI labels
   const { t } = useApp(); // For API translations
-  const [size, setSize] = useState("Medium");
-  const [iceLevel, setIceLevel] = useState("Regular Ice");
-  const [sweetnessLevel, setSweetnessLevel] = useState("50%");
-  const [selectedToppings, setSelectedToppings] = useState([]);
+  const [size, setSize] = useState(editMode?.customizations?.size || "Medium");
+  const [temperature, setTemperature] = useState(editMode?.customizations?.temperature || "Cold");
+  const [iceLevel, setIceLevel] = useState(editMode?.customizations?.iceLevel || "Regular Ice");
+  const [sweetnessLevel, setSweetnessLevel] = useState(editMode?.customizations?.sweetnessLevel || "50%");
+  const [selectedToppings, setSelectedToppings] = useState(editMode?.customizations?.toppings || []);
 
   const toggleTopping = (topping) => {
     const normalizeId = (id) => String(id);
@@ -663,7 +712,8 @@ function CustomizeModal({ product, customizations, onAdd, onCancel }) {
       price_per_unit: finalPrice,
       customizations: {
         size,
-        iceLevel,
+        temperature,
+        iceLevel: temperature === "Hot" ? null : iceLevel,
         sweetnessLevel,
         toppings: selectedToppings,
       },
@@ -675,7 +725,7 @@ function CustomizeModal({ product, customizations, onAdd, onCancel }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
-            {i18nT("Customize")}: {t(product.name)}
+            {editMode ? i18nT("Edit Item") : i18nT("Customize")}: {t(product.name)}
           </h2>
           <button className="modal-close" onClick={onCancel}>
             ×
@@ -699,19 +749,36 @@ function CustomizeModal({ product, customizations, onAdd, onCancel }) {
           </div>
 
           <div className="customization-section">
-            <h3>{i18nT("Ice Level")}</h3>
+            <h3>{i18nT("Temperature")}</h3>
             <div className="button-group">
-              {customizations.iceOptions.map((option) => (
+              {customizations.temperatureOptions.map((temp) => (
                 <button
-                  key={option}
-                  className={iceLevel === option ? "selected" : ""}
-                  onClick={() => setIceLevel(option)}
+                  key={temp}
+                  className={temperature === temp ? "selected" : ""}
+                  onClick={() => setTemperature(temp)}
                 >
-                  {t(option)}
+                  {t(temp)}
                 </button>
               ))}
             </div>
           </div>
+
+          {temperature !== "Hot" && (
+            <div className="customization-section">
+              <h3>{i18nT("Ice Level")}</h3>
+              <div className="button-group">
+                {customizations.iceOptions.map((option) => (
+                  <button
+                    key={option}
+                    className={iceLevel === option ? "selected" : ""}
+                    onClick={() => setIceLevel(option)}
+                  >
+                    {t(option)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="customization-section">
             <h3>{i18nT("Sweetness")}</h3>
@@ -763,7 +830,7 @@ function CustomizeModal({ product, customizations, onAdd, onCancel }) {
               {i18nT("Cancel")}
             </button>
             <button className="add-btn" onClick={handleAdd}>
-              {i18nT("Add to Order")}
+              {editMode ? i18nT("Update Item") : i18nT("Add to Order")}
             </button>
           </div>
         </div>

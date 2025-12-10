@@ -109,8 +109,9 @@ app.get("/api/customizations", async (req, res) => {
 
     res.json({
       sizes: ["Small", "Medium", "Large"],
+      temperatureOptions: ["Cold", "Hot"],
       iceOptions: ["No Ice", "Less Ice", "Regular Ice", "Extra Ice"],
-      sweetnessOptions: ["0%", "25%", "50%", "75%", "100%"],
+      sweetnessOptions: ["0%", "25%", "50%", "75%", "100%", "125%"],
       toppings: ingredients.rows.map((ing, index) => {
         // try to find some kind of id
         const id =
@@ -161,7 +162,8 @@ app.post("/api/orders", async (req, res) => {
         // build customization string
         const customizationDetails = [
           `Size: ${item.size}`,
-          `Ice: ${item.iceLevel}`,
+          item.temperature ? `Temperature: ${item.temperature}` : null,
+          item.temperature !== "Hot" && item.iceLevel ? `Ice: ${item.iceLevel}` : null,
           `Sweetness: ${item.sweetnessLevel}`,
           item.toppings && item.toppings.length > 0
             ? `Toppings: ${item.toppings.map((t) => t.name).join(", ")}`
@@ -308,7 +310,8 @@ app.post('/api/orders/complete', async (req, res) => {
         // Build customization string
         const customizationDetails = [
           `Size: ${item.size}`,
-          `Ice: ${item.iceLevel}`,
+          item.temperature ? `Temperature: ${item.temperature}` : null,
+          item.temperature !== "Hot" && item.iceLevel ? `Ice: ${item.iceLevel}` : null,
           `Sweetness: ${item.sweetnessLevel}`,
           item.toppings && item.toppings.length > 0
             ? `Toppings: ${item.toppings.map((t) => t.name).join(', ')}`
