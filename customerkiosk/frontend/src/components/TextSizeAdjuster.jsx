@@ -45,7 +45,7 @@ function TextSizeAdjuster() {
 
   const buttonStyle = {
     padding: "10px 16px",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     border: "2px solid #333",
     background: "white",
     cursor: "pointer",
@@ -73,7 +73,7 @@ function TextSizeAdjuster() {
   const controlButtonStyle = {
     margin: "5px",
     padding: "8px 16px",
-    fontSize: "16px",
+    fontSize: "1rem",
     border: "2px solid #333",
     background: "white",
     cursor: "pointer",
@@ -84,14 +84,14 @@ function TextSizeAdjuster() {
     display: "block",
     textAlign: "center",
     marginBottom: "10px",
-    fontSize: "14px",
+    fontSize: "0.875rem",
     color: "#333",
   };
 
   const scaleStyle = {
     textAlign: "center",
     marginTop: "10px",
-    fontSize: "12px",
+    fontSize: "0.75rem",
     color: "#666",
   };
 

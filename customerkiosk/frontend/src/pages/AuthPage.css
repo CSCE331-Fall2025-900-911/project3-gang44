@@ -3,29 +3,29 @@
   align-items: center;
   justify-content: center;
   min-height: 80vh;
-  padding: 20px;
+  padding: 1.25rem;
 }
 
 .auth-card {
   background: white;
-  padding: 50px 40px;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: 450px;
+  padding: 3.125rem 2.5rem;
+  border-radius: 0.9375rem;
+  box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.1);
+  max-width: 28.125rem;
   width: 100%;
   text-align: center;
 }
 
 .auth-card h1 {
   font-size: 1.8rem;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
   color: #333;
 }
 
 .auth-subtitle {
   font-size: 1rem;
   color: #666;
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
 }
 
 .auth-content {
@@ -33,24 +33,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 1.875rem;
 }
 
 .google-signin-label {
-  margin-top: 10px;
+  margin-top: 0.625rem;
   font-size: 0.9rem;
   color: #333;
 }
 
 .cancel-button {
-  padding: 12px 30px;
-  font-size: 16px;
+  padding: 0.75rem 1.875rem;
+  font-size: 1rem;
   cursor: pointer;
   background-color: #fff;
   color: #333;
-  border: 2px solid #333;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border: 0.125rem solid #333;
+  border-radius: 0.5rem;
 }
 
 .cancel-button:hover {
@@ -60,7 +59,7 @@
 /* High contrast mode support */
 .high-contrast .auth-card {
   background: #fff;
-  border: 3px solid #fff;
+  border: 0.1875rem solid #fff;
 }
 
 .high-contrast .auth-card h1,
@@ -71,7 +70,7 @@
 .high-contrast .cancel-button {
   background: #2b5726 !important;
   color: #fff !important;
-  border: 3px solid #fff !important;
+  border: 0.1875rem solid #fff !important;
 }
 
 .high-contrast .cancel-button:hover {
@@ -82,8 +81,8 @@
 /* Add background behind Google Sign-In button in high contrast mode */
 .high-contrast .auth-content {
   background: #2b5726;
-  padding: 15px 20px;
-  border-radius: 8px;
+  padding: 0.9375rem 1.25rem;
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
