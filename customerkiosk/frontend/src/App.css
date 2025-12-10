@@ -59,6 +59,28 @@ body {
   color: #fff !important;
   font-weight: bold !important;
 }
+
+/* Modal action buttons in high contrast */
+.high-contrast .modal-actions .cancel-btn {
+  background: #999 !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+}
+
+.high-contrast .modal-actions .cancel-btn:hover {
+  background: #777 !important;
+}
+
+.high-contrast .modal-actions .add-btn {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .modal-actions .add-btn:hover {
+  background: #1d3e1a !important;
+}
 .high-contrast .product-button {
   background: #4a8f3f !important;
   color: #fff !important;
