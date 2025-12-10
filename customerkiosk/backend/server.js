@@ -953,13 +953,13 @@ app.get('/api/manager/payments', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    // Parse dates - use start and end of day
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
-
     console.log(`📊 Fetching payment data from ${startDate} to ${endDate}`);
+
+    // Use date strings directly - PostgreSQL will handle the comparison correctly
+    // Add 1 day to endDate to include all transactions on that day
+    const endDatePlusOne = new Date(endDate);
+    endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+    const endDateStr = endDatePlusOne.toISOString().split('T')[0];
 
     // Get payment data from orders
     const paymentResult = await pool.query(`
@@ -968,9 +968,9 @@ app.get('/api/manager/payments', async (req, res) => {
         COUNT(*) as count,
         COALESCE(SUM(total_price), 0) as total
       FROM orders
-      WHERE order_date >= $1 AND order_date <= $2
+      WHERE DATE(order_date) >= $1 AND DATE(order_date) < $2
       GROUP BY payment_method
-    `, [start, end]);
+    `, [startDate, endDateStr]);
 
     // Get daily breakdown
     const dailyResult = await pool.query(`
@@ -980,10 +980,10 @@ app.get('/api/manager/payments', async (req, res) => {
         COUNT(*) as count,
         COALESCE(SUM(total_price), 0) as total
       FROM orders
-      WHERE order_date >= $1 AND order_date <= $2
+      WHERE DATE(order_date) >= $1 AND DATE(order_date) < $2
       GROUP BY DATE(order_date), payment_method
       ORDER BY DATE(order_date) ASC
-    `, [start, end]);
+    `, [startDate, endDateStr]);
 
     // Process payment summary
     let cardTotal = 0;
