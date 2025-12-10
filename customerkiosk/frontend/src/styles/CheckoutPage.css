@@ -177,18 +177,16 @@
   padding: 18px;
   background: #4caf50;
   color: white;
-  border: 2px solid #333;
+  border: 2px solid white;
   border-radius: 12px;
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .complete-order-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .complete-order-btn:disabled {

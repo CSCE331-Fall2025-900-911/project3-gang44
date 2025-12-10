@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 function TextSizeAdjuster() {
+  const { t } = useTranslation();
   const [textSize, setTextSize] = useState(1); // base multiplier
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -103,12 +105,12 @@ function TextSizeAdjuster() {
         style={buttonStyle}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span>Text Size</span>
+        <span>{t("Text Size")}</span>
         <span>{isOpen ? "▲" : "▼"}</span>
       </button>
 
       <div className="text-size-dropdown" style={dropdownContentStyle}>
-        <span style={labelStyle}>Adjust Text Size</span>
+        <span style={labelStyle}>{t("Adjust Text Size")}</span>
         <div style={{ textAlign: "center" }}>
           <button
             className="text-size-control"
@@ -122,7 +124,7 @@ function TextSizeAdjuster() {
             style={controlButtonStyle}
             onClick={resetText}
           >
-            Reset
+            {t("Reset")}
           </button>
           <button
             className="text-size-control"
@@ -132,7 +134,9 @@ function TextSizeAdjuster() {
             +
           </button>
         </div>
-        <div style={scaleStyle}>Current: {(textSize * 100).toFixed(0)}%</div>
+        <div style={scaleStyle}>
+          {t("Current")}: {(textSize * 100).toFixed(0)}%
+        </div>
       </div>
     </div>
   );

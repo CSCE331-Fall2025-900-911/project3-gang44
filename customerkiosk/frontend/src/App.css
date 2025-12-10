@@ -42,6 +42,11 @@ body {
   border-color: #000 !important;
 }
 
+/* Override cart button border in high-contrast mode */
+.high-contrast .cart-button {
+  border-color: #2b5726 !important;
+}
+
 /* Specific override: when high-contrast is active, the back button should be green (#2b5726)
    with white text. We place this after the broad high-contrast rule and use !important
    so it wins against the multi-selector above. */
@@ -99,6 +104,34 @@ body {
   border-color: #2b5726 !important;
 }
 
+/* Cart page: style Edit and quantity buttons (+/-) - need higher specificity to override inline styles */
+.high-contrast .cart-page .cart-edit-btn {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border: 2px solid #2b5726 !important;
+  border-color: #2b5726 !important;
+}
+
+.high-contrast .cart-page .cart-quantity-btn {
+  background: #2b5726 !important;
+  color: #ffffff !important;
+  border: 2px solid #2b5726 !important;
+  border-color: #2b5726 !important;
+}
+
+/* Cart page: make menu item cards and total card borders white in high-contrast */
+.high-contrast .cart-page .cart-item {
+  border-color: #ffffff !important;
+}
+
+.high-contrast .cart-page .cart-total {
+  border-color: #ffffff !important;
+}
+
+.high-contrast .cart-page .cart-quantity-btn span {
+  color: #ffffff !important;
+}
+
 /* Checkout page high-contrast rules */
 .high-contrast .checkout-header h1,
 .high-contrast .checkout-page h1 {
@@ -142,6 +175,17 @@ body {
 .high-contrast .test-cards-info li,
 .high-contrast .test-cards-info code {
   color: #000000 !important;
+}
+
+/* Ensure summary-total text is visible in high-contrast */
+.high-contrast .summary-total,
+.high-contrast .summary-total strong {
+  color: #000000 !important;
+}
+
+/* Make the bar above the total black in high-contrast */
+.high-contrast .summary-items {
+  border-bottom-color: #000000 !important;
 }
 
 /* Ensure category tabs use the white button look when high-contrast */
@@ -208,6 +252,11 @@ body {
 .high-contrast .menu-page,
 .high-contrast .menu-page * {
   border-color: #fff !important;
+}
+
+/* Override cart button border to be green in high-contrast mode */
+.high-contrast .menu-page .cart-button {
+  border-color: #2b5726 !important;
 }
 
 /* Specific toggles: make their borders white in high-contrast mode */
@@ -451,8 +500,9 @@ body {
   font-size: 18px;
   background: #4caf50;
   color: white;
-  border: 2px solid #333;
+  border: 2px solid #4caf50;
   cursor: pointer;
+  border-radius: 6px;
 }
 
 .cart-button:hover {
@@ -466,6 +516,7 @@ body {
   background: white;
   padding: 30px;
   border: 2px solid #333;
+  border-radius: 6px;
 }
 
 .back-button {
@@ -517,6 +568,7 @@ body {
   background: white;
   color: #333;
   border: 2px solid #333;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -547,7 +599,8 @@ body {
   font-size: 18px;
   background: #4caf50;
   color: white;
-  border: 2px solid #333;
+  border: 2px solid #4caf50;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -567,6 +620,13 @@ body {
   align-items: center;
   gap: 20px;
   margin-bottom: 30px;
+  position: relative;
+  justify-content: center;
+}
+
+.cart-header .back-button {
+  position: absolute;
+  left: 0;
 }
 
 .cart-page h1 {
@@ -574,7 +634,6 @@ body {
   font-size: 36px;
   color: #333;
   margin: 0;
-  flex: 1;
 }
 
 .cart-item {
@@ -582,6 +641,7 @@ body {
   padding: 20px;
   margin: 15px 0;
   border: 2px solid #333;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
 }
@@ -628,6 +688,7 @@ body {
   background: white;
   padding: 30px;
   border: 2px solid #333;
+  border-radius: 6px;
 }
 
 .cart-total h2 {
@@ -641,7 +702,8 @@ body {
   font-size: 18px;
   background: #4caf50;
   color: white;
-  border: 2px solid #333;
+  border: 2px solid #4caf50;
+  border-radius: 6px;
   cursor: pointer;
 }
 
