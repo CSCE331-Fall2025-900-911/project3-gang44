@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import StripePaymentForm from '../components/StripePaymentForm';
+import { getDrinkImage } from "../config/drinkImages";
 import "../styles/CashierPage.css";
 
 // Load Stripe (disable developer tools)
@@ -383,9 +384,39 @@ export default function CashierPage() {
             {cart.length === 0 ? (
               <div className="empty-cart">{i18nT("No items in cart")}</div>
             ) : (
-              cart.map((item) => (
-                <div key={item.cart_item_id} className="cart-item">
-                  <div className="item-info">
+              cart.map((item) => {
+                const imageUrl = getDrinkImage(item.product_name);
+                return (
+                <div key={item.cart_item_id} className="cart-item" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  {/* Drink Image on the left middle */}
+                  {imageUrl && (
+                    <div style={{
+                      flexShrink: 0,
+                      width: '80px',
+                      height: '80px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '2px solid #ddd',
+                      background: '#f5f5f5'
+                    }}>
+                      <img
+                        src={imageUrl}
+                        alt={t(item.product_name)}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="item-info" style={{ flex: 1 }}>
                     <span className="item-name">
                       {t(item.product_name)}
                       {item.customizations && (
@@ -476,7 +507,8 @@ export default function CashierPage() {
                     </div>
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
 
