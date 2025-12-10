@@ -7,7 +7,7 @@ import "./AuthPage.css";
 export default function AuthPage() {
   const { setUser } = useApp();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const role = searchParams.get("role"); // "cashier" or "manager"
 
@@ -83,7 +83,11 @@ export default function AuthPage() {
               onSuccess={handleSuccess}
               onError={handleError}
               size="large"
+              locale={i18n.language}
             />
+            <p className="google-signin-label">
+              {t("Use your staff Google account")}
+            </p>
           </div>
 
           <button className="cancel-button" onClick={handleCancel}>

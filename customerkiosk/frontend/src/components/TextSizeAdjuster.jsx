@@ -50,7 +50,6 @@ function TextSizeAdjuster() {
     background: "white",
     cursor: "pointer",
     borderRadius: "4px",
-    fontWeight: "bold",
     display: "flex",
     alignItems: "center",
     gap: "8px",
@@ -79,7 +78,6 @@ function TextSizeAdjuster() {
     background: "white",
     cursor: "pointer",
     borderRadius: "4px",
-    fontWeight: "bold",
   };
 
   const labelStyle = {
@@ -88,7 +86,6 @@ function TextSizeAdjuster() {
     marginBottom: "10px",
     fontSize: "14px",
     color: "#333",
-    fontWeight: "bold",
   };
 
   const scaleStyle = {
@@ -122,16 +119,18 @@ function TextSizeAdjuster() {
           <button
             className="text-size-control"
             style={controlButtonStyle}
-            onClick={resetText}
-          >
-            {t("Reset")}
-          </button>
-          <button
-            className="text-size-control"
-            style={controlButtonStyle}
             onClick={increaseText}
           >
             +
+          </button>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <button
+            className="text-size-control"
+            style={controlButtonStyle}
+            onClick={resetText}
+          >
+            {t("Reset")}
           </button>
         </div>
         <div style={scaleStyle}>

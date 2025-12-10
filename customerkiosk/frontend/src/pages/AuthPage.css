@@ -30,30 +30,37 @@
 
 .auth-content {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   margin-bottom: 30px;
+}
+
+.google-signin-label {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #333;
 }
 
 .cancel-button {
   padding: 12px 30px;
   font-size: 16px;
   cursor: pointer;
-  background-color: #f0f0f0;
+  background-color: #fff;
   color: #333;
-  border: 1px solid #ccc;
+  border: 2px solid #333;
   border-radius: 8px;
   transition: all 0.3s ease;
 }
 
 .cancel-button:hover {
-  background-color: #e0e0e0;
-  border-color: #999;
+  background-color: #f0f0f0;
 }
 
 /* High contrast mode support */
 .high-contrast .auth-card {
   background: #fff;
-  border: 3px solid #000;
+  border: 3px solid #fff;
 }
 
 .high-contrast .auth-card h1,
@@ -62,12 +69,30 @@
 }
 
 .high-contrast .cancel-button {
-  background: #fff;
-  color: #000;
-  border: 3px solid #000;
+  background: #2b5726 !important;
+  color: #fff !important;
+  border: 3px solid #fff !important;
 }
 
 .high-contrast .cancel-button:hover {
   background: #ffff00;
   color: #000;
+}
+
+/* Add background behind Google Sign-In button in high contrast mode */
+.high-contrast .auth-content {
+  background: #2b5726;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.high-contrast .google-signin-label {
+  color: #fff;
 }
