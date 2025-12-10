@@ -247,12 +247,14 @@ function ProductsTab() {
   const { t: i18nT } = useTranslation();
   const { t } = useApp(); // For translating product names
   const [products, setProducts] = useState([]);
+  const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    fetchIngredients();
   }, []);
 
   const fetchProducts = async () => {
@@ -269,13 +271,48 @@ function ProductsTab() {
     }
   };
 
+  const fetchIngredients = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/ingredients`
+      );
+      const data = await response.json();
+      setIngredients(data);
+    } catch (err) {
+      console.error("Error fetching ingredients:", err);
+    }
+  };
+
   const handleAdd = async (formData) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/manager/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const productResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/products`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            category: formData.category,
+            price: formData.price,
+          }),
+        }
+      );
+      const newProduct = await productResponse.json();
+
+      // If ingredients were specified, save them
+      if (formData.ingredients && formData.ingredients.length > 0) {
+        await fetch(
+          `${import.meta.env.VITE_API_URL}/api/manager/products/${
+            newProduct.id
+          }/ingredients`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ingredients: formData.ingredients }),
+          }
+        );
+      }
+
       fetchProducts();
       setShowAddForm(false);
     } catch (err) {
@@ -286,14 +323,32 @@ function ProductsTab() {
 
   const handleUpdate = async (id, formData) => {
     try {
+      // Update basic product info
       await fetch(
         `${import.meta.env.VITE_API_URL}/api/manager/products/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            category: formData.category,
+            price: formData.price,
+          }),
         }
       );
+
+      // Update ingredients if provided
+      if (formData.ingredients !== undefined) {
+        await fetch(
+          `${import.meta.env.VITE_API_URL}/api/manager/products/${id}/ingredients`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ingredients: formData.ingredients }),
+          }
+        );
+      }
+
       fetchProducts();
       setEditingProduct(null);
     } catch (err) {
@@ -333,6 +388,7 @@ function ProductsTab() {
         <ProductForm
           onSubmit={handleAdd}
           onCancel={() => setShowAddForm(false)}
+          availableIngredients={ingredients}
         />
       )}
 
@@ -357,6 +413,7 @@ function ProductsTab() {
                     product={product}
                     onSave={(data) => handleUpdate(product.id, data)}
                     onCancel={() => setEditingProduct(null)}
+                    availableIngredients={ingredients}
                   />
                 ) : (
                   <>
@@ -389,12 +446,14 @@ function ProductsTab() {
   );
 }
 
-function ProductForm({ onSubmit, onCancel }) {
+function ProductForm({ onSubmit, onCancel, availableIngredients }) {
   const { t: i18nT } = useTranslation();
+  const { t } = useApp();
   const [formData, setFormData] = useState({
     name: "",
     category: "",
     price: "",
+    ingredients: [],
   });
 
   const handleSubmit = (e) => {
@@ -402,80 +461,293 @@ function ProductForm({ onSubmit, onCancel }) {
     onSubmit(formData);
   };
 
-  return (
-    <form className="inline-form" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Name"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Category"
-        value={formData.category}
-        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-        required
-      />
-      <input
-        type="number"
-        step="0.01"
-        placeholder="Price"
-        value={formData.price}
-        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-        required
-      />
-      <button type="submit">{i18nT("Add")}</button>
-      <button type="button" onClick={onCancel}>
-        {i18nT("Cancel")}
-      </button>
-    </form>
-  );
-}
+  const handleIngredientToggle = (ingredientId) => {
+    setFormData((prev) => {
+      const exists = prev.ingredients.find(
+        (ing) => ing.ingredient_id === ingredientId
+      );
+      if (exists) {
+        return {
+          ...prev,
+          ingredients: prev.ingredients.filter(
+            (ing) => ing.ingredient_id !== ingredientId
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          ingredients: [
+            ...prev.ingredients,
+            { ingredient_id: ingredientId, quantity_needed: 1 },
+          ],
+        };
+      }
+    });
+  };
 
-function ProductFormRow({ product, onSave, onCancel }) {
-  const { t: i18nT } = useTranslation();
-  const [formData, setFormData] = useState({
-    name: product.name,
-    category: product.category,
-    price: product.price,
-  });
+  const handleQuantityChange = (ingredientId, quantity) => {
+    setFormData((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((ing) =>
+        ing.ingredient_id === ingredientId
+          ? { ...ing, quantity_needed: parseFloat(quantity) || 1 }
+          : ing
+      ),
+    }));
+  };
 
   return (
-    <>
-      <td>{product.id}</td>
-      <td>
+    <div className="product-form-container">
+      <form className="inline-form" onSubmit={handleSubmit}>
         <input
           type="text"
+          placeholder="Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
         />
-      </td>
-      <td>
         <input
           type="text"
+          placeholder="Category"
           value={formData.category}
           onChange={(e) =>
             setFormData({ ...formData, category: e.target.value })
           }
+          required
         />
-      </td>
-      <td>
         <input
           type="number"
           step="0.01"
+          placeholder="Price"
           value={formData.price}
           onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          required
         />
-      </td>
-      <td>
-        <button className="save-btn" onClick={() => onSave(formData)}>
-          {i18nT("Save")}
-        </button>
-        <button className="cancel-btn" onClick={onCancel}>
-          {i18nT("Cancel")}
-        </button>
+
+        <div className="ingredients-section">
+          <h4>{i18nT("Required Ingredients")}</h4>
+          <div className="ingredients-grid">
+            {availableIngredients.map((ingredient) => {
+              const selected = formData.ingredients.find(
+                (ing) => ing.ingredient_id === ingredient.id
+              );
+              return (
+                <div key={ingredient.id} className="ingredient-item">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={!!selected}
+                      onChange={() => handleIngredientToggle(ingredient.id)}
+                    />
+                    {t(ingredient.name)}
+                  </label>
+                  {selected && (
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={selected.quantity_needed}
+                      onChange={(e) =>
+                        handleQuantityChange(ingredient.id, e.target.value)
+                      }
+                      placeholder="Qty"
+                      className="quantity-input"
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="form-actions">
+          <button type="submit">{i18nT("Add")}</button>
+          <button type="button" onClick={onCancel}>
+            {i18nT("Cancel")}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function ProductFormRow({ product, onSave, onCancel, availableIngredients }) {
+  const { t: i18nT } = useTranslation();
+  const { t } = useApp();
+  const [formData, setFormData] = useState({
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    ingredients: [],
+  });
+  const [showIngredients, setShowIngredients] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchProductIngredients();
+  }, []);
+
+  const fetchProductIngredients = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/products/${
+          product.id
+        }/ingredients`
+      );
+      const data = await response.json();
+      setFormData((prev) => ({ ...prev, ingredients: data }));
+    } catch (err) {
+      console.error("Error fetching product ingredients:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleIngredientToggle = (ingredientId) => {
+    setFormData((prev) => {
+      const exists = prev.ingredients.find(
+        (ing) => ing.ingredient_id === ingredientId
+      );
+      if (exists) {
+        return {
+          ...prev,
+          ingredients: prev.ingredients.filter(
+            (ing) => ing.ingredient_id !== ingredientId
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          ingredients: [
+            ...prev.ingredients,
+            { ingredient_id: ingredientId, quantity_needed: 1 },
+          ],
+        };
+      }
+    });
+  };
+
+  const handleQuantityChange = (ingredientId, quantity) => {
+    setFormData((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((ing) =>
+        ing.ingredient_id === ingredientId
+          ? { ...ing, quantity_needed: parseFloat(quantity) || 1 }
+          : ing
+      ),
+    }));
+  };
+
+  return (
+    <>
+      <td colSpan="5">
+        <div className="edit-product-form">
+          <div className="basic-info">
+            <div className="form-field">
+              <label>{i18nT("ID")}</label>
+              <span>{product.id}</span>
+            </div>
+            <div className="form-field">
+              <label>{i18nT("Name")}</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-field">
+              <label>{i18nT("Category")}</label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-field">
+              <label>{i18nT("Price")}</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="ingredients-toggle">
+            <button
+              type="button"
+              onClick={() => setShowIngredients(!showIngredients)}
+              className="toggle-ingredients-btn"
+            >
+              {showIngredients
+                ? `▼ ${i18nT("Hide Ingredients")}`
+                : `▶ ${i18nT("Edit Ingredients")} (${
+                    formData.ingredients.length
+                  })`}
+            </button>
+          </div>
+
+          {showIngredients && (
+            <div className="ingredients-section">
+              <h4>{i18nT("Required Ingredients")}</h4>
+              {loading ? (
+                <div>{i18nT("Loading...")}</div>
+              ) : (
+                <div className="ingredients-grid">
+                  {availableIngredients.map((ingredient) => {
+                    const selected = formData.ingredients.find(
+                      (ing) => ing.ingredient_id === ingredient.id
+                    );
+                    return (
+                      <div key={ingredient.id} className="ingredient-item">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={!!selected}
+                            onChange={() =>
+                              handleIngredientToggle(ingredient.id)
+                            }
+                          />
+                          {t(ingredient.name)}
+                        </label>
+                        {selected && (
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={selected.quantity_needed}
+                            onChange={(e) =>
+                              handleQuantityChange(ingredient.id, e.target.value)
+                            }
+                            placeholder="Qty"
+                            className="quantity-input"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="form-actions">
+            <button className="save-btn" onClick={() => onSave(formData)}>
+              {i18nT("Save")}
+            </button>
+            <button className="cancel-btn" onClick={onCancel}>
+              {i18nT("Cancel")}
+            </button>
+          </div>
+        </div>
       </td>
     </>
   );
