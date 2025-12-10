@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
-import GoogleAuth from "./components/GoogleAuth";
+import RoleSelectionPage from "./pages/RoleSelectionPage";
+import AuthPage from "./pages/AuthPage";
 import MenuPage from "./pages/MenuPage";
 import CustomizePage from "./pages/CustomizePage";
 import CartPage from "./pages/CartPage";
@@ -48,7 +49,8 @@ function App() {
 
           {/* routes for all the pages */}
           <Routes>
-            <Route path="/" element={<GoogleAuth />} />
+            <Route path="/" element={<RoleSelectionPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/customize/:id" element={<CustomizePage />} />
             <Route path="/cart" element={<CartPage />} />

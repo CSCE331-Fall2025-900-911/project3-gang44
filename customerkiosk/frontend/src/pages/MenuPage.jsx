@@ -86,25 +86,25 @@ export default function MenuPage() {
   return (
     <div className="menu-page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-        <div style={{ flex: '0 0 auto' }}>
+        <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button
+            style={{
+              padding: '10px 20px',
+              fontSize: '16px',
+              cursor: 'pointer',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => navigate("/")}
+          >
+            ← {i18nT("Back to Landing Page")}
+          </button>
           <WeatherWidget drinks={drinks} onDrinkClick={handleWeatherDrinkClick} />
         </div>
         <div className="menu-header" style={{ flex: '1', textAlign: 'center' }}>
           <h1>{i18nT("menu")}</h1>
-          <div className="mode-buttons">
-            <button
-              className="cashier-mode-button"
-              onClick={() => navigate("/cashier")}
-            >
-              {i18nT("Cashier Mode")}
-            </button>
-            <button
-              className="manager-mode-button"
-              onClick={() => navigate("/manager")}
-            >
-              {i18nT("Manager Mode")}
-            </button>
-          </div>
         </div>
         <div style={{ flex: '0 0 auto', width: '200px' }}></div>
       </div>

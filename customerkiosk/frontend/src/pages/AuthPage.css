@@ -1,0 +1,73 @@
+.auth-page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.auth-card {
+  background: white;
+  padding: 50px 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-card h1 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.auth-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.auth-content {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.cancel-button {
+  padding: 12px 30px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
+/* High contrast mode support */
+.high-contrast .auth-card {
+  background: #fff;
+  border: 3px solid #000;
+}
+
+.high-contrast .auth-card h1,
+.high-contrast .auth-subtitle {
+  color: #000;
+}
+
+.high-contrast .cancel-button {
+  background: #fff;
+  color: #000;
+  border: 3px solid #000;
+}
+
+.high-contrast .cancel-button:hover {
+  background: #ffff00;
+  color: #000;
+}

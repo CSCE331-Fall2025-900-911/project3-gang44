@@ -310,8 +310,8 @@ export default function CashierPage() {
     <div className="cashier-page">
       <div className="cashier-header">
         <div className="header-left">
-          <button className="back-button" onClick={() => navigate("/menu")}>
-            ← {i18nT("Back to Customer View")}
+          <button className="back-button" onClick={() => navigate("/")}>
+            ← {i18nT("Back to Landing Page")}
           </button>
           <h1>{i18nT("Cashier Mode")}</h1>
         </div>
