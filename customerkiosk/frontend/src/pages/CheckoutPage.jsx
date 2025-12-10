@@ -173,7 +173,9 @@ export default function CheckoutPage() {
               <div>
                 <strong>{t(item.name)}</strong>
                 <p style={{ fontSize: '0.9em', color: '#666' }}>
-                  {t(item.size)} • {t(item.iceLevel)} • {t(item.sweetnessLevel)}
+                  {t(item.size)} • {t(item.temperature || "Cold")}
+                  {item.temperature !== "Hot" && item.iceLevel && ` • ${t(item.iceLevel)}`}
+                  {' • '}{t(item.sweetnessLevel)}
                   {item.toppings.length > 0 && ` • ${item.toppings.map(tp => t(tp.name)).join(', ')}`}
                 </p>
               </div>

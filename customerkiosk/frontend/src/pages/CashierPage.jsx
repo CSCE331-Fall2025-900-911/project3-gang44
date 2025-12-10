@@ -393,8 +393,11 @@ export default function CashierPage() {
                           <br />
                           <small>
                             {t(item.customizations.size)} |{" "}
-                            {t(item.customizations.iceLevel)} |{" "}
-                            {t(item.customizations.sweetnessLevel)}
+                            {t(item.customizations.temperature || "Cold")}
+                            {item.customizations.temperature !== "Hot" && item.customizations.iceLevel && (
+                              <> | {t(item.customizations.iceLevel)}</>
+                            )}
+                            {" "} | {t(item.customizations.sweetnessLevel)}
                             {item.customizations.toppings.length > 0 && (
                               <>
                                 {" "}
@@ -664,6 +667,7 @@ function CustomizeModal({ product, customizations, onAdd, onCancel, editMode }) 
   const { t: i18nT } = useTranslation(); // For UI labels
   const { t } = useApp(); // For API translations
   const [size, setSize] = useState(editMode?.customizations?.size || "Medium");
+  const [temperature, setTemperature] = useState(editMode?.customizations?.temperature || "Cold");
   const [iceLevel, setIceLevel] = useState(editMode?.customizations?.iceLevel || "Regular Ice");
   const [sweetnessLevel, setSweetnessLevel] = useState(editMode?.customizations?.sweetnessLevel || "50%");
   const [selectedToppings, setSelectedToppings] = useState(editMode?.customizations?.toppings || []);
@@ -708,7 +712,8 @@ function CustomizeModal({ product, customizations, onAdd, onCancel, editMode }) 
       price_per_unit: finalPrice,
       customizations: {
         size,
-        iceLevel,
+        temperature,
+        iceLevel: temperature === "Hot" ? null : iceLevel,
         sweetnessLevel,
         toppings: selectedToppings,
       },
@@ -744,19 +749,36 @@ function CustomizeModal({ product, customizations, onAdd, onCancel, editMode }) 
           </div>
 
           <div className="customization-section">
-            <h3>{i18nT("Ice Level")}</h3>
+            <h3>{i18nT("Temperature")}</h3>
             <div className="button-group">
-              {customizations.iceOptions.map((option) => (
+              {customizations.temperatureOptions.map((temp) => (
                 <button
-                  key={option}
-                  className={iceLevel === option ? "selected" : ""}
-                  onClick={() => setIceLevel(option)}
+                  key={temp}
+                  className={temperature === temp ? "selected" : ""}
+                  onClick={() => setTemperature(temp)}
                 >
-                  {t(option)}
+                  {t(temp)}
                 </button>
               ))}
             </div>
           </div>
+
+          {temperature !== "Hot" && (
+            <div className="customization-section">
+              <h3>{i18nT("Ice Level")}</h3>
+              <div className="button-group">
+                {customizations.iceOptions.map((option) => (
+                  <button
+                    key={option}
+                    className={iceLevel === option ? "selected" : ""}
+                    onClick={() => setIceLevel(option)}
+                  >
+                    {t(option)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="customization-section">
             <h3>{i18nT("Sweetness")}</h3>

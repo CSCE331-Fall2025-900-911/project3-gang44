@@ -162,6 +162,91 @@ export const getDrinkRecommendation = (temp, weatherCode) => {
   };
 };
 
+// Helper function to find the product_id for a recommended drink
+export const findRecommendedDrinkId = (drinks, recommendedName) => {
+  if (!drinks || !recommendedName) return null;
+
+  const normalizeName = (name) =>
+    name.toLowerCase().replace(/\s+/g, " ").trim();
+  const recommendedNameNormalized = normalizeName(recommendedName);
+
+  console.log("Looking for recommended drink:", recommendedName);
+  console.log("Available drinks:", drinks.map(d => d.name));
+
+  // First try: exact match
+  let drink = drinks.find((d) =>
+    normalizeName(d.name) === recommendedNameNormalized
+  );
+
+  if (drink) {
+    console.log("Found exact match:", drink.name);
+    return drink.product_id || drink.item_id;
+  }
+
+  // Second try: contains match (either direction)
+  drink = drinks.find((d) => {
+    const drinkName = normalizeName(d.name);
+    return (
+      drinkName.includes(recommendedNameNormalized) ||
+      recommendedNameNormalized.includes(drinkName)
+    );
+  });
+
+  if (drink) {
+    console.log("Found contains match:", drink.name);
+    return drink.product_id || drink.item_id;
+  }
+
+  // Third try: match all significant words (>3 chars)
+  const recommendedWords = recommendedNameNormalized
+    .split(" ")
+    .filter((w) => w.length > 3);
+
+  drink = drinks.find((d) => {
+    const drinkName = normalizeName(d.name);
+    const drinkWords = drinkName.split(" ").filter((w) => w.length > 3);
+
+    // Check if all recommended words are in the drink name
+    const allWordsMatch = recommendedWords.every((word) =>
+      drinkName.includes(word)
+    );
+
+    if (allWordsMatch && recommendedWords.length > 0) {
+      return true;
+    }
+
+    // Or check if most words match
+    const matchCount = recommendedWords.filter((word) =>
+      drinkName.includes(word)
+    ).length;
+
+    return matchCount >= Math.ceil(recommendedWords.length * 0.7);
+  });
+
+  if (drink) {
+    console.log("Found word match:", drink.name);
+    return drink.product_id || drink.item_id;
+  }
+
+  // Fourth try: fallback to any milk tea if recommended is a milk tea
+  if (recommendedNameNormalized.includes("milk tea")) {
+    drink = drinks.find((d) => normalizeName(d.name).includes("milk tea"));
+    if (drink) {
+      console.log("Found milk tea fallback:", drink.name);
+      return drink.product_id || drink.item_id;
+    }
+  }
+
+  // Last resort: return first drink
+  if (drinks.length > 0) {
+    console.log("Using fallback (first drink):", drinks[0].name);
+    return drinks[0].product_id || drinks[0].item_id;
+  }
+
+  console.log("No drink found");
+  return null;
+};
+
 // Simple Weather Component for MenuPage - shows temperature and recommended drink
 export const WeatherWidget = ({ drinks, onDrinkClick }) => {
   const { weather, loading, error } = useWeather();
@@ -186,21 +271,8 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
 
     const handleClick = () => {
       if (drinks && onDrinkClick) {
-        const normalizeName = (name) =>
-          name.toLowerCase().replace(/\s+/g, " ").trim();
-        // Try to find a milk tea drink
-        let drink = drinks.find((d) => {
-          const drinkName = normalizeName(d.name);
-          return (
-            drinkName.includes("milk tea") || drinkName.includes("classic")
-          );
-        });
-        // If no milk tea, just get the first drink
-        if (!drink && drinks.length > 0) {
-          drink = drinks[0];
-        }
-        if (drink) {
-          const productId = drink.product_id || drink.item_id;
+        const productId = findRecommendedDrinkId(drinks, defaultRecommendation.name);
+        if (productId) {
           onDrinkClick(productId);
         }
       }
@@ -218,44 +290,8 @@ export const WeatherWidget = ({ drinks, onDrinkClick }) => {
 
   const handleClick = () => {
     if (drinks && onDrinkClick) {
-      // Normalize names for better matching
-      const normalizeName = (name) =>
-        name.toLowerCase().replace(/\s+/g, " ").trim();
-      const recommendedName = normalizeName(recommendedDrink.name);
-
-      // Try to find the recommended drink by name (flexible matching)
-      let drink = drinks.find((d) => {
-        const drinkName = normalizeName(d.name);
-        // Check if names match or contain each other
-        return (
-          drinkName.includes(recommendedName) ||
-          recommendedName.includes(drinkName) ||
-          // Try matching key words (e.g., "Passion Fruit" matches "Passionfruit")
-          recommendedName
-            .split(" ")
-            .some((word) => word.length > 3 && drinkName.includes(word)) ||
-          drinkName
-            .split(" ")
-            .some((word) => word.length > 3 && recommendedName.includes(word))
-        );
-      });
-
-      // If no match, try matching by keywords from recommendation
-      if (!drink) {
-        const keywords = recommendedName.split(" ").filter((w) => w.length > 3);
-        drink = drinks.find((d) => {
-          const drinkName = normalizeName(d.name);
-          return keywords.some((keyword) => drinkName.includes(keyword));
-        });
-      }
-
-      // Last resort: find any milk tea
-      if (!drink) {
-        drink = drinks.find((d) => normalizeName(d.name).includes("milk tea"));
-      }
-
-      if (drink) {
-        const productId = drink.product_id || drink.item_id;
+      const productId = findRecommendedDrinkId(drinks, recommendedDrink.name);
+      if (productId) {
         onDrinkClick(productId);
       }
     }

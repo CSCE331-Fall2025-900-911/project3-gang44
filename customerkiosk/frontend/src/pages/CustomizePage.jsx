@@ -19,6 +19,7 @@ export default function CustomizePage() {
   const [loading, setLoading] = useState(true);
 
   const [size, setSize] = useState("Medium");
+  const [temperature, setTemperature] = useState("Cold");
   const [iceLevel, setIceLevel] = useState("Regular Ice");
   const [sweetnessLevel, setSweetnessLevel] = useState("50%");
   const [selectedToppings, setSelectedToppings] = useState([]); // Array of full topping objects
@@ -36,6 +37,7 @@ export default function CustomizePage() {
       if (itemToEdit) {
         console.log("Found item to edit:", itemToEdit);
         setSize(itemToEdit.size || "Medium");
+        setTemperature(itemToEdit.temperature || "Cold");
         setIceLevel(itemToEdit.iceLevel || "Regular Ice");
         setSweetnessLevel(itemToEdit.sweetnessLevel || "50%");
         setSelectedToppings(itemToEdit.toppings || []);
@@ -44,6 +46,7 @@ export default function CustomizePage() {
       // Reset selections and drink when ID changes (new item mode)
       setSelectedToppings([]);
       setSize("Medium");
+      setTemperature("Cold");
       setIceLevel("Regular Ice");
       setSweetnessLevel("50%");
     }
@@ -221,7 +224,8 @@ export default function CustomizePage() {
       menuItemId: productId,
       name: drink.name,
       size,
-      iceLevel,
+      temperature,
+      iceLevel: temperature === "Hot" ? null : iceLevel,
       sweetnessLevel,
       toppings: selectedToppings,
       price: parseFloat(calculatePrice()),
@@ -279,19 +283,36 @@ export default function CustomizePage() {
       </div>
 
       <div className="customization-section">
-        <h3>{i18nT("ice")}</h3>
+        <h3>{i18nT("Temperature")}</h3>
         <div className="button-group">
-          {customizations.iceOptions.map((option) => (
+          {customizations.temperatureOptions.map((temp) => (
             <button
-              key={option}
-              className={iceLevel === option ? "selected" : ""}
-              onClick={() => setIceLevel(option)}
+              key={temp}
+              className={temperature === temp ? "selected" : ""}
+              onClick={() => setTemperature(temp)}
             >
-              {t(option)}
+              {t(temp)}
             </button>
           ))}
         </div>
       </div>
+
+      {temperature !== "Hot" && (
+        <div className="customization-section">
+          <h3>{i18nT("ice")}</h3>
+          <div className="button-group">
+            {customizations.iceOptions.map((option) => (
+              <button
+                key={option}
+                className={iceLevel === option ? "selected" : ""}
+                onClick={() => setIceLevel(option)}
+              >
+                {t(option)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="customization-section">
         <h3>{i18nT("sweetness")}</h3>
