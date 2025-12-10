@@ -60,6 +60,14 @@ export const translations = {
     "Order as a customer": "Order as a customer",
     "Staff authentication required": "Staff authentication required",
     "Please select your role": "Please select your role",
+    "Cashier Mode - Authentication Required":
+      "Cashier Mode - Authentication Required",
+    "Manager Mode - Authentication Required":
+      "Manager Mode - Authentication Required",
+    "Staff Authentication Required": "Staff Authentication Required",
+    "Please sign in with your staff account to continue":
+      "Please sign in with your staff account to continue",
+    "Use your staff Google account": "Sign in with Google staff account",
 
     // Cashier Page
     "Loading cashier mode...": "Loading cashier mode...",
@@ -353,6 +361,15 @@ export const translations = {
     "Order as a customer": "Ordenar como cliente",
     "Staff authentication required": "Se requiere autenticación del personal",
     "Please select your role": "Por favor seleccione su rol",
+    "Cashier Mode - Authentication Required":
+      "Modo Cajero - Autenticación Requerida",
+    "Manager Mode - Authentication Required":
+      "Modo Administrador - Autenticación Requerida",
+    "Staff Authentication Required": "Autenticación del Personal Requerida",
+    "Please sign in with your staff account to continue":
+      "Por favor, inicie sesión con su cuenta de personal para continuar",
+    "Use your staff Google account":
+      "Inicie sesión con cuenta de Google del personal",
 
     // Cashier Page
     "Loading cashier mode...": "Cargando modo cajero...",

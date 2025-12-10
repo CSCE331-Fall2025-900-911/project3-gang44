@@ -78,22 +78,28 @@
 }
 
 /* High contrast mode support */
-.high-contrast .role-selection-container h1,
-.high-contrast .button-text h2 {
-  color: #000;
+.high-contrast .role-selection-container h1 {
+  color: #fff;
 }
 
-.high-contrast .subtitle,
-.high-contrast .button-text p {
-  color: #000;
+.high-contrast .subtitle {
+  color: #fff;
 }
 
 .high-contrast .role-button {
   background: #fff;
-  border: 3px solid #000;
+  border: 3px solid #fff !important;
+}
+
+.high-contrast .button-text h2 {
+  color: #000;
+}
+
+.high-contrast .button-text p {
+  color: #000;
 }
 
 .high-contrast .role-button:hover {
   background: #ffff00;
-  border-color: #000;
+  border-color: #fff !important;
 }
