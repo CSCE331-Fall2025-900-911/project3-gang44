@@ -42,6 +42,86 @@ body {
   border-color: #000 !important;
 }
 
+/* Product buttons in high contrast use green background */
+.high-contrast .product-button {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .product-name {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .product-price {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+.high-contrast .product-button {
+  background: #4a8f3f !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* Add hover and active state for buttons in high contrast */
+.high-contrast button:hover:not(:disabled),
+.high-contrast .language-toggle:hover,
+.high-contrast .high-contrast-toggle:hover,
+.high-contrast .add-to-cart-btn:hover,
+.high-contrast .cart-button:hover,
+.high-contrast .cashier-mode-button:hover,
+.high-contrast .manager-mode-button:hover,
+.high-contrast .category-tab:hover,
+.high-contrast .product-button:hover,
+.high-contrast .customization-section button:hover,
+.high-contrast .place-order-btn:hover,
+.high-contrast .confirmation-page button:hover,
+.high-contrast .empty-cart button:hover,
+.high-contrast .cart-item button:hover {
+  background: #ddd !important;
+  color: #000 !important;
+}
+
+/* Add active/clicked state for buttons in high contrast */
+.high-contrast button:active:not(:disabled),
+.high-contrast .language-toggle:active,
+.high-contrast .add-to-cart-btn:active,
+.high-contrast .cart-button:active,
+.high-contrast .cashier-mode-button:active,
+.high-contrast .manager-mode-button:active,
+.high-contrast .category-tab:active,
+.high-contrast .product-button:active,
+.high-contrast .customization-section button:active,
+.high-contrast .place-order-btn:active,
+.high-contrast .confirmation-page button:active,
+.high-contrast .empty-cart button:active,
+.high-contrast .cart-item button:active {
+  background: #999 !important;
+  color: #fff !important;
+  border-color: #666 !important;
+}
+
+/* Add focus state for keyboard navigation in high contrast */
+.high-contrast button:focus,
+.high-contrast .language-toggle:focus,
+.high-contrast .high-contrast-toggle:focus,
+.high-contrast .add-to-cart-btn:focus,
+.high-contrast .cart-button:focus,
+.high-contrast .cashier-mode-button:focus,
+.high-contrast .manager-mode-button:focus,
+.high-contrast .category-tab:focus,
+.high-contrast .product-button:focus,
+.high-contrast .customization-section button:focus,
+.high-contrast .place-order-btn:focus,
+.high-contrast .confirmation-page button:focus,
+.high-contrast .empty-cart button:focus,
+.high-contrast .cart-item button:focus {
+  outline: 3px solid #666 !important;
+  outline-offset: 2px;
+}
+
 /* Override cart button border in high-contrast mode */
 .high-contrast .cart-button {
   border-color: #2b5726 !important;
@@ -311,18 +391,19 @@ body {
 }
 
 /* Buttons (size/ice/sweetness/toppings) in customize: unselected use green (page color) with white text */
-.high-contrast .customize-page .customization-section button {
+.high-contrast .customize-page .customization-section button:not(.selected) {
   background: #2b5726 !important;
   color: #fff !important;
   border-color: #fff !important;
 }
 
-/* Selected option should be black with white text */
+/* Selected option should be highly contrasting */
 .high-contrast .customize-page .customization-section button.selected {
-  /* Selected options: white background with green text and border */
-  background: #ffffff !important;
-  color: #2b5726 !important;
-  border-color: #2b5726 !important;
+  /* Selected options: yellow/bright background with dark text for maximum contrast */
+  background: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+  font-weight: bold !important;
 }
 
 /* Ensure add-to-cart button is visible on the white card: use green background */
@@ -570,6 +651,7 @@ body {
   border: 2px solid #333;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .customization-section button:hover {
@@ -577,8 +659,9 @@ body {
 }
 
 .customization-section button.selected {
-  background: #333;
+  background: #667eea;
   color: white;
+  border-color: #667eea;
 }
 
 .price-section {

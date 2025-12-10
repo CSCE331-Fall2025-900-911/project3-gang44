@@ -754,7 +754,7 @@ function CustomizeModal({ product, customizations, onAdd, onCancel, editMode }) 
 
   return (
     <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content customize-page" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
             {editMode ? i18nT("Edit Item") : i18nT("Customize")}: {t(product.name)}
