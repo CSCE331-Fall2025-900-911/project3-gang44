@@ -87,75 +87,29 @@ body {
   border-color: #fff !important;
 }
 
-/* Add hover and active state for buttons in high contrast */
-.high-contrast button:hover:not(:disabled),
-.high-contrast .language-toggle:hover,
-.high-contrast .high-contrast-toggle:hover,
-.high-contrast .add-to-cart-btn:hover,
-.high-contrast .cart-button:hover,
-.high-contrast .cashier-mode-button:hover,
-.high-contrast .manager-mode-button:hover,
-.high-contrast .category-tab:hover,
-.high-contrast .product-button:hover,
-.high-contrast .customization-section button:hover,
-.high-contrast .place-order-btn:hover,
-.high-contrast .confirmation-page button:hover,
-.high-contrast .empty-cart button:hover,
-.high-contrast .cart-item button:hover {
-  background: #ddd !important;
+/* Exclude period buttons from generic button hover */
+.high-contrast .period-buttons button:hover {
+  background: #2b5726 !important;
+  color: #fff !important;
+}
+
+.high-contrast .period-buttons button.active:hover {
+  background: #ffff00 !important;
   color: #000 !important;
 }
 
 /* Add active/clicked state for buttons in high contrast */
-.high-contrast button:active:not(:disabled),
-.high-contrast .language-toggle:active,
-.high-contrast .add-to-cart-btn:active,
-.high-contrast .cart-button:active,
-.high-contrast .cashier-mode-button:active,
-.high-contrast .manager-mode-button:active,
-.high-contrast .category-tab:active,
-.high-contrast .product-button:active,
-.high-contrast .customization-section button:active,
-.high-contrast .place-order-btn:active,
-.high-contrast .confirmation-page button:active,
-.high-contrast .empty-cart button:active,
-.high-contrast .cart-item button:active {
-  background: #999 !important;
-  color: #fff !important;
-  border-color: #666 !important;
-}
-
-/* Add focus state for keyboard navigation in high contrast */
-.high-contrast button:focus,
-.high-contrast .language-toggle:focus,
-.high-contrast .high-contrast-toggle:focus,
-.high-contrast .add-to-cart-btn:focus,
-.high-contrast .cart-button:focus,
-.high-contrast .cashier-mode-button:focus,
-.high-contrast .manager-mode-button:focus,
-.high-contrast .category-tab:focus,
-.high-contrast .product-button:focus,
-.high-contrast .customization-section button:focus,
-.high-contrast .place-order-btn:focus,
-.high-contrast .confirmation-page button:focus,
-.high-contrast .empty-cart button:focus,
-.high-contrast .cart-item button:focus {
-  outline: 3px solid #666 !important;
-  outline-offset: 2px;
-}
-
-/* Override cart button border in high-contrast mode */
 .high-contrast .cart-button {
   border-color: #2b5726 !important;
 }
 
 /* Specific override: when high-contrast is active, the back button should be green (#2b5726)
-   with white text. We place this after the broad high-contrast rule and use !important
+   with white text and white border. We place this after the broad high-contrast rule and use !important
    so it wins against the multi-selector above. */
 .high-contrast .back-button {
   background: #2b5726 !important;
   color: #ffffff !important;
-  border-color: #1f3f1b !important;
+  border-color: #ffffff !important;
 }
 
 .high-contrast .back-button:hover {
@@ -295,6 +249,28 @@ body {
   background: #2b5726 !important;
   color: #fff !important;
   border-color: #fff !important;
+}
+
+/* Manager view background override */
+.manager-view .app {
+  background: #d4e9f7 !important;
+}
+
+.high-contrast.manager-view .app {
+  background: #2b5726 !important;
+}
+
+/* High contrast mode: remove focus outlines and hover effects on accessibility buttons */
+.high-contrast .language-toggle:focus,
+.high-contrast .high-contrast-toggle:focus,
+.high-contrast .text-size-adjuster:focus,
+.high-contrast .text-size-adjuster button:focus {
+  outline: none !important;
+}
+
+.high-contrast .language-toggle:hover,
+.high-contrast .high-contrast-toggle:hover {
+  background: white !important;
 }
 
 /* High contrast toggle button */
