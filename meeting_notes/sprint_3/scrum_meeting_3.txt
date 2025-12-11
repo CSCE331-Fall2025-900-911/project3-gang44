@@ -1,0 +1,12 @@
+SCRUM Meeting 3 for Project 3
+Prepared by: Justin	
+Meeting Date: Dec 8, 2025
+
+Meeting Agenda Items:
+Reviewed Stripe progress
+Checked status of all accessibility features
+Examined failed elements during mock secret shopper
+Planned final push from team to complete project
+
+Minutes from Previous Meeting:
+In the previous meeting, the team faced a bit of a crossroads and had to decide where to go. Discovered bugs were discussed and assigned squashers. As well, the difficulty of implementing a screen reader was discussed, and it was ultimately decided to switch to a high contrast feature. All team members agreed with this decision. Furthermore, the next two weeks of the project were discussed and contemplated with the team ultimately dispersing assignments and agreeing to prioritize exams.
