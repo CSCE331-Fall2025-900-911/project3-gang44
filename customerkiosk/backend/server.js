@@ -834,29 +834,57 @@ app.delete('/api/manager/employees/:id', async (req, res) => {
   }
 });
 
-// Generate X-Report
+// Generate X-Report (hourly totals for current day up to current hour)
 app.get('/api/manager/reports/x-report', async (req, res) => {
   try {
-    const today = new Date();
+    const now = new Date();
+    const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
-    // Get orders for today
-    const ordersResult = await pool.query(`
-      SELECT o.order_id, o.total_price, o.order_date
-      FROM orders o
-      WHERE o.order_date >= $1
-      ORDER BY o.order_date DESC
+    // Check if Z-report has been run today
+    const zReportCheck = await pool.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
     `, [today]);
 
-    // Get order items
+    if (zReportCheck.rows.length > 0) {
+      return res.status(403).json({
+        error: 'Z-Report has already been run for today. X-Report cannot be generated.',
+        zReportDate: zReportCheck.rows[0].report_date
+      });
+    }
+
+    // Get hourly sales data up to current hour using created_at timestamp (converted to Central Time)
+    const hourlyResult = await pool.query(`
+      SELECT
+        EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')) as hour,
+        COUNT(o.order_id) as order_count,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COALESCE(SUM(oi_count.item_count), 0) as items_sold
+      FROM orders o
+      LEFT JOIN (
+        SELECT order_id, SUM(quantity) as item_count
+        FROM order_items
+        GROUP BY order_id
+      ) oi_count ON o.order_id = oi_count.order_id
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
+        AND (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago') <= $2
+      GROUP BY EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago'))
+      ORDER BY hour ASC
+    `, [today, now]);
+
+    // Get order items for today up to now using created_at timestamp (converted to Central Time)
     const itemsResult = await pool.query(`
       SELECT oi.product_name, SUM(oi.quantity) as quantity
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.order_id
-      WHERE o.order_date >= $1
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
+        AND (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago') <= $2
       GROUP BY oi.product_name
       ORDER BY quantity DESC
-    `, [today]);
+    `, [today, now]);
 
     // Get low stock items
     const lowStockResult = await pool.query(`
@@ -872,14 +900,22 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
       FROM employees
     `);
 
-    const totalRevenue = ordersResult.rows.reduce((sum, order) => sum + parseFloat(order.total_price), 0);
-    const totalItems = itemsResult.rows.reduce((sum, item) => sum + parseInt(item.quantity), 0);
+    const totalRevenue = hourlyResult.rows.reduce((sum, hour) => sum + parseFloat(hour.revenue), 0);
+    const totalOrders = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.order_count), 0);
+    const totalItems = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.items_sold), 0);
 
     res.json({
       date: today,
-      totalOrders: ordersResult.rows.length,
+      currentTime: now,
+      totalOrders,
       totalRevenue,
       totalItems,
+      hourlyData: hourlyResult.rows.map(row => ({
+        hour: parseInt(row.hour),
+        orderCount: parseInt(row.order_count),
+        revenue: parseFloat(row.revenue),
+        itemsSold: parseInt(row.items_sold)
+      })),
       topItems: itemsResult.rows.slice(0, 5),
       lowStock: lowStockResult.rows,
       employeeCount: parseInt(employeeResult.rows[0].count),
@@ -887,6 +923,158 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
     });
   } catch (err) {
     console.error('Error generating X-report:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate Z-Report (end-of-day report, can only run once per day)
+app.post('/api/manager/reports/z-report', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    // Check if Z-report has already been run today
+    const existingZReport = await client.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
+    `, [today]);
+
+    if (existingZReport.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'Z-Report has already been run for today.',
+        existingReport: existingZReport.rows[0]
+      });
+    }
+
+    // Get hourly sales data for the entire day using created_at timestamp (converted to Central Time)
+    const hourlyResult = await client.query(`
+      SELECT
+        EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')) as hour,
+        COUNT(o.order_id) as order_count,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COALESCE(SUM(oi_count.item_count), 0) as items_sold
+      FROM orders o
+      LEFT JOIN (
+        SELECT order_id, SUM(quantity) as item_count
+        FROM order_items
+        GROUP BY order_id
+      ) oi_count ON o.order_id = oi_count.order_id
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
+      GROUP BY EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago'))
+      ORDER BY hour ASC
+    `, [today]);
+
+    // Get order items for today using created_at timestamp (converted to Central Time)
+    const itemsResult = await client.query(`
+      SELECT oi.product_name, SUM(oi.quantity) as quantity
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.order_id
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
+      GROUP BY oi.product_name
+      ORDER BY quantity DESC
+    `, [today]);
+
+    // Get low stock items
+    const lowStockResult = await client.query(`
+      SELECT name, quantity
+      FROM ingredients
+      WHERE quantity < 10
+      ORDER BY quantity ASC
+    `);
+
+    // Get employee stats
+    const employeeResult = await client.query(`
+      SELECT COUNT(*) as count, AVG(wage) as avg_wage
+      FROM employees
+    `);
+
+    const totalRevenue = hourlyResult.rows.reduce((sum, hour) => sum + parseFloat(hour.revenue), 0);
+    const totalOrders = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.order_count), 0);
+    const totalItems = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.items_sold), 0);
+
+    // Save Z-Report to database
+    const zReportData = {
+      date: today,
+      totalOrders,
+      totalRevenue,
+      totalItems,
+      hourlyData: hourlyResult.rows,
+      topItems: itemsResult.rows.slice(0, 5),
+      lowStock: lowStockResult.rows,
+      employeeCount: parseInt(employeeResult.rows[0].count),
+      avgWage: parseFloat(employeeResult.rows[0].avg_wage) || 0
+    };
+
+    const zReportResult = await client.query(`
+      INSERT INTO z_reports (report_date, report_data)
+      VALUES ($1, $2)
+      RETURNING report_id, report_date
+    `, [now, JSON.stringify(zReportData)]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      reportId: zReportResult.rows[0].report_id,
+      reportDate: zReportResult.rows[0].report_date,
+      date: today,
+      currentTime: now,
+      totalOrders,
+      totalRevenue,
+      totalItems,
+      hourlyData: hourlyResult.rows.map(row => ({
+        hour: parseInt(row.hour),
+        orderCount: parseInt(row.order_count),
+        revenue: parseFloat(row.revenue),
+        itemsSold: parseInt(row.items_sold)
+      })),
+      topItems: itemsResult.rows.slice(0, 5),
+      lowStock: lowStockResult.rows,
+      employeeCount: parseInt(employeeResult.rows[0].count),
+      avgWage: parseFloat(employeeResult.rows[0].avg_wage) || 0
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error generating Z-report:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Check if Z-report has been run today
+app.get('/api/manager/reports/z-report/status', async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const result = await pool.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
+    `, [today]);
+
+    if (result.rows.length > 0) {
+      res.json({
+        hasBeenRun: true,
+        reportId: result.rows[0].report_id,
+        reportDate: result.rows[0].report_date
+      });
+    } else {
+      res.json({
+        hasBeenRun: false
+      });
+    }
+  } catch (err) {
+    console.error('Error checking Z-report status:', err);
     res.status(500).json({ error: err.message });
   }
 });

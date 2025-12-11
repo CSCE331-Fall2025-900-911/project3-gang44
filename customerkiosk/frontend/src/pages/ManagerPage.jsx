@@ -1441,6 +1441,8 @@ function ReportsTab() {
   const { t: i18nT } = useTranslation();
   const { t } = useApp(); // For translating product/ingredient names
   const [xReportData, setXReportData] = useState(null);
+  const [zReportData, setZReportData] = useState(null);
+  const [zReportStatus, setZReportStatus] = useState({ hasBeenRun: false });
   const [productUsageData, setProductUsageData] = useState(null);
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -1449,16 +1451,76 @@ function ReportsTab() {
     new Date().toISOString().split("T")[0]
   );
 
+  useEffect(() => {
+    checkZReportStatus();
+  }, []);
+
+  const checkZReportStatus = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/reports/z-report/status`
+      );
+      const data = await response.json();
+      setZReportStatus(data);
+    } catch (err) {
+      console.error("Error checking Z-report status:", err);
+    }
+  };
+
   const generateXReport = async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/manager/reports/x-report`
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 403) {
+          alert(i18nT("Cannot generate X-Report: Z-Report has already been run for today."));
+          return;
+        }
+        throw new Error(errorData.error || "Failed to generate X-report");
+      }
+
       const data = await response.json();
       setXReportData(data);
     } catch (err) {
       console.error("Error generating X-report:", err);
-      alert(i18nT("Failed to generate X-report"));
+      alert(i18nT("Failed to generate X-report: ") + err.message);
+    }
+  };
+
+  const generateZReport = async () => {
+    if (zReportStatus.hasBeenRun) {
+      alert(i18nT("Z-Report has already been run for today."));
+      return;
+    }
+
+    if (!confirm(i18nT("Are you sure you want to run the Z-Report? This can only be done once per day and will prevent X-Reports from being generated."))) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/reports/z-report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate Z-report");
+      }
+
+      const data = await response.json();
+      setZReportData(data);
+      setZReportStatus({ hasBeenRun: true, reportDate: data.reportDate });
+      alert(i18nT("Z-Report generated successfully! X-Reports are now disabled for today."));
+    } catch (err) {
+      console.error("Error generating Z-report:", err);
+      alert(i18nT("Failed to generate Z-report: ") + err.message);
     }
   };
 
@@ -1477,19 +1539,48 @@ function ReportsTab() {
     }
   };
 
+  const formatHourDisplay = (hour) => {
+    const period = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:00 ${period}`;
+  };
+
   return (
     <div className="tab-content">
       <h2>{i18nT("Reports")}</h2>
 
+      {zReportStatus.hasBeenRun && (
+        <div className="z-report-notice" style={{
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffc107",
+          padding: "10px",
+          marginBottom: "20px",
+          borderRadius: "5px"
+        }}>
+          <strong>{i18nT("Notice")}:</strong> {i18nT("Z-Report has been run for today. X-Report is disabled.")}
+        </div>
+      )}
+
       <div className="report-section">
-        <h3>{i18nT("X-Report (Today's Activity)")}</h3>
-        <button className="generate-report-btn" onClick={generateXReport}>
+        <h3>{i18nT("X-Report (Hourly Totals Up to Current Hour)")}</h3>
+        <button
+          className="generate-report-btn"
+          onClick={generateXReport}
+          disabled={zReportStatus.hasBeenRun}
+          style={{
+            opacity: zReportStatus.hasBeenRun ? 0.5 : 1,
+            cursor: zReportStatus.hasBeenRun ? "not-allowed" : "pointer"
+          }}
+        >
           {i18nT("Generate X-Report")}
         </button>
 
         {xReportData && (
           <div className="report-display">
             <h4>{i18nT("Sales Summary")}</h4>
+            <p>
+              {i18nT("Report Time")}: {new Date(xReportData.currentTime).toLocaleString()}
+            </p>
             <p>
               {i18nT("Total Orders")}: {xReportData.totalOrders}
             </p>
@@ -1499,6 +1590,34 @@ function ReportsTab() {
             <p>
               {i18nT("Total Revenue")}: ${xReportData.totalRevenue.toFixed(2)}
             </p>
+
+            <h4>{i18nT("Hourly Breakdown")}</h4>
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>{i18nT("Hour")}</th>
+                  <th>{i18nT("Orders")}</th>
+                  <th>{i18nT("Items Sold")}</th>
+                  <th>{i18nT("Revenue")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {xReportData.hourlyData && xReportData.hourlyData.length > 0 ? (
+                  xReportData.hourlyData.map((hourData, index) => (
+                    <tr key={index}>
+                      <td>{formatHourDisplay(hourData.hour)}</td>
+                      <td>{hourData.orderCount}</td>
+                      <td>{hourData.itemsSold}</td>
+                      <td>${parseFloat(hourData.revenue).toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">{i18nT("No sales data for today yet")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
 
             <h4>{i18nT("Top Selling Items")}</h4>
             <ul>
@@ -1532,6 +1651,104 @@ function ReportsTab() {
 
             {/* Charts for X-Report */}
             <XReportCharts xReportData={xReportData} />
+          </div>
+        )}
+      </div>
+
+      <div className="report-section">
+        <h3>{i18nT("Z-Report (End-of-Day Report)")}</h3>
+        <button
+          className="generate-report-btn"
+          onClick={generateZReport}
+          disabled={zReportStatus.hasBeenRun}
+          style={{
+            opacity: zReportStatus.hasBeenRun ? 0.5 : 1,
+            cursor: zReportStatus.hasBeenRun ? "not-allowed" : "pointer",
+            backgroundColor: zReportStatus.hasBeenRun ? "#6c757d" : "#dc3545"
+          }}
+        >
+          {zReportStatus.hasBeenRun ? i18nT("Z-Report Already Run") : i18nT("Generate Z-Report")}
+        </button>
+        <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "5px" }}>
+          {i18nT("Warning: Z-Report can only be run once per day and will disable X-Reports.")}
+        </p>
+
+        {zReportData && (
+          <div className="report-display">
+            <h4>{i18nT("Sales Summary")}</h4>
+            <p>
+              {i18nT("Report Time")}: {new Date(zReportData.reportDate).toLocaleString()}
+            </p>
+            <p>
+              {i18nT("Total Orders")}: {zReportData.totalOrders}
+            </p>
+            <p>
+              {i18nT("Total Items Sold")}: {zReportData.totalItems}
+            </p>
+            <p>
+              {i18nT("Total Revenue")}: ${zReportData.totalRevenue.toFixed(2)}
+            </p>
+
+            <h4>{i18nT("Hourly Breakdown")}</h4>
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>{i18nT("Hour")}</th>
+                  <th>{i18nT("Orders")}</th>
+                  <th>{i18nT("Items Sold")}</th>
+                  <th>{i18nT("Revenue")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {zReportData.hourlyData && zReportData.hourlyData.length > 0 ? (
+                  zReportData.hourlyData.map((hourData, index) => (
+                    <tr key={index}>
+                      <td>{formatHourDisplay(hourData.hour)}</td>
+                      <td>{hourData.orderCount}</td>
+                      <td>{hourData.itemsSold}</td>
+                      <td>${parseFloat(hourData.revenue).toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">{i18nT("No sales data for today")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            <h4>{i18nT("Top Selling Items")}</h4>
+            <ul>
+              {zReportData.topItems.map((item, index) => (
+                <li key={index}>
+                  {t(item.product_name)}: {item.quantity} {i18nT("Quantity")}
+                </li>
+              ))}
+            </ul>
+
+            <h4>{i18nT("Low Stock Items")}</h4>
+            {zReportData.lowStock.length === 0 ? (
+              <p>{i18nT("All stock levels are sufficient.")}</p>
+            ) : (
+              <ul>
+                {zReportData.lowStock.map((item, index) => (
+                  <li key={index}>
+                    {item.name}: {item.quantity} {i18nT("Quantity")}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <h4>{i18nT("Employee Statistics")}</h4>
+            <p>
+              {i18nT("Total Employees")}: {zReportData.employeeCount}
+            </p>
+            <p>
+              {i18nT("Average Wage")}: ${zReportData.avgWage.toFixed(2)}/hr
+            </p>
+
+            {/* Charts for Z-Report */}
+            <XReportCharts xReportData={zReportData} />
           </div>
         )}
       </div>
