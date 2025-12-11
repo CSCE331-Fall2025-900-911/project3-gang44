@@ -12,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Pie, Line } from "react-chartjs-2";
+import { useApp } from "../context/AppContext";
 
 ChartJS.register(
   CategoryScale,
@@ -27,6 +28,8 @@ ChartJS.register(
 
 export function MenuStatsChart({ stats }) {
   // stats: [{ name, totalSold, avgPerDay }, ...]
+  const { isHighContrast } = useApp();
+  const opacity = isHighContrast ? "1" : "0.6";
   const labels = stats.map((s) => s.name);
   const data = {
     labels,
@@ -34,12 +37,12 @@ export function MenuStatsChart({ stats }) {
       {
         label: "Total Sold",
         data: stats.map((s) => s.totalSold),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        backgroundColor: `rgba(54, 162, 235, ${opacity})`,
       },
       {
         label: "Avg/Day",
         data: stats.map((s) => s.avgPerDay),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        backgroundColor: `rgba(75, 192, 192, ${opacity})`,
       },
     ],
   };
@@ -57,6 +60,8 @@ export function MenuStatsChart({ stats }) {
 
 export function InventoryChart({ ingredients }) {
   // ingredients: [{ id, name, quantity }, ...]
+  const { isHighContrast } = useApp();
+  const opacity = isHighContrast ? "1" : "0.7";
   const labels = ingredients.map((i) => i.name);
   const data = {
     labels,
@@ -64,8 +69,8 @@ export function InventoryChart({ ingredients }) {
       {
         label: "Quantity",
         data: ingredients.map((i) => i.quantity),
-        backgroundColor: labels.map((_, idx) =>
-          `hsl(${(idx * 40) % 360} 70% 50% / 0.7)`
+        backgroundColor: labels.map(
+          (_, idx) => `hsl(${(idx * 40) % 360} 70% 50% / ${opacity})`
         ),
       },
     ],
@@ -80,6 +85,8 @@ export function InventoryChart({ ingredients }) {
 
 export function IngredientAmountChart({ ingredients }) {
   // Show top 6 ingredients in a pie
+  const { isHighContrast } = useApp();
+  const opacity = isHighContrast ? "1" : "0.8";
   const sorted = [...ingredients].sort((a, b) => b.quantity - a.quantity);
   const top = sorted.slice(0, 6);
   const data = {
@@ -88,7 +95,9 @@ export function IngredientAmountChart({ ingredients }) {
       {
         label: "Amount",
         data: top.map((i) => i.quantity),
-        backgroundColor: top.map((_, idx) => `hsl(${(idx * 60) % 360} 70% 50% / 0.8)`),
+        backgroundColor: top.map(
+          (_, idx) => `hsl(${(idx * 60) % 360} 70% 50% / ${opacity})`
+        ),
       },
     ],
   };
@@ -102,13 +111,19 @@ export function IngredientAmountChart({ ingredients }) {
 export function XReportCharts({ xReportData }) {
   if (!xReportData) return null;
   // Top items pie and revenue line (if history provided)
+  const { isHighContrast } = useApp();
+  const pieOpacity = isHighContrast ? "1" : "0.8";
+  const lineBorderOpacity = isHighContrast ? "1" : "0.8";
+  const lineBgOpacity = isHighContrast ? "0.4" : "0.2";
   const topItems = xReportData.topItems || [];
   const pieData = {
     labels: topItems.map((it) => it.product_name),
     datasets: [
       {
         data: topItems.map((it) => it.quantity),
-        backgroundColor: topItems.map((_, idx) => `hsl(${(idx * 50) % 360} 70% 50% / 0.8)`),
+        backgroundColor: topItems.map(
+          (_, idx) => `hsl(${(idx * 50) % 360} 70% 50% / ${pieOpacity})`
+        ),
       },
     ],
   };
@@ -121,8 +136,8 @@ export function XReportCharts({ xReportData }) {
           {
             label: "Revenue",
             data: revenueHistory.map((r) => r.value),
-            borderColor: "rgba(255,99,132,0.8)",
-            backgroundColor: "rgba(255,99,132,0.2)",
+            borderColor: `rgba(255,99,132,${lineBorderOpacity})`,
+            backgroundColor: `rgba(255,99,132,${lineBgOpacity})`,
             tension: 0.3,
           },
         ],
@@ -147,6 +162,8 @@ export function XReportCharts({ xReportData }) {
 
 export function ProductUsageCharts({ productUsageData }) {
   if (!productUsageData) return null;
+  const { isHighContrast } = useApp();
+  const opacity = isHighContrast ? "1" : "0.7";
   const products = productUsageData.productsSold || [];
   const labels = products.map((p) => p.product_name);
   const data = {
@@ -155,7 +172,9 @@ export function ProductUsageCharts({ productUsageData }) {
       {
         label: "Quantity Sold",
         data: products.map((p) => p.quantity),
-        backgroundColor: labels.map((_, idx) => `hsl(${(idx * 50) % 360} 70% 50% / 0.7)`),
+        backgroundColor: labels.map(
+          (_, idx) => `hsl(${(idx * 50) % 360} 70% 50% / ${opacity})`
+        ),
       },
     ],
   };
@@ -167,6 +186,8 @@ export function ProductUsageCharts({ productUsageData }) {
 }
 
 export function PaymentMethodChart({ cardTotal, cashTotal }) {
+  const { isHighContrast } = useApp();
+  const opacity = isHighContrast ? "1" : "0.8";
   const total = cardTotal + cashTotal;
   const cardPercent = total > 0 ? ((cardTotal / total) * 100).toFixed(1) : 0;
   const cashPercent = total > 0 ? ((cashTotal / total) * 100).toFixed(1) : 0;
@@ -177,13 +198,10 @@ export function PaymentMethodChart({ cardTotal, cashTotal }) {
       {
         data: [cardTotal, cashTotal],
         backgroundColor: [
-          "rgba(54, 162, 235, 0.8)", // Blue for card
-          "rgba(75, 192, 75, 0.8)", // Green for cash
+          `rgba(54, 162, 235, ${opacity})`, // Blue for card
+          `rgba(75, 192, 75, ${opacity})`, // Green for cash
         ],
-        borderColor: [
-          "rgba(54, 162, 235, 1)",
-          "rgba(75, 192, 75, 1)",
-        ],
+        borderColor: ["rgba(54, 162, 235, 1)", "rgba(75, 192, 75, 1)"],
         borderWidth: 2,
       },
     ],
@@ -216,14 +234,16 @@ export function PaymentMethodChart({ cardTotal, cashTotal }) {
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: "0.95rem" }}>
             <div style={{ marginBottom: "12px" }}>
-              <strong style={{ color: "rgba(54, 162, 235, 1)" }}>Card Payments:</strong>
-              <br />
-              ${cardTotal.toFixed(2)} ({cardPercent}%)
+              <strong style={{ color: "rgba(54, 162, 235, 1)" }}>
+                Card Payments:
+              </strong>
+              <br />${cardTotal.toFixed(2)} ({cardPercent}%)
             </div>
             <div>
-              <strong style={{ color: "rgba(75, 192, 75, 1)" }}>Cash Payments:</strong>
-              <br />
-              ${cashTotal.toFixed(2)} ({cashPercent}%)
+              <strong style={{ color: "rgba(75, 192, 75, 1)" }}>
+                Cash Payments:
+              </strong>
+              <br />${cashTotal.toFixed(2)} ({cashPercent}%)
             </div>
           </div>
         </div>
