@@ -7,7 +7,9 @@ i18n
   .init({
     resources: {
       en: { translation: translations.en },
-      es: { translation: translations.es }
+      es: { translation: translations.es },
+      fr: { translation: translations.fr },
+      zh: { translation: translations.zh }
     },
     lng: 'en',
     fallbackLng: 'en',

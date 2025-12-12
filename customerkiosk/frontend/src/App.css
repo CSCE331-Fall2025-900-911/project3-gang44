@@ -282,6 +282,27 @@ body {
   background: white !important;
 }
 
+/* High contrast mode: language dropdown menu styling */
+.high-contrast .language-dropdown-menu {
+  background: white !important;
+  border-color: #000 !important;
+}
+
+.high-contrast .language-option {
+  background: white !important;
+  color: #000 !important;
+  border-bottom-color: #000 !important;
+}
+
+.high-contrast .language-option:hover {
+  background: #f0f0f0 !important;
+}
+
+.high-contrast .language-option.active {
+  background: #e8f4f8 !important;
+  color: #000 !important;
+}
+
 /* High contrast toggle button */
 .high-contrast-toggle {
   padding: 10px 16px;
@@ -427,7 +448,12 @@ body {
   color: #333;
 }
 
-/* Language Toggle */
+/* Language Toggle Dropdown */
+.language-toggle-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
 .language-toggle {
   padding: 10px 20px;
   font-size: 1rem;
@@ -436,10 +462,85 @@ body {
   border: 2px solid #333;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  justify-content: space-between;
 }
 
 .language-toggle:hover {
   background: #f0f0f0;
+}
+
+.language-toggle .language-flag {
+  font-size: 1.2rem;
+}
+
+.language-toggle .language-name {
+  flex: 1;
+  text-align: left;
+}
+
+.language-toggle .dropdown-arrow {
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.language-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.language-option {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 1rem;
+  background: white;
+  color: #333;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.language-option:last-child {
+  border-bottom: none;
+}
+
+.language-option:hover {
+  background: #f0f0f0;
+}
+
+.language-option.active {
+  background: #e8f4f8;
+  font-weight: bold;
+}
+
+.language-option .language-flag {
+  font-size: 1.2rem;
+}
+
+.language-option .language-name {
+  flex: 1;
+}
+
+.language-option .checkmark {
+  color: #4caf50;
+  font-weight: bold;
 }
 
 /* Auth Page */
