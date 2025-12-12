@@ -294,10 +294,14 @@ app.post('/api/orders/complete', async (req, res) => {
         }
       }
 
-      // Insert order with payment information
+      // Insert order with payment information (using Central Time)
       const orderResult = await client.query(
-        `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
-         VALUES (NOW(), $1, $2, $3, $4)
+        `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id, created_at)
+         VALUES (
+           (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date,
+           $1, $2, $3, $4,
+           CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+         )
          RETURNING order_id`,
         [total, paymentMethod, 'CUSTOMER_KIOSK', paymentIntentId || null]
       );
@@ -517,10 +521,14 @@ app.post('/api/cashier/orders', async (req, res) => {
       totalPrice += item.subtotal;
     }
 
-    // Insert order with timestamp, payment method, and stripe payment intent
+    // Insert order with timestamp, payment method, and stripe payment intent (using Central Time)
     const orderResult = await client.query(
-      `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
-       VALUES (NOW(), $1, $2, $3, $4)
+      `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id, created_at)
+       VALUES (
+         (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date,
+         $1, $2, $3, $4,
+         CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+       )
        RETURNING order_id`,
       [totalPrice, paymentMethod, 'CASHIER', paymentIntentId || null]
     );
@@ -996,10 +1004,10 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
       });
     }
 
-    // Get hourly sales data up to current hour using created_at timestamp (converted to Central Time)
+    // Get hourly sales data up to current hour (timestamps already in Central Time)
     const hourlyResult = await pool.query(`
       SELECT
-        EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')) as hour,
+        EXTRACT(HOUR FROM o.created_at) as hour,
         COUNT(o.order_id) as order_count,
         COALESCE(SUM(o.total_price), 0) as revenue,
         COALESCE(SUM(oi_count.item_count), 0) as items_sold
@@ -1009,22 +1017,22 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
         FROM order_items
         GROUP BY order_id
       ) oi_count ON o.order_id = oi_count.order_id
-      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago') <= $2
-      GROUP BY EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago'))
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+        AND o.created_at <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+      GROUP BY EXTRACT(HOUR FROM o.created_at)
       ORDER BY hour ASC
-    `, [today, now]);
+    `);
 
-    // Get order items for today up to now using created_at timestamp (converted to Central Time)
+    // Get order items for today up to now (timestamps already in Central Time)
     const itemsResult = await pool.query(`
       SELECT oi.product_name, SUM(oi.quantity) as quantity
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.order_id
-      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago') <= $2
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+        AND o.created_at <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
       GROUP BY oi.product_name
       ORDER BY quantity DESC
-    `, [today, now]);
+    `);
 
     // Get low stock items
     const lowStockResult = await pool.query(`
@@ -1094,10 +1102,10 @@ app.post('/api/manager/reports/z-report', async (req, res) => {
       });
     }
 
-    // Get hourly sales data for the entire day using created_at timestamp (converted to Central Time)
+    // Get hourly sales data for the entire day (timestamps already in Central Time)
     const hourlyResult = await client.query(`
       SELECT
-        EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')) as hour,
+        EXTRACT(HOUR FROM o.created_at) as hour,
         COUNT(o.order_id) as order_count,
         COALESCE(SUM(o.total_price), 0) as revenue,
         COALESCE(SUM(oi_count.item_count), 0) as items_sold
@@ -1107,20 +1115,20 @@ app.post('/api/manager/reports/z-report', async (req, res) => {
         FROM order_items
         GROUP BY order_id
       ) oi_count ON o.order_id = oi_count.order_id
-      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
-      GROUP BY EXTRACT(HOUR FROM (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago'))
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+      GROUP BY EXTRACT(HOUR FROM o.created_at)
       ORDER BY hour ASC
-    `, [today]);
+    `);
 
-    // Get order items for today using created_at timestamp (converted to Central Time)
+    // Get order items for today (timestamps already in Central Time)
     const itemsResult = await client.query(`
       SELECT oi.product_name, SUM(oi.quantity) as quantity
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.order_id
-      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Chicago')::date = $1::date
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
       GROUP BY oi.product_name
       ORDER BY quantity DESC
-    `, [today]);
+    `);
 
     // Get low stock items
     const lowStockResult = await client.query(`
