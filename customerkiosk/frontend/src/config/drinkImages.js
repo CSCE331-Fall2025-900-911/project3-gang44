@@ -34,7 +34,16 @@ const drinkImages = {
   "Thai Tea Latte": "thaitealatte.jpg",
   "Wintermelon Milk Tea": "wintermelonmilktea.jpg",
   "Yummy Turkey": "yummyturkey.jpg",
-  "Yummy Pumpkin": "yummypumpkin.jpg"
+  "Yummy Pumpkin": "yummypumpkin.jpg",
+  "Peppermint Tea": "pepperminttea.jpg",
+  "Honeydew Milk Tea": "honeydewmilktea.jpg",
+  "Lychee Milk Tea": "lycheemilktea.jpg",
+  "Strawberry Boba": "strawberryboba.jpg",
+  "Fresh Fruit Tea": "freshfruittea.jpg",
+  "Lychee Green Tea": "lycheegreentea.jpg",
+  "Peach Green Tea": "peachgreentea.jpg",
+  "Jasmine Milk Tea": "jasminemilktea.jpg",
+  "Oolong Milk Tea": "oolongmilktea.jpg"
 };
 
 /**

@@ -95,16 +95,19 @@ app.get("/api/customizations", async (req, res) => {
   try {
     // check what columns exist
     const testQuery = await pool.query(`
-      SELECT * FROM ingredients 
+      SELECT * FROM ingredients
       WHERE quantity > 0
       LIMIT 1
     `);
     console.log("sample ingredient:", testQuery.rows[0]);
 
+    // Only select ingredients with 'ingredient' or 'seasonal' category for toppings
+    // This filters out utility items like cups, straws, napkins, to-go boxes
     const ingredients = await pool.query(`
-      SELECT * FROM ingredients 
+      SELECT * FROM ingredients
       WHERE quantity > 0
-      ORDER BY name
+      AND LOWER(category) IN ('ingredient', 'seasonal')
+      ORDER BY category, name
     `);
 
     res.json({
@@ -302,7 +305,7 @@ app.post('/api/orders/complete', async (req, res) => {
       const orderId = orderResult.rows[0].order_id;
       console.log('Created order:', orderId, 'Payment method:', paymentMethod);
 
-      // Insert order items
+      // Insert order items and decrement inventory
       for (const item of items) {
         const pricePerUnit = item.price / (item.quantity || 1);
         const subtotal = item.price;
@@ -320,21 +323,118 @@ app.post('/api/orders/complete', async (req, res) => {
           .filter(Boolean)
           .join(', ');
 
-        const productNameWithCustomization = customizationDetails
-          ? `${item.name} (${customizationDetails})`
-          : item.name;
+        // Store base product name for analytics (without customizations)
+        const baseProductName = item.name;
 
         await client.query(
           `INSERT INTO order_items
            (order_id, product_name, quantity, price_per_unit, subtotal)
            VALUES ($1, $2, $3, $4, $5)`,
-          [orderId, productNameWithCustomization, item.quantity || 1, pricePerUnit, subtotal]
+          [orderId, baseProductName, item.quantity || 1, pricePerUnit, subtotal]
         );
         console.log(`Added item: ${item.name}`);
+
+        // Decrement inventory for this product's ingredients
+        // Get product_id from product name
+        const productResult = await client.query(
+          'SELECT item_id FROM products WHERE name = $1',
+          [item.name]
+        );
+
+        if (productResult.rows.length === 0) {
+          console.warn(`Product not found in database: ${item.name}. Skipping inventory update.`);
+          continue;
+        }
+
+        const productId = productResult.rows[0].item_id;
+        const orderQuantity = item.quantity || 1;
+
+        // Get ingredients for this product
+        const ingredientsResult = await client.query(
+          `SELECT ingredient_id, quantity_needed
+           FROM product_ingredients
+           WHERE product_id = $1`,
+          [productId]
+        );
+
+        // Decrement each ingredient
+        for (const ingredient of ingredientsResult.rows) {
+          const totalNeeded = ingredient.quantity_needed * orderQuantity;
+
+          // Check if enough inventory exists
+          const inventoryCheck = await client.query(
+            `SELECT quantity FROM ingredients WHERE item_id = $1`,
+            [ingredient.ingredient_id]
+          );
+
+          if (inventoryCheck.rows.length === 0) {
+            throw new Error(`Ingredient ID ${ingredient.ingredient_id} not found in inventory`);
+          }
+
+          const currentQuantity = inventoryCheck.rows[0].quantity;
+          if (currentQuantity < totalNeeded) {
+            throw new Error(`Insufficient inventory for ingredient ID ${ingredient.ingredient_id}. Need ${totalNeeded}, have ${currentQuantity}`);
+          }
+
+          // Decrement the inventory
+          const updateResult = await client.query(
+            `UPDATE ingredients
+             SET quantity = quantity - $1
+             WHERE item_id = $2 AND quantity >= $1
+             RETURNING quantity`,
+            [totalNeeded, ingredient.ingredient_id]
+          );
+
+          if (updateResult.rows.length === 0) {
+            throw new Error(`Failed to update inventory for ingredient ID ${ingredient.ingredient_id}`);
+          }
+
+          console.log(`Decremented ingredient ${ingredient.ingredient_id} by ${totalNeeded}, new quantity: ${updateResult.rows[0].quantity}`);
+        }
+
+        // Decrement inventory for toppings
+        if (item.toppings && item.toppings.length > 0) {
+          for (const topping of item.toppings) {
+            const toppingQuantityNeeded = orderQuantity; // 1 topping per drink
+
+            // Get topping ingredient ID - toppings are ingredients
+            const toppingId = topping.id;
+
+            // Check if enough inventory exists for this topping
+            const toppingInventoryCheck = await client.query(
+              `SELECT quantity FROM ingredients WHERE item_id = $1`,
+              [toppingId]
+            );
+
+            if (toppingInventoryCheck.rows.length === 0) {
+              throw new Error(`Topping ingredient ID ${toppingId} (${topping.name}) not found in inventory`);
+            }
+
+            const currentToppingQuantity = toppingInventoryCheck.rows[0].quantity;
+            if (currentToppingQuantity < toppingQuantityNeeded) {
+              throw new Error(`Insufficient inventory for topping ${topping.name}. Need ${toppingQuantityNeeded}, have ${currentToppingQuantity}`);
+            }
+
+            // Decrement the topping inventory
+            const toppingUpdateResult = await client.query(
+              `UPDATE ingredients
+               SET quantity = quantity - $1
+               WHERE item_id = $2 AND quantity >= $1
+               RETURNING quantity`,
+              [toppingQuantityNeeded, toppingId]
+            );
+
+            if (toppingUpdateResult.rows.length === 0) {
+              throw new Error(`Failed to update inventory for topping ${topping.name}`);
+            }
+
+            console.log(`Decremented topping ${toppingId} (${topping.name}) by ${toppingQuantityNeeded}, new quantity: ${toppingUpdateResult.rows[0].quantity}`);
+          }
+        }
       }
 
       await client.query('COMMIT');
-      console.log('Order committed successfully');
+      console.log('Order committed successfully with inventory updates');
       res.json({ orderId, message: 'Order placed successfully' });
     } catch (err) {
       await client.query('ROLLBACK');
@@ -491,10 +591,50 @@ app.post('/api/cashier/orders', async (req, res) => {
 
         console.log(`Decremented ingredient ${ingredient.ingredient_id} by ${totalNeeded}, new quantity: ${updateResult.rows[0].quantity}`);
       }
+
+      // Decrement inventory for toppings
+      if (item.customizations && item.customizations.toppings && item.customizations.toppings.length > 0) {
+        for (const topping of item.customizations.toppings) {
+          const toppingQuantityNeeded = orderQuantity; // 1 topping per drink
+
+          // Get topping ingredient ID - toppings are ingredients
+          const toppingId = topping.id;
+
+          // Check if enough inventory exists for this topping
+          const toppingInventoryCheck = await client.query(
+            `SELECT quantity FROM ingredients WHERE item_id = $1`,
+            [toppingId]
+          );
+
+          if (toppingInventoryCheck.rows.length === 0) {
+            throw new Error(`Topping ingredient ID ${toppingId} (${topping.name}) not found in inventory`);
+          }
+
+          const currentToppingQuantity = toppingInventoryCheck.rows[0].quantity;
+          if (currentToppingQuantity < toppingQuantityNeeded) {
+            throw new Error(`Insufficient inventory for topping ${topping.name}. Need ${toppingQuantityNeeded}, have ${currentToppingQuantity}`);
+          }
+
+          // Decrement the topping inventory
+          const toppingUpdateResult = await client.query(
+            `UPDATE ingredients
+             SET quantity = quantity - $1
+             WHERE item_id = $2 AND quantity >= $1
+             RETURNING quantity`,
+            [toppingQuantityNeeded, toppingId]
+          );
+
+          if (toppingUpdateResult.rows.length === 0) {
+            throw new Error(`Failed to update inventory for topping ${topping.name}`);
+          }
+
+          console.log(`Decremented topping ${toppingId} (${topping.name}) by ${toppingQuantityNeeded}, new quantity: ${toppingUpdateResult.rows[0].quantity}`);
+        }
+      }
     }
 
     await client.query('COMMIT');
-    console.log('Cashier order committed successfully with inventory updates');
+    console.log('Cashier order committed successfully with inventory updates including toppings');
     res.json({
       orderId,
       message: 'Order placed successfully',
