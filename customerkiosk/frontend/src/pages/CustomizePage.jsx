@@ -23,6 +23,7 @@ export default function CustomizePage() {
   const [iceLevel, setIceLevel] = useState("Regular Ice");
   const [sweetnessLevel, setSweetnessLevel] = useState("50%");
   const [selectedToppings, setSelectedToppings] = useState([]); // Array of full topping objects
+  const [quantity, setQuantity] = useState(1); // Quantity selector
 
   useEffect(() => {
     if (!id) {
@@ -41,6 +42,7 @@ export default function CustomizePage() {
         setIceLevel(itemToEdit.iceLevel || "Regular Ice");
         setSweetnessLevel(itemToEdit.sweetnessLevel || "50%");
         setSelectedToppings(itemToEdit.toppings || []);
+        setQuantity(itemToEdit.quantity || 1);
       }
     } else {
       // Reset selections and drink when ID changes (new item mode)
@@ -49,6 +51,7 @@ export default function CustomizePage() {
       setTemperature("Cold");
       setIceLevel("Regular Ice");
       setSweetnessLevel("50%");
+      setQuantity(1);
     }
 
     setDrink(null);
@@ -228,6 +231,25 @@ export default function CustomizePage() {
       price += parseFloat(topping.price);
     });
 
+    // Multiply by quantity
+    price *= quantity;
+
+    return price.toFixed(2);
+  };
+
+  const calculatePricePerUnit = () => {
+    if (!drink) return 0;
+    let price = parseFloat(drink.price);
+
+    // Add size multiplier
+    if (size === "Large") price *= 1.5;
+    if (size === "Small") price *= 0.8;
+
+    // Add topping prices
+    selectedToppings.forEach((topping) => {
+      price += parseFloat(topping.price);
+    });
+
     return price.toFixed(2);
   };
 
@@ -242,7 +264,7 @@ export default function CustomizePage() {
       sweetnessLevel,
       toppings: selectedToppings,
       price: parseFloat(calculatePrice()),
-      quantity: 1,
+      quantity: quantity,
     };
 
     if (editItemId) {
@@ -400,7 +422,68 @@ export default function CustomizePage() {
         </div>
       </div>
 
+      {/* Quantity Selector */}
+      <div className="customization-section">
+        <h3>{i18nT("Quantity")}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'center' }}>
+          <button
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            style={{
+              width: '40px',
+              height: '40px',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '2px solid #333',
+              background: '#fff',
+              color: '#000',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            disabled={quantity <= 1}
+          >
+            −
+          </button>
+          <span style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold', 
+            minWidth: '50px', 
+            textAlign: 'center' 
+          }}>
+            {quantity}
+          </span>
+          <button
+            onClick={() => setQuantity(quantity + 1)}
+            style={{
+              width: '40px',
+              height: '40px',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '2px solid #333',
+              background: '#fff',
+              color: '#000',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
       <div className="price-section">
+        <div style={{ marginBottom: '10px', fontSize: '16px', color: '#666' }}>
+          {quantity > 1 && (
+            <span>
+              ${calculatePricePerUnit()} × {quantity} = 
+            </span>
+          )}
+        </div>
         <h2>
           {i18nT("total")}: ${calculatePrice()}
         </h2>
