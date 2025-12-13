@@ -1,0 +1,11 @@
+SCRUM Meeting 2 for Project 3
+Prepared by: Wesley
+Meeting Date: Nov 30, 2025
+
+Meeting Agenda Items:
+Discussing discovered bugs in frontend.
+Discussing changing screen reader to visual contrast feature.
+Evaluating workload and how to move forward.
+
+Minutes from Previous Meeting
+During the previous meeting, the team discussed the feedback received from user studies and how to implement changes to address the feedback. Each member gave their opinions about feedback and how to specifically address it. All members also then discussed what we wanted out of Stripe and how to integrate it. A plan was agreed upon and tasks were assigned accordingly. At the end of the meeting, all the research and design tasks were assigned. 

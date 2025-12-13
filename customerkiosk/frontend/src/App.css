@@ -42,18 +42,74 @@ body {
   border-color: #000 !important;
 }
 
-/* Override cart button border in high-contrast mode */
+/* Product buttons in high contrast use green background */
+.high-contrast .product-button {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .product-name {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .product-price {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+/* Modal action buttons in high contrast */
+.high-contrast .modal-actions .cancel-btn {
+  background: #999 !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+}
+
+.high-contrast .modal-actions .cancel-btn:hover {
+  background: #777 !important;
+}
+
+.high-contrast .modal-actions .add-btn {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .modal-actions .add-btn:hover {
+  background: #1d3e1a !important;
+}
+.high-contrast .product-button {
+  background: #2b5726 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* Exclude period buttons from generic button hover */
+.high-contrast .period-buttons button:hover {
+  background: #2b5726 !important;
+  color: #fff !important;
+}
+
+.high-contrast .period-buttons button.active:hover {
+  background: #ffff00 !important;
+  color: #000 !important;
+}
+
+/* Add active/clicked state for buttons in high contrast */
 .high-contrast .cart-button {
   border-color: #2b5726 !important;
 }
 
 /* Specific override: when high-contrast is active, the back button should be green (#2b5726)
-   with white text. We place this after the broad high-contrast rule and use !important
+   with white text and white border. We place this after the broad high-contrast rule and use !important
    so it wins against the multi-selector above. */
 .high-contrast .back-button {
   background: #2b5726 !important;
   color: #ffffff !important;
-  border-color: #1f3f1b !important;
+  border-color: #ffffff !important;
 }
 
 .high-contrast .back-button:hover {
@@ -195,10 +251,62 @@ body {
   border-color: #fff !important;
 }
 
+/* Cashier view background override */
+.cashier-view .app {
+  background: #ffd1dc !important;
+}
+
+.high-contrast.cashier-view .app {
+  background: #2b5726 !important;
+}
+
+/* Manager view background override */
+.manager-view .app {
+  background: #d4e9f7 !important;
+}
+
+.high-contrast.manager-view .app {
+  background: #2b5726 !important;
+}
+
+/* High contrast mode: remove focus outlines and hover effects on accessibility buttons */
+.high-contrast .language-toggle:focus,
+.high-contrast .high-contrast-toggle:focus,
+.high-contrast .text-size-adjuster:focus,
+.high-contrast .text-size-adjuster button:focus {
+  outline: none !important;
+}
+
+.high-contrast .language-toggle:hover,
+.high-contrast .high-contrast-toggle:hover {
+  background: white !important;
+}
+
+/* High contrast mode: language dropdown menu styling */
+.high-contrast .language-dropdown-menu {
+  background: white !important;
+  border-color: #000 !important;
+}
+
+.high-contrast .language-option {
+  background: white !important;
+  color: #000 !important;
+  border-bottom-color: #000 !important;
+}
+
+.high-contrast .language-option:hover {
+  background: #f0f0f0 !important;
+}
+
+.high-contrast .language-option.active {
+  background: #e8f4f8 !important;
+  color: #000 !important;
+}
+
 /* High contrast toggle button */
 .high-contrast-toggle {
   padding: 10px 16px;
-  font-size: 16px;
+  font-size: 1rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -213,7 +321,7 @@ body {
 /* Weather display (top bar) - match high-contrast toggle look */
 .weather-display {
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -311,18 +419,19 @@ body {
 }
 
 /* Buttons (size/ice/sweetness/toppings) in customize: unselected use green (page color) with white text */
-.high-contrast .customize-page .customization-section button {
+.high-contrast .customize-page .customization-section button:not(.selected) {
   background: #2b5726 !important;
   color: #fff !important;
   border-color: #fff !important;
 }
 
-/* Selected option should be black with white text */
+/* Selected option should be highly contrasting */
 .high-contrast .customize-page .customization-section button.selected {
-  /* Selected options: white background with green text and border */
-  background: #ffffff !important;
-  color: #2b5726 !important;
-  border-color: #2b5726 !important;
+  /* Selected options: yellow/bright background with dark text for maximum contrast */
+  background: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+  font-weight: bold !important;
 }
 
 /* Ensure add-to-cart button is visible on the white card: use green background */
@@ -335,23 +444,103 @@ body {
 .loading {
   text-align: center;
   padding-top: 200px;
-  font-size: 20px;
+  font-size: 1.25rem;
   color: #333;
 }
 
-/* Language Toggle */
+/* Language Toggle Dropdown */
+.language-toggle-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
 .language-toggle {
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1rem;
   background: white;
   color: #333;
   border: 2px solid #333;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  justify-content: space-between;
 }
 
 .language-toggle:hover {
   background: #f0f0f0;
+}
+
+.language-toggle .language-flag {
+  font-size: 1.2rem;
+}
+
+.language-toggle .language-name {
+  flex: 1;
+  text-align: left;
+}
+
+.language-toggle .dropdown-arrow {
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.language-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.language-option {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 1rem;
+  background: white;
+  color: #333;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.language-option:last-child {
+  border-bottom: none;
+}
+
+.language-option:hover {
+  background: #f0f0f0;
+}
+
+.language-option.active {
+  background: #e8f4f8;
+  font-weight: bold;
+}
+
+.language-option .language-flag {
+  font-size: 1.2rem;
+}
+
+.language-option .language-name {
+  flex: 1;
+}
+
+.language-option .checkmark {
+  color: #4caf50;
+  font-weight: bold;
 }
 
 /* Auth Page */
@@ -361,7 +550,7 @@ body {
 }
 
 .auth-container h1 {
-  font-size: 48px;
+  font-size: 3rem;
   color: #333;
   margin-bottom: 40px;
 }
@@ -497,7 +686,7 @@ body {
   bottom: 20px;
   right: 20px;
   padding: 15px 30px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -521,7 +710,7 @@ body {
 
 .back-button {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   /* Default (non-high-contrast): white background with black border */
   background: #fff;
   color: #000;
@@ -535,13 +724,13 @@ body {
 }
 
 .customize-page h1 {
-  font-size: 32px;
+  font-size: 2rem;
   margin-bottom: 10px;
   color: #333;
 }
 
 .customize-page h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   margin-bottom: 30px;
   color: #666;
 }
@@ -551,7 +740,7 @@ body {
 }
 
 .customization-section h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-bottom: 15px;
   color: #333;
 }
@@ -564,12 +753,13 @@ body {
 
 .customization-section button {
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: white;
   color: #333;
   border: 2px solid #333;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .customization-section button:hover {
@@ -577,8 +767,9 @@ body {
 }
 
 .customization-section button.selected {
-  background: #333;
+  background: #667eea;
   color: white;
+  border-color: #667eea;
 }
 
 .price-section {
@@ -589,14 +780,14 @@ body {
 }
 
 .price-section h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   color: #333;
   margin-bottom: 20px;
 }
 
 .add-to-cart-btn {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -631,7 +822,7 @@ body {
 
 .cart-page h1 {
   text-align: center;
-  font-size: 36px;
+  font-size: 2.25rem;
   color: #333;
   margin: 0;
 }
@@ -647,14 +838,14 @@ body {
 }
 
 .cart-item h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-bottom: 10px;
   color: #333;
   text-align: left;
 }
 
 .cart-item p {
-  font-size: 14px;
+  font-size: 0.875rem;
   margin: 5px 0;
   color: #666;
   display: block;
@@ -662,7 +853,7 @@ body {
 }
 
 .cart-item .price {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: bold;
   color: #333;
   margin: 10px 0;
@@ -671,7 +862,7 @@ body {
 .cart-item button {
   margin-top: 10px;
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: #f44336;
   color: white;
   border: 1px solid #333;
@@ -692,14 +883,14 @@ body {
 }
 
 .cart-total h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   color: #333;
   margin-bottom: 20px;
 }
 
 .place-order-btn {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: #4caf50;
   color: white;
   border: 2px solid #4caf50;
@@ -719,18 +910,18 @@ body {
 }
 
 .confirmation-page h1 {
-  font-size: 48px;
+  font-size: 3rem;
   margin-bottom: 20px;
 }
 
 .confirmation-page p {
-  font-size: 24px;
+  font-size: 1.5rem;
   margin-bottom: 40px;
 }
 
 .confirmation-page button {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -749,13 +940,13 @@ body {
 }
 
 .empty-cart h2 {
-  font-size: 36px;
+  font-size: 2.25rem;
   margin-bottom: 30px;
 }
 
 .empty-cart button {
   padding: 15px 40px;
-  font-size: 18px;
+  font-size: 1.125rem;
   background: white;
   color: #333;
   border: 2px solid #333;
@@ -780,7 +971,7 @@ body {
 /* Default (unselected) category tab */
 .category-tab {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: #f7fafc;
   color: #2d3748;
   border: 2px solid #cbd5e0;

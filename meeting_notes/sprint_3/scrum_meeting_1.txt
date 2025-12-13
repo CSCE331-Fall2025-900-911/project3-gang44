@@ -1,0 +1,10 @@
+SCRUM Meeting 1 for Project 3
+Prepared by: Ryan
+Meeting Date: Nov 23, 2025
+
+Meeting Agenda Items:
+Discuss results from user study.
+Design changes to visibility and readability based on user feedback.
+Begin laying out plan for Stripe integration.
+
+There are no minutes from the previous meeting because this is the first meeting.

@@ -95,16 +95,19 @@ app.get("/api/customizations", async (req, res) => {
   try {
     // check what columns exist
     const testQuery = await pool.query(`
-      SELECT * FROM ingredients 
+      SELECT * FROM ingredients
       WHERE quantity > 0
       LIMIT 1
     `);
     console.log("sample ingredient:", testQuery.rows[0]);
 
+    // Only select ingredients with 'ingredient' or 'seasonal' category for toppings
+    // This filters out utility items like cups, straws, napkins, to-go boxes
     const ingredients = await pool.query(`
-      SELECT * FROM ingredients 
+      SELECT * FROM ingredients
       WHERE quantity > 0
-      ORDER BY name
+      AND LOWER(category) IN ('ingredient', 'seasonal')
+      ORDER BY category, name
     `);
 
     res.json({
@@ -291,10 +294,14 @@ app.post('/api/orders/complete', async (req, res) => {
         }
       }
 
-      // Insert order with payment information
+      // Insert order with payment information (using Central Time)
       const orderResult = await client.query(
-        `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
-         VALUES (NOW(), $1, $2, $3, $4)
+        `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id, created_at)
+         VALUES (
+           (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date,
+           $1, $2, $3, $4,
+           CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+         )
          RETURNING order_id`,
         [total, paymentMethod, 'CUSTOMER_KIOSK', paymentIntentId || null]
       );
@@ -302,7 +309,7 @@ app.post('/api/orders/complete', async (req, res) => {
       const orderId = orderResult.rows[0].order_id;
       console.log('Created order:', orderId, 'Payment method:', paymentMethod);
 
-      // Insert order items
+      // Insert order items and decrement inventory
       for (const item of items) {
         const pricePerUnit = item.price / (item.quantity || 1);
         const subtotal = item.price;
@@ -320,21 +327,118 @@ app.post('/api/orders/complete', async (req, res) => {
           .filter(Boolean)
           .join(', ');
 
-        const productNameWithCustomization = customizationDetails
-          ? `${item.name} (${customizationDetails})`
-          : item.name;
+        // Store base product name for analytics (without customizations)
+        const baseProductName = item.name;
 
         await client.query(
           `INSERT INTO order_items
            (order_id, product_name, quantity, price_per_unit, subtotal)
            VALUES ($1, $2, $3, $4, $5)`,
-          [orderId, productNameWithCustomization, item.quantity || 1, pricePerUnit, subtotal]
+          [orderId, baseProductName, item.quantity || 1, pricePerUnit, subtotal]
         );
         console.log(`Added item: ${item.name}`);
+
+        // Decrement inventory for this product's ingredients
+        // Get product_id from product name
+        const productResult = await client.query(
+          'SELECT item_id FROM products WHERE name = $1',
+          [item.name]
+        );
+
+        if (productResult.rows.length === 0) {
+          console.warn(`Product not found in database: ${item.name}. Skipping inventory update.`);
+          continue;
+        }
+
+        const productId = productResult.rows[0].item_id;
+        const orderQuantity = item.quantity || 1;
+
+        // Get ingredients for this product
+        const ingredientsResult = await client.query(
+          `SELECT ingredient_id, quantity_needed
+           FROM product_ingredients
+           WHERE product_id = $1`,
+          [productId]
+        );
+
+        // Decrement each ingredient
+        for (const ingredient of ingredientsResult.rows) {
+          const totalNeeded = ingredient.quantity_needed * orderQuantity;
+
+          // Check if enough inventory exists
+          const inventoryCheck = await client.query(
+            `SELECT quantity FROM ingredients WHERE item_id = $1`,
+            [ingredient.ingredient_id]
+          );
+
+          if (inventoryCheck.rows.length === 0) {
+            throw new Error(`Ingredient ID ${ingredient.ingredient_id} not found in inventory`);
+          }
+
+          const currentQuantity = inventoryCheck.rows[0].quantity;
+          if (currentQuantity < totalNeeded) {
+            throw new Error(`Insufficient inventory for ingredient ID ${ingredient.ingredient_id}. Need ${totalNeeded}, have ${currentQuantity}`);
+          }
+
+          // Decrement the inventory
+          const updateResult = await client.query(
+            `UPDATE ingredients
+             SET quantity = quantity - $1
+             WHERE item_id = $2 AND quantity >= $1
+             RETURNING quantity`,
+            [totalNeeded, ingredient.ingredient_id]
+          );
+
+          if (updateResult.rows.length === 0) {
+            throw new Error(`Failed to update inventory for ingredient ID ${ingredient.ingredient_id}`);
+          }
+
+          console.log(`Decremented ingredient ${ingredient.ingredient_id} by ${totalNeeded}, new quantity: ${updateResult.rows[0].quantity}`);
+        }
+
+        // Decrement inventory for toppings
+        if (item.toppings && item.toppings.length > 0) {
+          for (const topping of item.toppings) {
+            const toppingQuantityNeeded = orderQuantity; // 1 topping per drink
+
+            // Get topping ingredient ID - toppings are ingredients
+            const toppingId = topping.id;
+
+            // Check if enough inventory exists for this topping
+            const toppingInventoryCheck = await client.query(
+              `SELECT quantity FROM ingredients WHERE item_id = $1`,
+              [toppingId]
+            );
+
+            if (toppingInventoryCheck.rows.length === 0) {
+              throw new Error(`Topping ingredient ID ${toppingId} (${topping.name}) not found in inventory`);
+            }
+
+            const currentToppingQuantity = toppingInventoryCheck.rows[0].quantity;
+            if (currentToppingQuantity < toppingQuantityNeeded) {
+              throw new Error(`Insufficient inventory for topping ${topping.name}. Need ${toppingQuantityNeeded}, have ${currentToppingQuantity}`);
+            }
+
+            // Decrement the topping inventory
+            const toppingUpdateResult = await client.query(
+              `UPDATE ingredients
+               SET quantity = quantity - $1
+               WHERE item_id = $2 AND quantity >= $1
+               RETURNING quantity`,
+              [toppingQuantityNeeded, toppingId]
+            );
+
+            if (toppingUpdateResult.rows.length === 0) {
+              throw new Error(`Failed to update inventory for topping ${topping.name}`);
+            }
+
+            console.log(`Decremented topping ${toppingId} (${topping.name}) by ${toppingQuantityNeeded}, new quantity: ${toppingUpdateResult.rows[0].quantity}`);
+          }
+        }
       }
 
       await client.query('COMMIT');
-      console.log('Order committed successfully');
+      console.log('Order committed successfully with inventory updates');
       res.json({ orderId, message: 'Order placed successfully' });
     } catch (err) {
       await client.query('ROLLBACK');
@@ -417,10 +521,14 @@ app.post('/api/cashier/orders', async (req, res) => {
       totalPrice += item.subtotal;
     }
 
-    // Insert order with timestamp, payment method, and stripe payment intent
+    // Insert order with timestamp, payment method, and stripe payment intent (using Central Time)
     const orderResult = await client.query(
-      `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id)
-       VALUES (NOW(), $1, $2, $3, $4)
+      `INSERT INTO orders (order_date, total_price, payment_method, order_type, stripe_payment_intent_id, created_at)
+       VALUES (
+         (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date,
+         $1, $2, $3, $4,
+         CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+       )
        RETURNING order_id`,
       [totalPrice, paymentMethod, 'CASHIER', paymentIntentId || null]
     );
@@ -491,10 +599,50 @@ app.post('/api/cashier/orders', async (req, res) => {
 
         console.log(`Decremented ingredient ${ingredient.ingredient_id} by ${totalNeeded}, new quantity: ${updateResult.rows[0].quantity}`);
       }
+
+      // Decrement inventory for toppings
+      if (item.customizations && item.customizations.toppings && item.customizations.toppings.length > 0) {
+        for (const topping of item.customizations.toppings) {
+          const toppingQuantityNeeded = orderQuantity; // 1 topping per drink
+
+          // Get topping ingredient ID - toppings are ingredients
+          const toppingId = topping.id;
+
+          // Check if enough inventory exists for this topping
+          const toppingInventoryCheck = await client.query(
+            `SELECT quantity FROM ingredients WHERE item_id = $1`,
+            [toppingId]
+          );
+
+          if (toppingInventoryCheck.rows.length === 0) {
+            throw new Error(`Topping ingredient ID ${toppingId} (${topping.name}) not found in inventory`);
+          }
+
+          const currentToppingQuantity = toppingInventoryCheck.rows[0].quantity;
+          if (currentToppingQuantity < toppingQuantityNeeded) {
+            throw new Error(`Insufficient inventory for topping ${topping.name}. Need ${toppingQuantityNeeded}, have ${currentToppingQuantity}`);
+          }
+
+          // Decrement the topping inventory
+          const toppingUpdateResult = await client.query(
+            `UPDATE ingredients
+             SET quantity = quantity - $1
+             WHERE item_id = $2 AND quantity >= $1
+             RETURNING quantity`,
+            [toppingQuantityNeeded, toppingId]
+          );
+
+          if (toppingUpdateResult.rows.length === 0) {
+            throw new Error(`Failed to update inventory for topping ${topping.name}`);
+          }
+
+          console.log(`Decremented topping ${toppingId} (${topping.name}) by ${toppingQuantityNeeded}, new quantity: ${toppingUpdateResult.rows[0].quantity}`);
+        }
+      }
     }
 
     await client.query('COMMIT');
-    console.log('Cashier order committed successfully with inventory updates');
+    console.log('Cashier order committed successfully with inventory updates including toppings');
     res.json({
       orderId,
       message: 'Order placed successfully',
@@ -834,29 +982,57 @@ app.delete('/api/manager/employees/:id', async (req, res) => {
   }
 });
 
-// Generate X-Report
+// Generate X-Report (hourly totals for current day up to current hour)
 app.get('/api/manager/reports/x-report', async (req, res) => {
   try {
-    const today = new Date();
+    const now = new Date();
+    const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
-    // Get orders for today
-    const ordersResult = await pool.query(`
-      SELECT o.order_id, o.total_price, o.order_date
-      FROM orders o
-      WHERE o.order_date >= $1
-      ORDER BY o.order_date DESC
+    // Check if Z-report has been run today
+    const zReportCheck = await pool.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
     `, [today]);
 
-    // Get order items
+    if (zReportCheck.rows.length > 0) {
+      return res.status(403).json({
+        error: 'Z-Report has already been run for today. X-Report cannot be generated.',
+        zReportDate: zReportCheck.rows[0].report_date
+      });
+    }
+
+    // Get hourly sales data up to current hour (timestamps already in Central Time)
+    const hourlyResult = await pool.query(`
+      SELECT
+        EXTRACT(HOUR FROM o.created_at) as hour,
+        COUNT(o.order_id) as order_count,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COALESCE(SUM(oi_count.item_count), 0) as items_sold
+      FROM orders o
+      LEFT JOIN (
+        SELECT order_id, SUM(quantity) as item_count
+        FROM order_items
+        GROUP BY order_id
+      ) oi_count ON o.order_id = oi_count.order_id
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+        AND o.created_at <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
+      GROUP BY EXTRACT(HOUR FROM o.created_at)
+      ORDER BY hour ASC
+    `);
+
+    // Get order items for today up to now (timestamps already in Central Time)
     const itemsResult = await pool.query(`
       SELECT oi.product_name, SUM(oi.quantity) as quantity
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.order_id
-      WHERE o.order_date >= $1
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+        AND o.created_at <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
       GROUP BY oi.product_name
       ORDER BY quantity DESC
-    `, [today]);
+    `);
 
     // Get low stock items
     const lowStockResult = await pool.query(`
@@ -872,14 +1048,22 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
       FROM employees
     `);
 
-    const totalRevenue = ordersResult.rows.reduce((sum, order) => sum + parseFloat(order.total_price), 0);
-    const totalItems = itemsResult.rows.reduce((sum, item) => sum + parseInt(item.quantity), 0);
+    const totalRevenue = hourlyResult.rows.reduce((sum, hour) => sum + parseFloat(hour.revenue), 0);
+    const totalOrders = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.order_count), 0);
+    const totalItems = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.items_sold), 0);
 
     res.json({
       date: today,
-      totalOrders: ordersResult.rows.length,
+      currentTime: now,
+      totalOrders,
       totalRevenue,
       totalItems,
+      hourlyData: hourlyResult.rows.map(row => ({
+        hour: parseInt(row.hour),
+        orderCount: parseInt(row.order_count),
+        revenue: parseFloat(row.revenue),
+        itemsSold: parseInt(row.items_sold)
+      })),
       topItems: itemsResult.rows.slice(0, 5),
       lowStock: lowStockResult.rows,
       employeeCount: parseInt(employeeResult.rows[0].count),
@@ -887,6 +1071,158 @@ app.get('/api/manager/reports/x-report', async (req, res) => {
     });
   } catch (err) {
     console.error('Error generating X-report:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate Z-Report (end-of-day report, can only run once per day)
+app.post('/api/manager/reports/z-report', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    // Check if Z-report has already been run today
+    const existingZReport = await client.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
+    `, [today]);
+
+    if (existingZReport.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'Z-Report has already been run for today.',
+        existingReport: existingZReport.rows[0]
+      });
+    }
+
+    // Get hourly sales data for the entire day (timestamps already in Central Time)
+    const hourlyResult = await client.query(`
+      SELECT
+        EXTRACT(HOUR FROM o.created_at) as hour,
+        COUNT(o.order_id) as order_count,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COALESCE(SUM(oi_count.item_count), 0) as items_sold
+      FROM orders o
+      LEFT JOIN (
+        SELECT order_id, SUM(quantity) as item_count
+        FROM order_items
+        GROUP BY order_id
+      ) oi_count ON o.order_id = oi_count.order_id
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+      GROUP BY EXTRACT(HOUR FROM o.created_at)
+      ORDER BY hour ASC
+    `);
+
+    // Get order items for today (timestamps already in Central Time)
+    const itemsResult = await client.query(`
+      SELECT oi.product_name, SUM(oi.quantity) as quantity
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.order_id
+      WHERE DATE(o.created_at) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago')::date
+      GROUP BY oi.product_name
+      ORDER BY quantity DESC
+    `);
+
+    // Get low stock items
+    const lowStockResult = await client.query(`
+      SELECT name, quantity
+      FROM ingredients
+      WHERE quantity < 10
+      ORDER BY quantity ASC
+    `);
+
+    // Get employee stats
+    const employeeResult = await client.query(`
+      SELECT COUNT(*) as count, AVG(wage) as avg_wage
+      FROM employees
+    `);
+
+    const totalRevenue = hourlyResult.rows.reduce((sum, hour) => sum + parseFloat(hour.revenue), 0);
+    const totalOrders = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.order_count), 0);
+    const totalItems = hourlyResult.rows.reduce((sum, hour) => sum + parseInt(hour.items_sold), 0);
+
+    // Save Z-Report to database
+    const zReportData = {
+      date: today,
+      totalOrders,
+      totalRevenue,
+      totalItems,
+      hourlyData: hourlyResult.rows,
+      topItems: itemsResult.rows.slice(0, 5),
+      lowStock: lowStockResult.rows,
+      employeeCount: parseInt(employeeResult.rows[0].count),
+      avgWage: parseFloat(employeeResult.rows[0].avg_wage) || 0
+    };
+
+    const zReportResult = await client.query(`
+      INSERT INTO z_reports (report_date, report_data)
+      VALUES ($1, $2)
+      RETURNING report_id, report_date
+    `, [now, JSON.stringify(zReportData)]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      reportId: zReportResult.rows[0].report_id,
+      reportDate: zReportResult.rows[0].report_date,
+      date: today,
+      currentTime: now,
+      totalOrders,
+      totalRevenue,
+      totalItems,
+      hourlyData: hourlyResult.rows.map(row => ({
+        hour: parseInt(row.hour),
+        orderCount: parseInt(row.order_count),
+        revenue: parseFloat(row.revenue),
+        itemsSold: parseInt(row.items_sold)
+      })),
+      topItems: itemsResult.rows.slice(0, 5),
+      lowStock: lowStockResult.rows,
+      employeeCount: parseInt(employeeResult.rows[0].count),
+      avgWage: parseFloat(employeeResult.rows[0].avg_wage) || 0
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error generating Z-report:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Check if Z-report has been run today
+app.get('/api/manager/reports/z-report/status', async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const result = await pool.query(`
+      SELECT report_id, report_date
+      FROM z_reports
+      WHERE DATE(report_date) = DATE($1)
+      LIMIT 1
+    `, [today]);
+
+    if (result.rows.length > 0) {
+      res.json({
+        hasBeenRun: true,
+        reportId: result.rows[0].report_id,
+        reportDate: result.rows[0].report_date
+      });
+    } else {
+      res.json({
+        hasBeenRun: false
+      });
+    }
+  } catch (err) {
+    console.error('Error checking Z-report status:', err);
     res.status(500).json({ error: err.message });
   }
 });

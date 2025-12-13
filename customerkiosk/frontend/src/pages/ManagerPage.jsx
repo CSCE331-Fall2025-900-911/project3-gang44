@@ -18,6 +18,14 @@ export default function ManagerPage() {
   const navigate = useNavigate();
   const { t: i18nT } = useTranslation();
 
+  // Add manager-view class to document root for styling
+  useEffect(() => {
+    document.documentElement.classList.add("manager-view");
+    return () => {
+      document.documentElement.classList.remove("manager-view");
+    };
+  }, []);
+
   // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,8 +50,8 @@ export default function ManagerPage() {
           <button className="back-button" onClick={() => navigate("/")}>
             ← {i18nT("Back to Landing Page")}
           </button>
-          <h1>{i18nT("Manager Dashboard")}</h1>
         </div>
+        <h1>{i18nT("Manager Dashboard")}</h1>
         <div className="header-right">
           <span className="current-time">{formatTime(currentTime)}</span>
         </div>
@@ -171,12 +179,12 @@ function MenuStatsTab() {
               <tr>
                 <th>{i18nT("Item")}</th>
                 <th>
-                  {i18nT("Sales")} {" "}
+                  {i18nT("Sales")}{" "}
                   {period === "day"
                     ? i18nT("Today")
-                    : i18nT("This {period}", {
-                        period: i18nT(period === "week" ? "Week" : "Month"),
-                      })}
+                    : period === "week"
+                    ? i18nT("This Week")
+                    : i18nT("This Month")}
                 </th>
                 <th>{i18nT("Sold/Day")}</th>
               </tr>
@@ -231,31 +239,31 @@ function InventoryTab() {
         <>
           <InventoryChart ingredients={ingredients} />
           <table className="inventory-table">
-          <thead>
-            <tr>
-              <th>{i18nT("Item")}</th>
-              <th>{i18nT("Amount")}</th>
-              <th>{i18nT("Status")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ingredients.map((item) => (
-              <tr
-                key={item.id}
-                className={item.quantity < 10 ? "low-stock" : ""}
-              >
-                <td>{t(item.name)}</td>
-                <td>{item.quantity}</td>
-                <td>
-                  {item.quantity < 10 ? (
-                    <span className="status-low">{i18nT("Low Stock")}</span>
-                  ) : (
-                    <span className="status-ok">{i18nT("OK")}</span>
-                  )}
-                </td>
+            <thead>
+              <tr>
+                <th>{i18nT("Item")}</th>
+                <th>{i18nT("Amount")}</th>
+                <th>{i18nT("Status")}</th>
               </tr>
-            ))}
-          </tbody>
+            </thead>
+            <tbody>
+              {ingredients.map((item) => (
+                <tr
+                  key={item.id}
+                  className={item.quantity < 10 ? "low-stock" : ""}
+                >
+                  <td>{t(item.name)}</td>
+                  <td>{item.quantity}</td>
+                  <td>
+                    {item.quantity < 10 ? (
+                      <span className="status-low">{i18nT("Low Stock")}</span>
+                    ) : (
+                      <span className="status-ok">{i18nT("OK")}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </>
       )}
@@ -361,7 +369,9 @@ function ProductsTab() {
       // Update ingredients if provided
       if (formData.ingredients !== undefined) {
         await fetch(
-          `${import.meta.env.VITE_API_URL}/api/manager/products/${id}/ingredients`,
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/manager/products/${id}/ingredients`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -746,7 +756,10 @@ function ProductFormRow({ product, onSave, onCancel, availableIngredients }) {
                             step="1"
                             value={selected.quantity_needed}
                             onChange={(e) =>
-                              handleQuantityChange(ingredient.id, e.target.value)
+                              handleQuantityChange(
+                                ingredient.id,
+                                e.target.value
+                              )
                             }
                             placeholder="Qty"
                             className="quantity-input"
@@ -874,52 +887,52 @@ function IngredientsTab() {
         <>
           <IngredientAmountChart ingredients={ingredients} />
           <table className="management-table">
-          <thead>
-            <tr>
-              <th>{i18nT("ID")}</th>
-              <th>{i18nT("Name")}</th>
-              <th>{i18nT("Category")}</th>
-              <th>{i18nT("Price")}</th>
-              <th>{i18nT("Quantity")}</th>
-              <th>{i18nT("Actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ingredients.map((ingredient) => (
-              <tr key={ingredient.id}>
-                {editingIngredient?.id === ingredient.id ? (
-                  <IngredientFormRow
-                    ingredient={ingredient}
-                    onSave={(data) => handleUpdate(ingredient.id, data)}
-                    onCancel={() => setEditingIngredient(null)}
-                  />
-                ) : (
-                  <>
-                    <td>{ingredient.id}</td>
-                    <td>{t(ingredient.name)}</td>
-                    <td>{t(ingredient.category)}</td>
-                    <td>${parseFloat(ingredient.price).toFixed(2)}</td>
-                    <td>{ingredient.quantity}</td>
-                    <td>
-                      <button
-                        className="edit-btn"
-                        onClick={() => setEditingIngredient(ingredient)}
-                      >
-                        {i18nT("Edit")}
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(ingredient.id)}
-                      >
-                        {i18nT("Delete")}
-                      </button>
-                    </td>
-                  </>
-                )}
+            <thead>
+              <tr>
+                <th>{i18nT("ID")}</th>
+                <th>{i18nT("Name")}</th>
+                <th>{i18nT("Category")}</th>
+                <th>{i18nT("Price")}</th>
+                <th>{i18nT("Quantity")}</th>
+                <th>{i18nT("Actions")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {ingredients.map((ingredient) => (
+                <tr key={ingredient.id}>
+                  {editingIngredient?.id === ingredient.id ? (
+                    <IngredientFormRow
+                      ingredient={ingredient}
+                      onSave={(data) => handleUpdate(ingredient.id, data)}
+                      onCancel={() => setEditingIngredient(null)}
+                    />
+                  ) : (
+                    <>
+                      <td>{ingredient.id}</td>
+                      <td>{t(ingredient.name)}</td>
+                      <td>{t(ingredient.category)}</td>
+                      <td>${parseFloat(ingredient.price).toFixed(2)}</td>
+                      <td>{ingredient.quantity}</td>
+                      <td>
+                        <button
+                          className="edit-btn"
+                          onClick={() => setEditingIngredient(ingredient)}
+                        >
+                          {i18nT("Edit")}
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDelete(ingredient.id)}
+                        >
+                          {i18nT("Delete")}
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </div>
@@ -1265,17 +1278,23 @@ function PaymentsTab() {
       const url = `${
         import.meta.env.VITE_API_URL
       }/api/manager/payments?startDate=${startDate}&endDate=${endDate}`;
-      console.log('Fetching payment data from:', url);
-      
+      console.log("Fetching payment data from:", url);
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          `API Error: ${response.status} - ${
+            errorData.error || response.statusText
+          }`
+        );
       }
-      
+
       const data = await response.json();
-      console.log('Payment data received:', data);
+      console.log("Payment data received:", data);
       setPaymentData(data);
       setError(null);
     } catch (err) {
@@ -1294,7 +1313,7 @@ function PaymentsTab() {
   return (
     <div className="tab-content">
       <h2>{i18nT("Payment Tracking")}</h2>
-      
+
       <div className="date-range">
         <label>
           {i18nT("Start Date")}:
@@ -1312,10 +1331,7 @@ function PaymentsTab() {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </label>
-        <button
-          className="generate-report-btn"
-          onClick={fetchPaymentData}
-        >
+        <button className="generate-report-btn" onClick={fetchPaymentData}>
           {i18nT("Fetch Payment Data")}
         </button>
       </div>
@@ -1324,10 +1340,15 @@ function PaymentsTab() {
         <div className="loading">{i18nT("Loading payment data...")}</div>
       ) : error ? (
         <div className="error-message">
-          <p><strong>{i18nT("Error loading payment data:")}</strong></p>
+          <p>
+            <strong>{i18nT("Error loading payment data:")}</strong>
+          </p>
           <p>{error}</p>
           <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "10px" }}>
-            {i18nT("Please check that the API server is running and accessible at")}: {import.meta.env.VITE_API_URL}
+            {i18nT(
+              "Please check that the API server is running and accessible at"
+            )}
+            : {import.meta.env.VITE_API_URL}
           </p>
         </div>
       ) : paymentData ? (
@@ -1335,58 +1356,81 @@ function PaymentsTab() {
           <div className="summary-cards">
             <div className="summary-card">
               <h3>{i18nT("Total Card Payments")}</h3>
-              <p className="amount">${paymentData.cardTotal?.toFixed(2) || "0.00"}</p>
-              <p className="count">{paymentData.cardCount || 0} {i18nT("transactions")}</p>
+              <p className="amount">
+                ${paymentData.cardTotal?.toFixed(2) || "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cardCount || 0} {i18nT("transactions")}
+              </p>
             </div>
             <div className="summary-card">
               <h3>{i18nT("Total Cash Payments")}</h3>
-              <p className="amount">${paymentData.cashTotal?.toFixed(2) || "0.00"}</p>
-              <p className="count">{paymentData.cashCount || 0} {i18nT("transactions")}</p>
+              <p className="amount">
+                ${paymentData.cashTotal?.toFixed(2) || "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cashCount || 0} {i18nT("transactions")}
+              </p>
             </div>
             <div className="summary-card">
               <h3>{i18nT("Total Revenue")}</h3>
-              <p className="amount total">${(paymentData.cardTotal + paymentData.cashTotal)?.toFixed(2) || "0.00"}</p>
-              <p className="count">{(paymentData.cardCount + paymentData.cashCount) || 0} {i18nT("total")}</p>
+              <p className="amount total">
+                $
+                {(paymentData.cardTotal + paymentData.cashTotal)?.toFixed(2) ||
+                  "0.00"}
+              </p>
+              <p className="count">
+                {paymentData.cardCount + paymentData.cashCount || 0}{" "}
+                {i18nT("total")}
+              </p>
             </div>
           </div>
 
           <div className="payment-chart">
-            {paymentData.cardTotal !== undefined && paymentData.cashTotal !== undefined && (
-              <PaymentMethodChart
-                cardTotal={paymentData.cardTotal}
-                cashTotal={paymentData.cashTotal}
-              />
-            )}
+            {paymentData.cardTotal !== undefined &&
+              paymentData.cashTotal !== undefined && (
+                <PaymentMethodChart
+                  cardTotal={paymentData.cardTotal}
+                  cashTotal={paymentData.cashTotal}
+                />
+              )}
           </div>
 
-          {paymentData.paymentsByDay && paymentData.paymentsByDay.length > 0 && (
-            <div className="payment-history">
-              <h3>{i18nT("Payment Breakdown by Day")}</h3>
-              <table className="report-table">
-                <thead>
-                  <tr>
-                    <th>{i18nT("Date")}</th>
-                    <th>{i18nT("Card Payments")}</th>
-                    <th>{i18nT("Cash Payments")}</th>
-                    <th>{i18nT("Total")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paymentData.paymentsByDay.map((day, idx) => (
-                    <tr key={idx}>
-                      <td>{day.date}</td>
-                      <td>${day.cardAmount?.toFixed(2) || "0.00"}</td>
-                      <td>${day.cashAmount?.toFixed(2) || "0.00"}</td>
-                      <td>${(day.cardAmount + day.cashAmount)?.toFixed(2) || "0.00"}</td>
+          {paymentData.paymentsByDay &&
+            paymentData.paymentsByDay.length > 0 && (
+              <div className="payment-history">
+                <h3>{i18nT("Payment Breakdown by Day")}</h3>
+                <table className="report-table">
+                  <thead>
+                    <tr>
+                      <th>{i18nT("Date")}</th>
+                      <th>{i18nT("Card Payments")}</th>
+                      <th>{i18nT("Cash Payments")}</th>
+                      <th>{i18nT("Total")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {paymentData.paymentsByDay.map((day, idx) => (
+                      <tr key={idx}>
+                        <td>{day.date}</td>
+                        <td>${day.cardAmount?.toFixed(2) || "0.00"}</td>
+                        <td>${day.cashAmount?.toFixed(2) || "0.00"}</td>
+                        <td>
+                          $
+                          {(day.cardAmount + day.cashAmount)?.toFixed(2) ||
+                            "0.00"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
       ) : (
-        <div className="no-data">{i18nT("No payment data available for the selected date range.")}</div>
+        <div className="no-data">
+          {i18nT("No payment data available for the selected date range.")}
+        </div>
       )}
     </div>
   );
@@ -1397,6 +1441,8 @@ function ReportsTab() {
   const { t: i18nT } = useTranslation();
   const { t } = useApp(); // For translating product/ingredient names
   const [xReportData, setXReportData] = useState(null);
+  const [zReportData, setZReportData] = useState(null);
+  const [zReportStatus, setZReportStatus] = useState({ hasBeenRun: false });
   const [productUsageData, setProductUsageData] = useState(null);
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -1405,16 +1451,76 @@ function ReportsTab() {
     new Date().toISOString().split("T")[0]
   );
 
+  useEffect(() => {
+    checkZReportStatus();
+  }, []);
+
+  const checkZReportStatus = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/reports/z-report/status`
+      );
+      const data = await response.json();
+      setZReportStatus(data);
+    } catch (err) {
+      console.error("Error checking Z-report status:", err);
+    }
+  };
+
   const generateXReport = async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/manager/reports/x-report`
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 403) {
+          alert(i18nT("Cannot generate X-Report: Z-Report has already been run for today."));
+          return;
+        }
+        throw new Error(errorData.error || "Failed to generate X-report");
+      }
+
       const data = await response.json();
       setXReportData(data);
     } catch (err) {
       console.error("Error generating X-report:", err);
-      alert(i18nT("Failed to generate X-report"));
+      alert(i18nT("Failed to generate X-report: ") + err.message);
+    }
+  };
+
+  const generateZReport = async () => {
+    if (zReportStatus.hasBeenRun) {
+      alert(i18nT("Z-Report has already been run for today."));
+      return;
+    }
+
+    if (!confirm(i18nT("Are you sure you want to run the Z-Report? This can only be done once per day and will prevent X-Reports from being generated."))) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/manager/reports/z-report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate Z-report");
+      }
+
+      const data = await response.json();
+      setZReportData(data);
+      setZReportStatus({ hasBeenRun: true, reportDate: data.reportDate });
+      alert(i18nT("Z-Report generated successfully! X-Reports are now disabled for today."));
+    } catch (err) {
+      console.error("Error generating Z-report:", err);
+      alert(i18nT("Failed to generate Z-report: ") + err.message);
     }
   };
 
@@ -1433,19 +1539,48 @@ function ReportsTab() {
     }
   };
 
+  const formatHourDisplay = (hour) => {
+    const period = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:00 ${period}`;
+  };
+
   return (
     <div className="tab-content">
       <h2>{i18nT("Reports")}</h2>
 
+      {zReportStatus.hasBeenRun && (
+        <div className="z-report-notice" style={{
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffc107",
+          padding: "10px",
+          marginBottom: "20px",
+          borderRadius: "5px"
+        }}>
+          <strong>{i18nT("Notice")}:</strong> {i18nT("Z-Report has been run for today. X-Report is disabled.")}
+        </div>
+      )}
+
       <div className="report-section">
-        <h3>{i18nT("X-Report (Today's Activity)")}</h3>
-        <button className="generate-report-btn" onClick={generateXReport}>
+        <h3>{i18nT("X-Report (Hourly Totals Up to Current Hour)")}</h3>
+        <button
+          className="generate-report-btn"
+          onClick={generateXReport}
+          disabled={zReportStatus.hasBeenRun}
+          style={{
+            opacity: zReportStatus.hasBeenRun ? 0.5 : 1,
+            cursor: zReportStatus.hasBeenRun ? "not-allowed" : "pointer"
+          }}
+        >
           {i18nT("Generate X-Report")}
         </button>
 
         {xReportData && (
           <div className="report-display">
             <h4>{i18nT("Sales Summary")}</h4>
+            <p>
+              {i18nT("Report Time")}: {new Date(xReportData.currentTime).toLocaleString()}
+            </p>
             <p>
               {i18nT("Total Orders")}: {xReportData.totalOrders}
             </p>
@@ -1455,6 +1590,34 @@ function ReportsTab() {
             <p>
               {i18nT("Total Revenue")}: ${xReportData.totalRevenue.toFixed(2)}
             </p>
+
+            <h4>{i18nT("Hourly Breakdown")}</h4>
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>{i18nT("Hour")}</th>
+                  <th>{i18nT("Orders")}</th>
+                  <th>{i18nT("Items Sold")}</th>
+                  <th>{i18nT("Revenue")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {xReportData.hourlyData && xReportData.hourlyData.length > 0 ? (
+                  xReportData.hourlyData.map((hourData, index) => (
+                    <tr key={index}>
+                      <td>{formatHourDisplay(hourData.hour)}</td>
+                      <td>{hourData.orderCount}</td>
+                      <td>{hourData.itemsSold}</td>
+                      <td>${parseFloat(hourData.revenue).toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">{i18nT("No sales data for today yet")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
 
             <h4>{i18nT("Top Selling Items")}</h4>
             <ul>
@@ -1488,6 +1651,104 @@ function ReportsTab() {
 
             {/* Charts for X-Report */}
             <XReportCharts xReportData={xReportData} />
+          </div>
+        )}
+      </div>
+
+      <div className="report-section">
+        <h3>{i18nT("Z-Report (End-of-Day Report)")}</h3>
+        <button
+          className="generate-report-btn"
+          onClick={generateZReport}
+          disabled={zReportStatus.hasBeenRun}
+          style={{
+            opacity: zReportStatus.hasBeenRun ? 0.5 : 1,
+            cursor: zReportStatus.hasBeenRun ? "not-allowed" : "pointer",
+            backgroundColor: zReportStatus.hasBeenRun ? "#6c757d" : "#dc3545"
+          }}
+        >
+          {zReportStatus.hasBeenRun ? i18nT("Z-Report Already Run") : i18nT("Generate Z-Report")}
+        </button>
+        <p style={{ fontSize: "0.9rem", color: "#666", marginTop: "5px" }}>
+          {i18nT("Warning: Z-Report can only be run once per day and will disable X-Reports.")}
+        </p>
+
+        {zReportData && (
+          <div className="report-display">
+            <h4>{i18nT("Sales Summary")}</h4>
+            <p>
+              {i18nT("Report Time")}: {new Date(zReportData.reportDate).toLocaleString()}
+            </p>
+            <p>
+              {i18nT("Total Orders")}: {zReportData.totalOrders}
+            </p>
+            <p>
+              {i18nT("Total Items Sold")}: {zReportData.totalItems}
+            </p>
+            <p>
+              {i18nT("Total Revenue")}: ${zReportData.totalRevenue.toFixed(2)}
+            </p>
+
+            <h4>{i18nT("Hourly Breakdown")}</h4>
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>{i18nT("Hour")}</th>
+                  <th>{i18nT("Orders")}</th>
+                  <th>{i18nT("Items Sold")}</th>
+                  <th>{i18nT("Revenue")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {zReportData.hourlyData && zReportData.hourlyData.length > 0 ? (
+                  zReportData.hourlyData.map((hourData, index) => (
+                    <tr key={index}>
+                      <td>{formatHourDisplay(hourData.hour)}</td>
+                      <td>{hourData.orderCount}</td>
+                      <td>{hourData.itemsSold}</td>
+                      <td>${parseFloat(hourData.revenue).toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">{i18nT("No sales data for today")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            <h4>{i18nT("Top Selling Items")}</h4>
+            <ul>
+              {zReportData.topItems.map((item, index) => (
+                <li key={index}>
+                  {t(item.product_name)}: {item.quantity} {i18nT("Quantity")}
+                </li>
+              ))}
+            </ul>
+
+            <h4>{i18nT("Low Stock Items")}</h4>
+            {zReportData.lowStock.length === 0 ? (
+              <p>{i18nT("All stock levels are sufficient.")}</p>
+            ) : (
+              <ul>
+                {zReportData.lowStock.map((item, index) => (
+                  <li key={index}>
+                    {item.name}: {item.quantity} {i18nT("Quantity")}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <h4>{i18nT("Employee Statistics")}</h4>
+            <p>
+              {i18nT("Total Employees")}: {zReportData.employeeCount}
+            </p>
+            <p>
+              {i18nT("Average Wage")}: ${zReportData.avgWage.toFixed(2)}/hr
+            </p>
+
+            {/* Charts for Z-Report */}
+            <XReportCharts xReportData={zReportData} />
           </div>
         )}
       </div>

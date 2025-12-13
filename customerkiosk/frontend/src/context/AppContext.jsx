@@ -53,6 +53,10 @@ export const AppProvider = ({ children }) => {
     setCart([]);
   };
 
+  const setLanguageChoice = (lang) => {
+    setLanguage(lang);
+  };
+
   const toggleLanguage = () => {
     setLanguage((lang) => (lang === "en" ? "es" : "en"));
   };
@@ -273,6 +277,7 @@ export const AppProvider = ({ children }) => {
         user,
         setUser,
         language,
+        setLanguageChoice,
         toggleLanguage,
         t,
         translate,
