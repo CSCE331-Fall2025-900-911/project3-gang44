@@ -101,18 +101,17 @@ export default function CashierPage() {
   const addToCartWithCustomization = (customizedItem) => {
     if (editingCartItem) {
       // Update existing item
-      setCart(
-        cart.map((item) =>
-          item.cart_item_id === editingCartItem.cart_item_id
-            ? {
-                ...item,
-                price_per_unit: customizedItem.price_per_unit,
-                subtotal: customizedItem.price_per_unit * item.quantity,
-                customizations: customizedItem.customizations,
-              }
-            : item
-        )
-      );
+      setCart(cart.map((item) =>
+        item.cart_item_id === editingCartItem.cart_item_id
+          ? {
+              ...item,
+              quantity: customizedItem.quantity || item.quantity,
+              price_per_unit: customizedItem.price_per_unit,
+              subtotal: customizedItem.price_per_unit * (customizedItem.quantity || item.quantity),
+              customizations: customizedItem.customizations,
+            }
+          : item
+      ));
       setEditingCartItem(null);
     } else {
       // Add new customized item to cart with unique ID based on timestamp
@@ -120,9 +119,9 @@ export default function CashierPage() {
         cart_item_id: Date.now(), // Unique ID for each cart item
         product_id: customizedItem.product_id,
         product_name: customizedItem.product_name,
-        quantity: 1,
+        quantity: customizedItem.quantity || 1,
         price_per_unit: customizedItem.price_per_unit,
-        subtotal: customizedItem.price_per_unit,
+        subtotal: customizedItem.price_per_unit * (customizedItem.quantity || 1),
         customizations: customizedItem.customizations, // Store customization details
       };
       setCart([...cart, cartItem]);
@@ -837,18 +836,11 @@ function CustomizeModal({
   const { t: i18nT } = useTranslation(); // For UI labels
   const { t } = useApp(); // For API translations
   const [size, setSize] = useState(editMode?.customizations?.size || "Medium");
-  const [temperature, setTemperature] = useState(
-    editMode?.customizations?.temperature || "Cold"
-  );
-  const [iceLevel, setIceLevel] = useState(
-    editMode?.customizations?.iceLevel || "Regular Ice"
-  );
-  const [sweetnessLevel, setSweetnessLevel] = useState(
-    editMode?.customizations?.sweetnessLevel || "50%"
-  );
-  const [selectedToppings, setSelectedToppings] = useState(
-    editMode?.customizations?.toppings || []
-  );
+  const [temperature, setTemperature] = useState(editMode?.customizations?.temperature || "Cold");
+  const [iceLevel, setIceLevel] = useState(editMode?.customizations?.iceLevel || "Regular Ice");
+  const [sweetnessLevel, setSweetnessLevel] = useState(editMode?.customizations?.sweetnessLevel || "50%");
+  const [selectedToppings, setSelectedToppings] = useState(editMode?.customizations?.toppings || []);
+  const [quantity, setQuantity] = useState(editMode?.quantity || 1);
 
   const toggleTopping = (topping) => {
     const normalizeId = (id) => String(id);
@@ -867,7 +859,7 @@ function CustomizeModal({
     }
   };
 
-  const calculatePrice = () => {
+  const calculatePricePerUnit = () => {
     let price = parseFloat(product.price);
 
     // Add size multiplier
@@ -882,12 +874,17 @@ function CustomizeModal({
     return price;
   };
 
+  const calculatePrice = () => {
+    return calculatePricePerUnit() * quantity;
+  };
+
   const handleAdd = () => {
-    const finalPrice = calculatePrice();
+    const pricePerUnit = calculatePricePerUnit();
     onAdd({
       product_id: product.product_id,
       product_name: product.name,
-      price_per_unit: finalPrice,
+      price_per_unit: pricePerUnit,
+      quantity: quantity,
       customizations: {
         size,
         temperature,
@@ -1000,10 +997,69 @@ function CustomizeModal({
               })}
             </div>
           </div>
+
+          {/* Quantity Selector */}
+          <div className="customization-section">
+            <h3>{i18nT("Quantity")}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'center' }}>
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: '2px solid #333',
+                  background: '#fff',
+                  color: '#000',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                disabled={quantity <= 1}
+              >
+                −
+              </button>
+              <span style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                minWidth: '50px', 
+                textAlign: 'center' 
+              }}>
+                {quantity}
+              </span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: '2px solid #333',
+                  background: '#fff',
+                  color: '#000',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="modal-footer">
           <div className="modal-total">
+            {quantity > 1 && (
+              <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>
+                ${calculatePricePerUnit().toFixed(2)} × {quantity} =
+              </div>
+            )}
             <span>{i18nT("total")}:</span>
             <span className="price">${calculatePrice().toFixed(2)}</span>
           </div>
